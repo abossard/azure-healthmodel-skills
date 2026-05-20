@@ -27,6 +27,7 @@ Reference data for **healthmodel-design**. Instead of a frozen table of resource
 8. ⛔ MANDATORY: Use only standard `az` CLI commands — `az monitor metrics list-definitions`, `az monitor metrics list`, `az rest`. No extensions, no Python SDK.
 9. ⛔ MANDATORY: Never use `grep` or `sed` to parse `az` JSON output — always `jq`.
 10. ⛔ MANDATORY: For resource types you can't immediately classify, mark the signal `"_review": "needs human review — auto-derived"`, set entity `impact` to `Limited`, and document the rationale next to the design file.
+11. ⛔ MANDATORY: Every `az` command that queries Azure must persist its full output (including errors) to `.healthmodel/data/<phase>/<category>/`. Use `2>&1 | tee` for commands where you also need stdout, or `> file 2>&1` for background collection. File names should include the resource name for easy lookup. Timestamps are optional but recommended for baselines. The `.healthmodel/data/` directory is gitignored — never commit collected data.
 
 ## What this skill is consumed by
 
@@ -45,8 +46,12 @@ Reference data for **healthmodel-design**. Instead of a frozen table of resource
 
 ```bash
 RID='/subscriptions/<sub>/resourceGroups/<rg>/providers/<provider>/<type>/<name>'
+NAME="$(echo "$RID" | rev | cut -d/ -f1 | rev)"
+DATA_METRICS=".healthmodel/data/discovery/metric-definitions"
+mkdir -p "$DATA_METRICS"
 
-az monitor metrics list-definitions --resource "$RID" -o json \
+az monitor metrics list-definitions --resource "$RID" -o json 2>&1 \
+  | tee "$DATA_METRICS/$NAME.json" \
   | jq '[.[] | {
         name: .name.value,
         displayName: .name.localizedValue,
@@ -70,13 +75,18 @@ The four fields you actually paste into a signal definition come from this outpu
 ### 1.2 Sample real metric values (last 1 h, 5-minute grain)
 
 ```bash
+DATA_BASELINES=".healthmodel/data/signals/baselines"
+mkdir -p "$DATA_BASELINES"
+METRIC="ServiceAvailability"
+
 az monitor metrics list \
   --resource "$RID" \
-  --metric "ServiceAvailability" \
+  --metric "$METRIC" \
   --aggregation Average \
   --interval PT5M \
   --start-time "$(date -u -v-1H '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u -d '1 hour ago' '+%Y-%m-%dT%H:%M:%SZ')" \
-  -o json \
+  -o json 2>&1 \
+  | tee "$DATA_BASELINES/$NAME-$METRIC.json" \
   | jq '[.value[0].timeseries[0].data[] | select(.average != null) | .average]
         | { n: length, min: min, max: max, avg: (add/length) }'
 ```
@@ -90,7 +100,10 @@ Use this baseline window when proposing thresholds — see Section 5.
 After dumping definitions, classify with `jq`:
 
 ```bash
-az monitor metrics list-definitions --resource "$RID" -o json | jq '
+# Uses the definitions already persisted by §1.1; re-fetches if needed
+az monitor metrics list-definitions --resource "$RID" -o json 2>&1 \
+  | tee "$DATA_METRICS/$NAME-golden.json" \
+  | jq '
   def classify(n; u):
     if   (n | test("avail"; "i"))                                       then "availability"
     elif (n | test("latency|duration|responsetime|e2e|ttlt|ttft|tbt|timetoresponse|timetolast|timebetween"; "i"))
@@ -119,7 +132,8 @@ Goal: pick **one** signal per golden-signal category that matters for this resou
 ### 1.4 Generic "did I miss anything obvious?" filter
 
 ```bash
-az monitor metrics list-definitions --resource "$RID" -o json \
+az monitor metrics list-definitions --resource "$RID" -o json 2>&1 \
+  | tee "$DATA_METRICS/$NAME-filter.json" \
   | jq -r '.[].name.value' \
   | awk 'tolower($0) ~ /avail|error|fail|throttle|latency|5xx|429|deadletter|busy|token|rai|harmful|rejected|ptu|utilization|ttft|ttlt/ {print}'
 ```
@@ -187,8 +201,9 @@ Azure OpenAI resources (`Microsoft.CognitiveServices/accounts` with `kind=OpenAI
 **To filter for the right metrics**, use Recipe 12 (namespace discovery) and prefix-match:
 
 ```bash
-# Show only modern Azure OpenAI metrics
-az monitor metrics list-definitions --resource "$RID" -o json \
+# Show only modern Azure OpenAI metrics (persists raw definitions alongside)
+az monitor metrics list-definitions --resource "$RID" -o json 2>&1 \
+  | tee "$DATA_METRICS/$NAME-openai.json" \
   | jq '[.[] | select(.name.value | test("^AzureOpenAI|^Processed|^Generated|^Token|^Active|^Audio|^RAI|^FineTuned"; "i"))
          | {name: .name.value, category: .category, unit, primaryAgg: .primaryAggregationType}]'
 ```
@@ -258,11 +273,14 @@ Uses `az rest` with `--resource` for authentication — no curl, no Python, no t
 
 ```bash
 AMW='/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Monitor/accounts/<amw>'
+DATA_PROMQL=".healthmodel/data/signals/promql-probes"
+mkdir -p "$DATA_PROMQL"
 
 # Get the Prometheus endpoint
 ENDPOINT=$(az rest --method GET \
   --url "https://management.azure.com${AMW}?api-version=2023-04-03" \
-  -o json | jq -r '.properties.metrics.prometheusQueryEndpoint')
+  -o json 2>&1 | tee "$DATA_PROMQL/amw-endpoint.json" \
+  | jq -r '.properties.metrics.prometheusQueryEndpoint')
 
 # URL-encode the query with jq (no python)
 QUERY='sum(rate(kube_pod_container_status_restarts_total{namespace="prod"}[5m])) or vector(0)'
@@ -272,7 +290,7 @@ ENCODED=$(printf '%s' "$QUERY" | jq -Rr @uri)
 az rest --method GET \
   --url "${ENDPOINT}/api/v1/query?query=${ENCODED}" \
   --resource "https://prometheus.monitor.azure.com" \
-  -o json | jq '.data.result'
+  -o json 2>&1 | tee "$DATA_PROMQL/probe-restarts.json" | jq '.data.result'
 ```
 
 A non-empty `result` array means the query is wired correctly. A `[{"value":[..,"0"]}]` result (from `or vector(0)`) is still healthy — the signal will report `0`.
@@ -379,13 +397,17 @@ This guarantees the signal returns `0` instead of `Unknown` on cold tables.
 ### 3.4 Test KQL before deploying
 
 ```bash
+DATA_KQL=".healthmodel/data/signals/kql-probes"
+mkdir -p "$DATA_KQL"
+
 WS_ID="$(az monitor log-analytics workspace show \
   --ids '/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.OperationalInsights/workspaces/<ws>' \
-  -o json | jq -r '.customerId')"
+  -o json 2>&1 | tee "$DATA_KQL/workspace.json" | jq -r '.customerId')"
 
 az monitor log-analytics query --workspace "$WS_ID" \
   --analytics-query 'AppExceptions | where TimeGenerated > ago(5m) | summarize Count=count()' \
-  -o json \
+  -o json 2>&1 \
+  | tee "$DATA_KQL/probe-exceptions.json" \
   | jq '.tables[0].rows'
 ```
 
@@ -402,10 +424,13 @@ After `bash .agents/skills/healthmodel-deploy/scripts/apply.sh` finishes, **read
 ```bash
 HM='/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.CloudHealth/healthModels/<name>'
 API='2026-01-01-preview'
+DATA_ENTITY=".healthmodel/data/deploy/entity-state"
+mkdir -p "$DATA_ENTITY"
 
 az rest --method get \
   --url "https://management.azure.com$HM/entities?api-version=$API" \
-  -o json \
+  -o json 2>&1 \
+  | tee "$DATA_ENTITY/entities.json" \
   | jq '[.value[]? | {
         entity: .name,
         state: .properties.healthState,
@@ -430,7 +455,8 @@ az rest --method get \
 
 ```bash
 az rest --method get \
-  --url "https://management.azure.com$HM/entities?api-version=$API" -o json \
+  --url "https://management.azure.com$HM/entities?api-version=$API" -o json 2>&1 \
+  | tee "$DATA_ENTITY/entities-unknown.json" \
   | jq '[.value[]? | .properties.signalGroups // {} | to_entries[].value.signals[]?
          | select(.status.healthState == "Unknown")
          | {name, state: .status.healthState}]'
@@ -449,14 +475,20 @@ Common reasons (`stateReason` field) and fixes:
 ### 4.4 Check RBAC on the signal-execution identity
 
 ```bash
+DATA_RBAC=".healthmodel/data/rbac"
+mkdir -p "$DATA_RBAC"
+
 IDENTITY_PRINCIPAL_ID="$(az rest --method get \
   --url "https://management.azure.com$HM/authenticationSettings?api-version=$API" \
-  -o json \
+  -o json 2>&1 \
+  | tee "$DATA_RBAC/auth-settings.json" \
   | jq -r '.value[0].properties.managedIdentityName' \
   | xargs -I {} az identity show --ids {} -o json \
+  | tee "$DATA_RBAC/identity.json" \
   | jq -r '.principalId')"
 
-az role assignment list --assignee "$IDENTITY_PRINCIPAL_ID" --all -o json \
+az role assignment list --assignee "$IDENTITY_PRINCIPAL_ID" --all -o json 2>&1 \
+  | tee "$DATA_RBAC/identity-roles.json" \
   | jq '[.[] | {role: .roleDefinitionName, scope}]'
 ```
 

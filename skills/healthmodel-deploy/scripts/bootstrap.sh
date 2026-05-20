@@ -23,6 +23,13 @@ URL=$(arm_url "$SUB" "$RG" "$MODEL")
 TMP=$(mktemp); trap 'rm -f "$TMP"' EXIT
 
 if [ -n "$UAMI" ]; then
+  # Verify UAMI exists before attaching
+  if ! az identity show --ids "$UAMI" -o none 2>&1; then
+    echo "⚠ UAMI not found or inaccessible: $UAMI"
+    echo "  Create it first:  az identity create -g <rg> -n <name>"
+    echo "  Or verify the resource ID is correct (full ARM path required)"
+    exit 1
+  fi
   cat > "$TMP" <<EOF
 {
   "location": "$LOC",

@@ -42,18 +42,36 @@ command -v jq >/dev/null
 
 ### Step 1: Build Dependency Graph
 
-Extract implicit relationships by resource type. For each, produce edges `{from, to, kind}` where kind ∈ `serves|stores|authenticates|monitors`.
+Start from **all** discovered resources in `.healthmodel/resources.json` — do not filter by expected types. Every resource in the file is a candidate for the graph.
+
+#### 1a. Enumerate all resources and classify by role
 
 ```bash
-# AKS → data stores
-jq '[.[] | select(.type | test("DocumentDB|Sql/servers|DBforPostgreSQL"))] | map({name, type, id})' \
+# List all distinct resource types and counts
+jq 'group_by(.type) | map({type: .[0].type, count: length}) | sort_by(-.count)' \
   .healthmodel/resources.json
 
-# Monitoring plane
-jq '[.[] | select(.type=="Microsoft.Monitor/accounts")] | map({name, id})' .healthmodel/resources.json
+# For any resource type you don't immediately recognize, research it:
+# - What does this service do?
+# - Is it on the request path, a background service, or infrastructure?
+# - What kind of health signals would matter for it?
 ```
 
-For Front Door / App Gateway, match origin hostnames to compute resources.
+For each resource, determine its **role** in the architecture. Use `.healthmodel/00-brief.md` (especially §2 Critical User Journeys and §4 Top Concerns) as the primary guide. When the brief doesn't cover a resource, research the resource type and ask the user.
+
+#### 1b. Infer relationships
+
+Produce edges `{from, to, kind}` where kind ∈ `serves|stores|authenticates|monitors|calls|feeds`.
+
+Relationship inference strategies (use all that apply):
+- **Naming conventions**: resources with matching prefixes/suffixes likely belong together
+- **Resource group co-location**: resources in the same RG are often related
+- **Known Azure patterns**: ingress resources serve compute, compute calls data stores, compute calls AI services, etc.
+- **Tags**: `tags.environment`, `tags.application`, `tags.stamp` reveal groupings
+- **Network topology** (if Resource Graph data available): subnet co-location, private endpoints
+- **Brief §2**: user-described journeys define the actual call chain — prefer these over inferred relationships
+
+Do **not** assume a fixed topology. The architecture could be anything: microservices, monolith, event-driven, AI pipeline, batch processing, IoT, or a combination.
 
 ### Step 2: Classify Impact
 
@@ -66,17 +84,22 @@ Read `.healthmodel/00-brief.md` before classifying:
 
 If the brief is not filled in or sections are blank, fall back to the defaults listed in the brief's §9.
 
-| Position | Impact | Meaning |
-|----------|--------|---------|
-| Request path (ingress → compute → data) | `Standard` | Failure turns parent red |
-| Side dependency (cache, queue, AI) | `Limited` | Visible, doesn't escalate |
-| Telemetry/monitoring (AMW, Log Analytics) | `Suppressed` | Informational |
+Impact is determined by **the resource's role in the user's architecture**, not by its Azure type:
+
+| Principle | Impact | Meaning |
+|-----------|--------|---------|
+| On the critical request path — user request fails if this is down | `Standard` | Failure turns parent red |
+| Supports the request path but has fallback/degraded mode | `Limited` | Visible degradation, doesn't escalate |
+| Background/async processing — users don't notice immediately | `Limited` | Visible, doesn't escalate |
+| Telemetry, monitoring, management infrastructure | `Suppressed` | Informational |
+
+> **Any** resource type can be `Standard` — an Azure OpenAI service powering a chatbot, a PostgreSQL database holding user sessions, a Storage account serving static assets. Don't assume impact from the resource type alone. The brief and the user's architecture determine impact.
 
 **Critical path** = longest directed path from any public ingress to a stateful node — *unless* §2 of the brief specifies user journeys, in which case the critical path follows the journeys.
 
 ### Step 3: Generate Mermaid Diagram
 
-Save to `.healthmodel/02-architecture.md`:
+Build the diagram from the actual discovered resources and inferred relationships — not from a template. Save to `.healthmodel/02-architecture.md`:
 
 ```mermaid
 graph LR
@@ -84,50 +107,76 @@ graph LR
   classDef limited fill:#1c2833,stroke:#7f8c8d,color:#ccc
   classDef suppressed fill:#1c2833,stroke:#566573,color:#888
 
-  FD[Front Door<br/>fd-myapp]:::critical --> AKS1[AKS<br/>swedencentral-001]:::critical
-  AKS1 --> COS[Cosmos DB<br/>cosmos-myapp]:::critical
-  AKS1 -.-> AMW1[AMW<br/>amw-sc1]:::suppressed
-  AKS1 -.-> KV[Key Vault]:::limited
+  %% Example — replace with actual discovered resources:
+  INGRESS[Ingress<br/>resource-name]:::critical --> COMPUTE[Compute<br/>resource-name]:::critical
+  COMPUTE --> DATA[Data Store<br/>resource-name]:::critical
+  COMPUTE -.-> SIDE[Side Dependency<br/>resource-name]:::limited
+  COMPUTE -.-> MON[Monitoring<br/>resource-name]:::suppressed
 ```
+
+Use the actual resource names from `resources.json`. The diagram should reflect the real topology — add or remove nodes and edges as the architecture demands.
 
 Also include a resource inventory table and an explicit critical-path call-out.
 
 ### Step 4: Propose Entity Hierarchy
 
-Pick the pattern matching the discovery answers.
+Design a hierarchy that reflects the **actual architecture**, not a predefined template. The hierarchy should group resources by their role in the system and the golden signals that matter for each group.
 
-**Pattern A — AKS microservices, multi-stamp**
+**Guiding principles:**
+- Group by **function** (what it does for the user), not by Azure resource type
+- Leaf entities carry signal groups; branch entities aggregate health from children
+- Each entity has at most one parent (tree, not DAG)
+- 2-4 signals per leaf entity (one per relevant golden-signal category)
+- Name entities after their role ("Payment Processing", "Document Ingestion"), not their Azure type ("Cosmos DB", "Storage Account")
+
+**Example hierarchies** — these are illustrations, not templates. Your architecture will likely differ:
+
+*Microservices with multi-stamp:*
 ```
 Root (<appName>)
-├── Failures        (Suppressed — aggregates error signals)
-│   ├── <stamp> — AKS Failures
-│   ├── <stamp> — Pod Failures
-│   ├── <stamp> — Front Door Errors
-│   └── <stamp> — Cosmos Errors
-├── Latency         (Limited — aggregates latency signals)
-│   ├── <stamp> — Gateway Latency
-│   ├── <stamp> — Cosmos Latency
-│   └── <stamp> — FD Latency
+├── Failures        (aggregates error signals across stamps)
+├── Latency         (aggregates latency signals across stamps)
 ├── Resource Pressure (per stamp)
-└── Side groups (Queues, AI, Certificates if present)
+└── Side groups (as needed)
 ```
 
-**Pattern B — PaaS (App Service + SQL/Cosmos)**
+*PaaS web app:*
 ```
 Root
-├── Frontend (App Service errors, latency, CPU, memory)
-├── Database (DTU/RU, errors, latency)
-├── Ingress (5xx, origin latency)
+├── Frontend (errors, latency, resource usage)
+├── Database (availability, query performance)
+├── Ingress (error rate, origin latency)
 └── Telemetry (Suppressed)
 ```
 
-**Pattern C — Event-driven (Functions + Service Bus)**
+*Event-driven processing:*
 ```
 Root
 ├── Producers (HTTP errors, latency)
-├── Bus (dead letters, throttling, server errors)
-└── Consumers (failed executions, processing latency)
+├── Message Bus (dead letters, throttling)
+└── Consumers (execution failures, processing latency)
 ```
+
+*AI-powered application (e.g., RAG chatbot):*
+```
+Root
+├── Frontend (errors, latency, resource usage)
+├── AI Inference (request rate, latency, throttling, content safety)
+├── Knowledge Base (search latency, indexer health, throttling)
+├── Data Store (availability, latency)
+└── Telemetry (Suppressed)
+```
+
+*Batch/ETL pipeline:*
+```
+Root
+├── Ingestion (trigger rate, failures, queue depth)
+├── Processing (execution time, error rate, resource usage)
+├── Output (write latency, failures)
+└── Orchestration (pipeline status, scheduling)
+```
+
+These are starting points. Combine, modify, or ignore them entirely based on what `resources.json` and the brief tell you. If the architecture doesn't fit any pattern, design the hierarchy from scratch — the user confirms in Step 6.
 
 ### Step 5: Save (draft)
 

@@ -19,6 +19,10 @@ AMW_ID="${1:?Usage: validate-promql.sh <AMW_RESOURCE_ID> [design-dir]}"
 DESIGN_DIR="${2:-.healthmodel/03-design}"
 SIGNALS_DIR="${DESIGN_DIR}/signals"
 
+DATA=".healthmodel/data/signals/validation"
+mkdir -p "$DATA"
+TIMESTAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+
 if [ ! -d "$SIGNALS_DIR" ]; then
   echo "⚠  No signals directory at $SIGNALS_DIR — nothing to validate"
   exit 0
@@ -27,9 +31,13 @@ fi
 # --- Resolve the Prometheus query endpoint -----------------------------------
 
 echo "📡 Resolving Prometheus endpoint for AMW..."
-ENDPOINT=$(az rest --method GET \
+AMW_RESPONSE=$(az rest --method GET \
   --url "https://management.azure.com${AMW_ID}?api-version=2023-04-03" \
-  -o json | jq -r '.properties.metrics.prometheusQueryEndpoint // empty')
+  -o json 2>&1)
+echo "$AMW_RESPONSE" > "$DATA/amw-endpoint-$TIMESTAMP.json"
+echo "  AMW response → $DATA/amw-endpoint-$TIMESTAMP.json"
+
+ENDPOINT=$(echo "$AMW_RESPONSE" | jq -r '.properties.metrics.prometheusQueryEndpoint // empty')
 
 if [ -z "$ENDPOINT" ]; then
   echo "❌ No prometheusQueryEndpoint found on workspace:"
@@ -76,6 +84,8 @@ for f in "$SIGNALS_DIR"/*.json; do
     echo "❌ $NAME: az rest failed"
     echo "   Query: $QUERY"
     echo "   Error: $RESULT"
+    echo "$RESULT" > "$DATA/$NAME-$TIMESTAMP.json"
+    echo "   → $DATA/$NAME-$TIMESTAMP.json"
 
     # Mark as broken
     if [[ "$DISPLAY" != *"(broken)"* ]]; then
@@ -88,6 +98,7 @@ for f in "$SIGNALS_DIR"/*.json; do
   }
 
   STATUS=$(echo "$RESULT" | jq -r '.status // "error"')
+  echo "$RESULT" > "$DATA/$NAME-$TIMESTAMP.json"
 
   if [ "$STATUS" = "success" ]; then
     COUNT=$(echo "$RESULT" | jq '.data.result | length')
@@ -120,11 +131,21 @@ done
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  PromQL validation: ✅ $PASS passed, ❌ $FAIL failed, ⏭ $SKIP skipped ($TOTAL total)"
+SUMMARY="  PromQL validation: ✅ $PASS passed, ❌ $FAIL failed, ⏭ $SKIP skipped ($TOTAL total)"
+echo "$SUMMARY"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 if [ "$TOTAL" -eq 0 ]; then
   echo "  No PrometheusMetricsQuery signals found in $SIGNALS_DIR"
 fi
+
+# Persist summary
+{
+  echo "timestamp: $TIMESTAMP"
+  echo "amw: $AMW_ID"
+  echo "$SUMMARY"
+  echo "signals_dir: $SIGNALS_DIR"
+} > "$DATA/summary-$TIMESTAMP.txt"
+echo "  report → $DATA/summary-$TIMESTAMP.txt"
 
 [ "$FAIL" -eq 0 ]

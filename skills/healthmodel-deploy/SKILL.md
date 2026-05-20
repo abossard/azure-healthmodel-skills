@@ -112,13 +112,8 @@ After bootstrap, before apply, ensure the identity is ready:
    ```bash
    az role assignment create --assignee "$PRINCIPAL" --role "Monitoring Data Reader" --scope "<amw-resource-id>"
    ```
-4. **Wait for RBAC propagation** (~2-5 min). Signals **will** return `Unknown` until propagation completes.
-   ```bash
-   echo "⏳ Waiting 120s for RBAC propagation (Azure AD → ARM)…"
-   sleep 120
-   echo "  Minimum propagation window elapsed. If signals still show Unknown after deploy, wait up to 5 minutes total."
-   ```
-   > ⚠️ Do NOT skip this step. Proceeding directly to plan+apply after role assignment is the most common cause of `Unknown` signals on first deploy. The health model evaluator runs under the UAMI identity — if RBAC hasn't propagated, every signal query returns 403 and the signal goes Unknown.
+4. **Wait for RBAC propagation** (~2-5 min). Signals **will** return `Unknown` until propagation completes. The `apply.sh` script emits a `⚠ Auth changed` warning when auth items are modified — the orchestrating agent should wait 2-5 minutes before running smoke tests.
+   > ⚠️ Do NOT skip the wait. Proceeding directly to smoke tests after auth changes is the most common cause of `Unknown` signals on first deploy. The health model evaluator runs under the UAMI identity — if RBAC hasn't propagated, every signal query returns 403 and the signal goes Unknown.
 
 ### Step 3: Plan
 

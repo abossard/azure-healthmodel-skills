@@ -15,6 +15,7 @@ Guide the user through sequential steps of resource discovery and architecture i
 4. ⛔ MANDATORY: Save all answers to `.healthmodel/01-discovery.json` before handing off.
 5. ⛔ MANDATORY: Use `jq` for JSON parsing — never `grep` or `sed` on JSON.
 6. ⛔ MANDATORY: Do not proceed past discovery until the user has reviewed and confirmed `.healthmodel/00-brief.md`.
+7. ⛔ MANDATORY: Every `az` command that queries Azure must persist its full output (including errors) to `.healthmodel/data/<phase>/<category>/`. Use `2>&1 | tee` for commands where you also need stdout, or `> file 2>&1` for background collection. File names should include the resource name for easy lookup. Timestamps are optional but recommended for baselines. The `.healthmodel/data/` directory is gitignored — never commit collected data.
 
 ## Prerequisites
 
@@ -44,6 +45,9 @@ Architecture:
 9. **Async messaging**: `Service-Bus` / `Event-Hubs` / `Storage-Queues` / `none`
 10. **Ingress**: `Front-Door` / `App-Gateway` / `direct-LB` / `Istio` / `none`
 11. **Observability stack**: `AMW+Grafana` / `Log-Analytics-only` / `App-Insights` / `mix`
+12. **AI services**: `Azure-OpenAI` / `AI-Search` / `AI-Foundry` / `Document-Intelligence` / `Content-Safety` / `none`
+13. **AI on request path?**: `yes-critical` (inference is in the hot path) / `yes-background` (batch/async enrichment) / `no`
+14. **Content safety monitoring**: `built-in-filters` / `custom-safety-pipeline` / `none`
 
 ### Step 2: Resource Export
 
@@ -58,6 +62,43 @@ bash .agents/skills/healthmodel-discovery/scripts/inventory.sh
 ```
 
 Writes `.healthmodel/resources.json` and prints type counts + stamp grouping.
+
+### Step 3b: Resource Graph Topology (optional, complements Step 2)
+
+If `az graph query` is available, use Resource Graph to discover cross-resource relationships and topology that `az resource list` may not fully enumerate:
+
+```bash
+az extension add --name resource-graph 2>/dev/null
+
+DATA_GRAPH=".healthmodel/data/discovery/resource-graph"
+mkdir -p "$DATA_GRAPH"
+
+# Discover all resource types in the monitored RGs
+az graph query -q "
+  Resources
+  | where resourceGroup in~ ($(jq -r '[.resourceGroups[] | \"\x27\"+.+\"\x27\"] | join(\",\")' .healthmodel/01-discovery.json))
+  | summarize count() by type
+  | order by count_ desc
+" --first 200 -o json 2>&1 | tee "$DATA_GRAPH/resource-types.json"
+
+# Discover resource details: kind, SKU, endpoints, networking
+az graph query -q "
+  Resources
+  | where resourceGroup in~ ($(jq -r '[.resourceGroups[] | \"\x27\"+.+\"\x27\"] | join(\",\")' .healthmodel/01-discovery.json))
+  | project name, type, kind, location, resourceGroup, sku=sku.name, endpoint=properties.endpoint, subnet=properties.virtualNetworkSubnetId
+" --first 500 -o json 2>&1 | tee "$DATA_GRAPH/resource-details.json"
+
+# Check Resource Health for all discovered resources
+az graph query -q "
+  HealthResources
+  | where type =~ 'microsoft.resourcehealth/availabilitystatuses'
+  | where resourceGroup in~ ($(jq -r '[.resourceGroups[] | \"\x27\"+.+\"\x27\"] | join(\",\")' .healthmodel/01-discovery.json))
+  | project resourceId=id, state=properties.availabilityState, reason=properties.reasonType
+  | where state != 'Available'
+" --first 100 -o json 2>&1 | tee "$DATA_GRAPH/resource-health.json"
+```
+
+Resource Graph results are advisory — they complement, not replace, the `resources.json` from Step 3.
 
 ### Step 4: User Brief — fill the human context
 
@@ -83,19 +124,22 @@ RGS=$(jq -r '.resourceGroups[]' .healthmodel/01-discovery.json)
 
 Fill in subscription ID, name, location, and generate the Resource Groups table rows from the interview answers. If a UAMI named `id-healthmodel-*` was found during resource export, pre-fill the managed identity field.
 
-Then pre-fill `## 6. What to Observe` from `.healthmodel/resources.json` — one row per discovered resource. Suggested-signal hints by type (use the signal catalog as the source of truth, this is a starting point):
+Then pre-fill `## 6. What to Observe` from `.healthmodel/resources.json` — one row per discovered resource. For each resource, dynamically discover golden-signal candidates:
 
-| Resource type | Suggested signals |
-|---|---|
-| `Microsoft.ContainerService/managedClusters` | node Ready, pod restarts, API server latency |
-| `Microsoft.DocumentDB/databaseAccounts` | availability, P99 latency, 429 rate |
-| `Microsoft.Web/sites` | HTTP 5xx, response time, CPU |
-| `Microsoft.Storage/storageAccounts` | availability, throttling, latency |
-| `Microsoft.ServiceBus/namespaces` | active messages, throttled requests, DLQ depth |
-| `Microsoft.KeyVault/vaults` | availability, throttled requests |
-| `Microsoft.Cdn/profiles` (Front Door) | origin health, 5xx rate, latency |
-| `Microsoft.Network/applicationGateways` | backend health, failed requests, response time |
-| _other_ | leave column blank — design phase will fill from catalog |
+```bash
+DATA_METRICS=".healthmodel/data/discovery/metric-definitions"
+mkdir -p "$DATA_METRICS"
+
+jq -r '.[].id' .healthmodel/resources.json | while read -r rid; do
+  NAME="$(echo "$rid" | rev | cut -d/ -f1 | rev)"
+  TYPE="$(echo "$rid" | grep -oP 'providers/\K[^/]+/[^/]+')"
+  az monitor metrics list-definitions --resource "$rid" -o json 2>&1 > "$DATA_METRICS/$NAME.json"
+  SIGNALS=$(jq -r '[.[].name.value] | join(", ")' "$DATA_METRICS/$NAME.json" 2>/dev/null || echo "(discovery failed)")
+  echo "| \`$TYPE\` ($NAME) | $SIGNALS |"
+done
+```
+
+Then apply the golden-signal classifier from the signal catalog (Recipe 2) to each resource to highlight the most relevant metrics. The classifier groups metrics into availability, latency, errors, saturation, usage, safety, etc. — pick 2-4 per entity.
 
 Build the rows with `jq` from `.healthmodel/resources.json`, then append into the brief between the table header and the trailing `---`.
 
@@ -111,9 +155,32 @@ Do not run Step 5 until the user confirms.
 bash .agents/skills/healthmodel-discovery/scripts/relationships.sh "$SUB"
 ```
 
-Prints AKS / Cosmos / ingress / AMW anchors and writes `.healthmodel/raw/rbac.json` (scoped to monitored RGs only).
+Prints AKS / Cosmos / ingress / AMW anchors and writes `.healthmodel/data/relationships/rbac/all-assignments.json` (scoped to monitored RGs only).
 
-> **Note**: `.healthmodel/raw/` contains potentially sensitive data (RBAC assignments, full resource IDs). A `.gitignore` excludes this directory from version control. Regenerate with `export-resources.sh` and `relationships.sh`.
+> **Note**: `.healthmodel/data/` contains potentially sensitive data (RBAC assignments, full resource IDs, diagnostic settings). A `.gitignore` excludes this directory from version control. Regenerate with `export-resources.sh` and `relationships.sh`.
+
+### Step 5b: Diagnostic Settings Coverage Check
+
+Check which resources have diagnostic settings configured. Missing diagnostics means KQL/Log Analytics signals will fail (ARM metric signals are unaffected).
+
+```bash
+echo "== Diagnostic Settings Coverage =="
+DATA_DIAG=".healthmodel/data/discovery/diagnostic-settings"
+mkdir -p "$DATA_DIAG"
+
+jq -r '.[].id' .healthmodel/resources.json | while read -r rid; do
+  NAME="$(echo "$rid" | rev | cut -d/ -f1 | rev)"
+  az monitor diagnostic-settings list --resource "$rid" -o json 2>&1 > "$DATA_DIAG/$NAME.json"
+  COUNT=$(jq '(.value // .) | length' "$DATA_DIAG/$NAME.json" 2>/dev/null)
+  if [ "$COUNT" = "0" ] || [ "$COUNT" = "" ]; then
+    echo "  ⚠ NO diagnostics: $NAME → $DATA_DIAG/$NAME.json"
+  else
+    echo "  ✓ $NAME ($COUNT settings) → $DATA_DIAG/$NAME.json"
+  fi
+done
+```
+
+Resources without diagnostic settings can still use `AzureResourceMetric` signal kind, but `LogAnalyticsQuery` signals require diagnostic log routing to a workspace.
 
 ### Step 6: Validate & Present
 
@@ -141,6 +208,9 @@ Ask: "Does this look right? Any corrections?"
   "messaging": "none",
   "ingress": "Front-Door",
   "observability": "AMW+Grafana",
+  "aiServices": "Azure-OpenAI",
+  "aiOnRequestPath": "yes-critical",
+  "contentSafety": "built-in-filters",
   "stamps": ["swedencentral-001", "swedencentral-002"],
   "resources": { }
 }

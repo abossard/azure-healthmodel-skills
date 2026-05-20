@@ -57,7 +57,32 @@ if [ "$YES" -ne 1 ]; then
 fi
 
 TMP=$(mktemp); trap 'rm -f "$TMP"' EXIT
-jq -c "$FILTER" "$PLAN" | while read -r item; do
+
+# Apply auth items first, then the rest
+# Note: if auth items were created/modified, RBAC propagation may take 2-5 minutes.
+# The agent orchestrating this script should wait before running smoke tests.
+AUTH_FILTER="$FILTER | select(.kind == \"authenticationsettings\")"
+REST_FILTER="$FILTER | select(.kind != \"authenticationsettings\")"
+
+AUTH_COUNT=$(jq "[ $AUTH_FILTER ] | length" "$PLAN")
+NEED_RBAC_WAIT=0
+if [ "$AUTH_COUNT" -gt 0 ]; then
+  jq -c "$AUTH_FILTER" "$PLAN" | while read -r item; do
+    url=$(jq -r '.url' <<<"$item")
+    body=$(jq -r '.body' <<<"$item")
+    printf '%s' "$body" > "$TMP"
+    arm_put "$url" "$TMP" >/dev/null
+    echo "  applied: $(jq -r '"\(.kind)/\(.name)"' <<<"$item")"
+  done
+  # Check if any auth items were created or modified (not no-ops)
+  AUTH_CHANGES=$(jq "[ $AUTH_FILTER | select(.verdict != \"= no-op\") ] | length" "$PLAN")
+  if [ "$AUTH_CHANGES" -gt 0 ]; then
+    NEED_RBAC_WAIT=1
+    echo "  ⚠ Auth changed — RBAC propagation may take 2-5 min. Signals may show Unknown until propagation completes."
+  fi
+fi
+
+jq -c "$REST_FILTER" "$PLAN" | while read -r item; do
   url=$(jq -r '.url' <<<"$item")
   body=$(jq -r '.body' <<<"$item")
   printf '%s' "$body" > "$TMP"
