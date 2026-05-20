@@ -35,6 +35,8 @@ The filename (without `.json`) is the resource's ARM name. Use deterministic sho
 7. ⛔ MANDATORY: Each entity has at most one parent (tree, not DAG). Leaf entities carry signal groups; branch entities have no signals (health rolls up).
 8. ⛔ MANDATORY: For unknown resource types, omit `evaluationRules` and tag the design file with `"_review": "needs human review"` (the underscore key won't be sent because bicep would reject it — strip before deploy, OR populate evaluationRules to the best guess and document the rationale).
 9. ⛔ MANDATORY: Stop after Step 6 and present the design for user approval before handing off to deploy.
+10. ⛔ MANDATORY: When the architecture graph contains `Microsoft.ContainerService/managedClusters` **and** `Microsoft.Monitor/accounts` (AMW), propose PromQL signals for AKS workloads using the [PromQL cheatsheet](../healthmodel-signal-catalog/references/promql-cheatsheet.md). AKS ARM metrics alone (`FailedPodCounts`, `cluster_autoscaler_*`) are event-based and unreliable — PromQL with `or vector(0)` is the correct approach.
+11. ⛔ MANDATORY: If a PromQL signal cannot be validated against the live AMW, mark it `(broken)` in `displayName` — e.g., `"displayName": "AKS Pod Restarts (broken)"`. A broken signal still deploys (shows `Unknown`) but is visibly flagged. See [promql-validation.md](../healthmodel-signal-catalog/references/promql-validation.md).
 
 ## Prerequisites
 
@@ -124,6 +126,72 @@ One file per signal definition in `.healthmodel/03-design/signals/`. **Flat prop
   }
 }
 ```
+
+### Step 1b: AKS PromQL Signal Generation
+
+When the graph contains AKS clusters with an AMW, generate PromQL signals **in addition to** any ARM metric signals. AKS ARM metrics are event-based (they emit data only when the condition is active, e.g., `FailedPodCounts` only appears when pods fail) — PromQL with `or vector(0)` is the reliable alternative.
+
+**Detection**:
+
+```bash
+# Check for AKS + AMW in the architecture graph
+AKS_COUNT=$(jq '[.nodes[] | select(.type == "Microsoft.ContainerService/managedClusters")] | length' .healthmodel/02-graph.json)
+AMW_COUNT=$(jq '[.nodes[] | select(.type == "Microsoft.Monitor/accounts")] | length' .healthmodel/02-graph.json)
+
+if [ "$AKS_COUNT" -gt 0 ] && [ "$AMW_COUNT" -gt 0 ]; then
+  echo "AKS + AMW detected — generating PromQL signals"
+fi
+```
+
+**Signal selection** — pick from the [PromQL cheatsheet](../healthmodel-signal-catalog/references/promql-cheatsheet.md) based on the brief's golden-signal priority (§3 SLOs, §7 golden signal ranking):
+
+| Priority | Cheatsheet section | Minimum signals |
+|---|---|---|
+| Always include | §2 Pod Health | Pod Restarts, CrashLoopBackOff |
+| High (availability/errors) | §2 Pod Health | OOMKilled, Pending Pods |
+| High (saturation) | §3 CPU & Memory | CPU %, Memory % |
+| Medium | §5 Deployment & Scaling | Min Replicas, HPA Ceiling |
+| Medium (if Istio) | §6 Networking | 5xx Rate, P99 Latency |
+| Low | §4 Node Pressure | Pods on NotReady Nodes |
+| Low (if cert-manager) | §7 Cert Manager | Days to Expiry |
+
+For each AKS cluster in the graph:
+1. Identify the Kubernetes namespace(s) from `01-discovery.json` or ask the user.
+2. Hard-code the namespace into each query (no variable substitution).
+3. Reference the AMW resource ID from the graph's `Microsoft.Monitor/accounts` node.
+
+**Entity wiring** — AKS PromQL signals use the `azureMonitorWorkspace` signal group:
+
+```json
+{
+  "displayName": "swedencentral-001 — AKS Workloads",
+  "impact": "Standard",
+  "icon": {"iconName": "AzureKubernetesService"},
+  "signalGroups": {
+    "azureMonitorWorkspace": {
+      "authenticationSetting": "id-healthmodel-myapp",
+      "azureMonitorWorkspaceResourceId": "/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Monitor/accounts/<amw>",
+      "signals": [
+        {
+          "name": "sa-aks-restarts",
+          "signalDefinitionName": "sd-aks-restarts",
+          "signalKind": "PrometheusMetricsQuery",
+          "refreshInterval": "PT1M"
+        }
+      ]
+    }
+  }
+}
+```
+
+**Validation** — after writing signal files, test them against the live AMW:
+
+```bash
+AMW='/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Monitor/accounts/<amw>'
+bash .agents/skills/healthmodel-deploy/scripts/validate-promql.sh "$AMW"
+```
+
+If any query fails, the script marks it `(broken)` in `displayName`. Fix or accept and move on — a broken signal still deploys but shows `Unknown` until fixed. See [promql-validation.md](../healthmodel-signal-catalog/references/promql-validation.md) for troubleshooting.
 
 ### Step 2: Entities
 
@@ -252,3 +320,5 @@ Announce: *"Design complete. Sparse files written under `.healthmodel/03-design/
 | Unknown resource type | Not in signal catalog | Run `az monitor metrics list-definitions --resource <id>` to find metrics; document threshold rationale in a comment |
 | Cyclic relationship | Entity reused as parent and child | One parent per entity — promote one to root or move to a side group |
 | Signal always `Unknown` for event-based ARM metrics | Metric only emits data when the condition is active (e.g., `cluster_autoscaler_unschedulable_pods_count`) | Switch to PromQL with `or vector(0)` or KQL with `coalesce`; see signal-catalog § 1.6 |
+| AKS cluster found but no AMW in graph | Can't write PromQL signals without an Azure Monitor Workspace | Ask user if managed Prometheus is enabled; if not, fall back to AKS ARM metrics (with caveats about event-based metrics) |
+| PromQL signal marked `(broken)` | Query failed validation against live AMW | See [promql-validation.md](../healthmodel-signal-catalog/references/promql-validation.md) — check metric availability, fix query, re-validate |

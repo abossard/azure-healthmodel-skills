@@ -49,6 +49,7 @@ healthmodel-deploy/
 └── scripts/
     ├── lib/arm.sh                ← sourced: ARM URL builder, az rest wrappers, API_VERSION
     ├── validate.sh               ← offline bicep build for every design file
+    ├── validate-promql.sh        ← live PromQL validation against an AMW
     ├── bootstrap.sh              ← create the model root resource (idempotent)
     ├── plan.sh                   ← GET live, merge with design, write .healthmodel/04-plan.json
     ├── apply.sh                  ← PUT every non-no-op item from the plan; writes 04-deployed.json receipt
@@ -64,6 +65,24 @@ bash .agents/skills/healthmodel-deploy/scripts/validate.sh           # walks .he
 ```
 
 For every file the script: writes it as `body.json` next to the matching `templates/<kind>.bicep`, runs `az bicep build` against the typed schema, fails on any `BCP` warning (missing required prop, wrong type, disallowed field, etc.). No Azure call. Fix any reported error before continuing.
+
+### Step 1b: Validate PromQL queries against the live AMW (optional but recommended)
+
+If the design contains `PrometheusMetricsQuery` signals, test them against the actual Azure Monitor Workspace before deploying:
+
+```bash
+AMW='/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Monitor/accounts/<amw>'
+bash .agents/skills/healthmodel-deploy/scripts/validate-promql.sh "$AMW"
+```
+
+The script:
+- Finds all signal files with `signalKind: PrometheusMetricsQuery`
+- Executes each `queryText` via `az rest` against the AMW's Prometheus endpoint
+- Reports pass/fail/skip per signal
+- Automatically marks failing signals with `(broken)` in `displayName`
+- Removes `(broken)` from signals that now pass
+
+**This step is non-blocking**: broken signals still deploy but show `Unknown` in the health model until fixed. The `(broken)` marker is visible in the Azure portal.
 
 ### Step 2: Bootstrap (create/ensure the model exists)
 
@@ -93,7 +112,13 @@ After bootstrap, before apply, ensure the identity is ready:
    ```bash
    az role assignment create --assignee "$PRINCIPAL" --role "Monitoring Data Reader" --scope "<amw-resource-id>"
    ```
-4. **Wait for RBAC propagation** (~2-5 min). Signals may return `Unknown` until propagation completes.
+4. **Wait for RBAC propagation** (~2-5 min). Signals **will** return `Unknown` until propagation completes.
+   ```bash
+   echo "⏳ Waiting 120s for RBAC propagation (Azure AD → ARM)…"
+   sleep 120
+   echo "  Minimum propagation window elapsed. If signals still show Unknown after deploy, wait up to 5 minutes total."
+   ```
+   > ⚠️ Do NOT skip this step. Proceeding directly to plan+apply after role assignment is the most common cause of `Unknown` signals on first deploy. The health model evaluator runs under the UAMI identity — if RBAC hasn't propagated, every signal query returns 403 and the signal goes Unknown.
 
 ### Step 3: Plan
 

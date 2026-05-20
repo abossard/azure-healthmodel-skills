@@ -44,10 +44,17 @@ Maps directly onto the four schema fields:
 az monitor metrics list-definitions --resource "$RID" -o json | jq '
   def classify(n; u):
     if   (n | test("avail"; "i"))                                       then "availability"
-    elif (n | test("latency|duration|responsetime|e2e"; "i"))           then "latency"
-    elif (n | test("error|fail|5xx|4xx|exception|deadletter"; "i"))     then "errors"
-    elif (n | test("throttle|429|busy"; "i"))                           then "saturation"
-    elif (n | test("cpu|memory|connections|load|ru|queue|backlog"; "i"))then "saturation"
+    elif (n | test("latency|duration|responsetime|e2e|ttlt|ttft|tbt|timetoresponse|timetolast|timebetween"; "i"))
+                                                                        then "latency"
+    elif (n | test("error|fail|5xx|4xx|exception|deadletter|rejected"; "i"))
+                                                                        then "errors"
+    elif (n | test("throttle|429|busy|provisioned.*utilization|ptu"; "i"))
+                                                                        then "saturation"
+    elif (n | test("cpu|memory|connections|load|ru|queue|backlog"; "i")) then "saturation"
+    elif (n | test("tokenpersecond"; "i"))                               then "throughput"
+    elif (n | test("token|prompt|completion|generated|inference"; "i"))  then "usage"
+    elif (n | test("rai|harmful|abusive|contentsafety"; "i"))           then "safety"
+    elif (n | test("cache.*match|cache.*rate"; "i"))                    then "efficiency"
     elif (u == "Percent")                                               then "ratio"
     else "other" end;
   [.[] | {
@@ -115,20 +122,30 @@ Pick the result that matches the math:
 ```bash
 AMW='/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Monitor/accounts/<amw>'
 
-EP="$(az monitor account show --ids "$AMW" -o json \
-       | jq -r '.metrics.prometheusQueryEndpoint')"
+# Get the Prometheus endpoint
+ENDPOINT=$(az rest --method GET \
+  --url "https://management.azure.com${AMW}?api-version=2023-04-03" \
+  -o json | jq -r '.properties.metrics.prometheusQueryEndpoint')
 
-TOKEN="$(az account get-access-token --resource "$EP" -o json | jq -r '.accessToken')"
-
+# URL-encode the query with jq (no python, no curl)
 QUERY='sum(rate(kube_pod_container_status_restarts_total{namespace="prod"}[5m])) or vector(0)'
+ENCODED=$(printf '%s' "$QUERY" | jq -Rr @uri)
 
-curl -sG "$EP/api/v1/query" \
-  --data-urlencode "query=$QUERY" \
-  -H "Authorization: Bearer $TOKEN" \
-  | jq '.data.result'
+# Execute via az rest (handles auth automatically)
+az rest --method GET \
+  --url "${ENDPOINT}/api/v1/query?query=${ENCODED}" \
+  --resource "https://prometheus.monitor.azure.com" \
+  -o json | jq '.data.result'
 ```
 
 A non-empty `result` array confirms the query parses and the AMW has data. The `or vector(0)` tail guarantees you'll never get an empty result — perfect for health signals.
+
+For batch validation of all PromQL signals, use:
+```bash
+bash .agents/skills/healthmodel-deploy/scripts/validate-promql.sh "$AMW"
+```
+
+See [promql-validation.md](./promql-validation.md) for the full development workflow.
 
 ---
 
@@ -251,6 +268,110 @@ jq -e '
 ```
 
 Anything that prints `FAIL —` blocks the design from moving to deploy.
+
+---
+
+## Recipe 11 — Discover actual dimension values for a metric
+
+When you need to filter by dimension (e.g., `ModelDeploymentName`, `StatusCode`) but don't know what values exist:
+
+```bash
+METRIC="AzureOpenAIRequests"
+
+az monitor metrics list \
+  --resource "$RID" \
+  --metric "$METRIC" \
+  --filter "ModelDeploymentName eq '*'" \
+  --metadata \
+  -o json \
+  | jq '[.value[0].timeseries[]?.metadatavalues
+         | map({(.name.value): .value}) | add]'
+```
+
+Returns the actual dimension values that have emitted data recently. Use this to verify deployment names, status codes, or regions before writing dimension-filtered KQL/PromQL signals.
+
+---
+
+## Recipe 12 — Discover metric namespaces for a resource
+
+Some resources expose multiple metric namespaces (e.g., CognitiveServices exposes both legacy `Cognitive Services` and modern `Azure OpenAI` namespaces). Discover what's available:
+
+```bash
+az monitor metrics list-namespaces \
+  --resource-uri "$RID" \
+  --start-time "$(date -u -v-1H '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null \
+    || date -u -d '1 hour ago' '+%Y-%m-%dT%H:%M:%SZ')" \
+  -o json | jq '[.value[].name]'
+```
+
+> **Note**: `list-namespaces` is a Preview command (uses `--resource-uri`, not `--resource`). If unavailable, fall back to grouping `list-definitions` output by namespace:
+> ```bash
+> az monitor metrics list-definitions --resource "$RID" -o json \
+>   | jq '[.[].metricNamespace] | unique'
+> ```
+
+**⚠️ CognitiveServices namespace split**: Azure OpenAI resources expose legacy metrics (`Latency`, `SuccessfulCalls`, `BlockedCalls`) under the default namespace. **Do not use these for OpenAI** — they produce misleading results. Filter for modern metrics:
+```bash
+az monitor metrics list-definitions --resource "$RID" -o json \
+  | jq '[.[] | select(.name.value | test("^AzureOpenAI"; "i"))
+         | {name: .name.value, unit, primaryAgg: .primaryAggregationType, dims: [.dimensions[]?.value]}]'
+```
+
+---
+
+## Recipe 13 — Check diagnostic settings coverage
+
+Missing diagnostic settings means KQL/Log Analytics signals will fail. ARM metric signals are unaffected.
+
+```bash
+az monitor diagnostic-settings list --resource "$RID" -o json \
+  | jq '[.value[] | {
+      name,
+      workspace: .workspaceId,
+      logs: [.logs[] | select(.enabled) | .category],
+      metrics: [.metrics[] | select(.enabled) | .category]
+    }]'
+```
+
+If the output is `[]`, no diagnostics are configured. Also check what categories are available to configure:
+
+```bash
+az monitor diagnostic-settings categories list --resource "$RID" -o json \
+  | jq '[.value[] | {category: .name, type: .categoryType}]'
+```
+
+Key log categories for AI services:
+- **CognitiveServices**: `RequestResponse` (every API call), `Audit` (config changes), `Trace` (debug)
+- **AI Search**: `OperationLogs` (query/index operations)
+- **ML Workspaces**: `AmlComputeClusterEvent`, `AmlRunStatusChangedEvent`
+
+> ⚠️ Some critical AI metrics have `DS Export = No` and **cannot** be exported via diagnostic settings. These must be queried directly via `az monitor metrics list` or the ARM metrics API. Known examples: `AzureOpenAIAvailabilityRate`, `AzureOpenAIProvisionedManagedUtilizationV2`, `AzureOpenAIContextTokensCacheMatchRate`, and all AI Foundry Agents metrics.
+
+---
+
+## Recipe 14 — Check Azure Resource Health status
+
+Azure's own assessment of each resource's platform health — catches infrastructure issues before signal design:
+
+```bash
+az rest --method get \
+  --url "https://management.azure.com${RID}/providers/Microsoft.ResourceHealth/availabilityStatuses/current?api-version=2023-07-01" \
+  -o json | jq '{state: .properties.availabilityState, reason: .properties.reasonType, since: .properties.occurredTime}'
+```
+
+If `state` is not `Available`, the resource has a platform issue that may affect all metrics.
+
+For a fleet-wide check across all discovered resources:
+
+```bash
+jq -r '.[].id' .healthmodel/resources.json | while read -r rid; do
+  NAME="$(echo "$rid" | rev | cut -d/ -f1 | rev)"
+  STATE=$(az rest --method get \
+    --url "https://management.azure.com${rid}/providers/Microsoft.ResourceHealth/availabilityStatuses/current?api-version=2023-07-01" \
+    -o json 2>/dev/null | jq -r '.properties.availabilityState // "unknown"')
+  [ "$STATE" != "Available" ] && echo "  ⚠ $NAME: $STATE"
+done
+```
 
 ---
 

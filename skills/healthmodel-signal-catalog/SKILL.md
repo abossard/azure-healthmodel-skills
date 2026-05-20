@@ -93,10 +93,17 @@ After dumping definitions, classify with `jq`:
 az monitor metrics list-definitions --resource "$RID" -o json | jq '
   def classify(n; u):
     if   (n | test("avail"; "i"))                                       then "availability"
-    elif (n | test("latency|duration|responsetime|e2e"; "i"))           then "latency"
-    elif (n | test("error|fail|5xx|4xx|exception|deadletter"; "i"))     then "errors"
-    elif (n | test("throttle|429|busy"; "i"))                           then "saturation"
-    elif (n | test("cpu|memory|connections|load|ru|queue|backlog"; "i"))then "saturation"
+    elif (n | test("latency|duration|responsetime|e2e|ttlt|ttft|tbt|timetoresponse|timetolast|timebetween"; "i"))
+                                                                        then "latency"
+    elif (n | test("error|fail|5xx|4xx|exception|deadletter|rejected"; "i"))
+                                                                        then "errors"
+    elif (n | test("throttle|429|busy|provisioned.*utilization|ptu"; "i"))
+                                                                        then "saturation"
+    elif (n | test("cpu|memory|connections|load|ru|queue|backlog"; "i")) then "saturation"
+    elif (n | test("tokenpersecond"; "i"))                               then "throughput"
+    elif (n | test("token|prompt|completion|generated|inference"; "i"))  then "usage"
+    elif (n | test("rai|harmful|abusive|contentsafety"; "i"))           then "safety"
+    elif (n | test("cache.*match|cache.*rate"; "i"))                    then "efficiency"
     elif (u == "Percent")                                               then "ratio"
     else "other" end;
   [.[] | {
@@ -114,7 +121,7 @@ Goal: pick **one** signal per golden-signal category that matters for this resou
 ```bash
 az monitor metrics list-definitions --resource "$RID" -o json \
   | jq -r '.[].name.value' \
-  | awk 'tolower($0) ~ /avail|error|fail|throttle|latency|5xx|429|deadletter|busy/ {print}'
+  | awk 'tolower($0) ~ /avail|error|fail|throttle|latency|5xx|429|deadletter|busy|token|rai|harmful|rejected|ptu|utilization|ttft|ttlt/ {print}'
 ```
 
 Anything this prints that is **not** in your design is a candidate for review.
@@ -147,6 +154,46 @@ When the condition is absent, the metric has **no data** and the signal evaluate
 3. **Accept Unknown as OK**: Document in the entity design that `Unknown` means "no data = healthy condition" — but this creates noise in the health model dashboard.
 
 Always prefer option 1 or 2. If you must use option 3, set the entity `impact` to `Suppressed` so Unknown doesn't escalate.
+
+### 1.7 AI service idle pattern (no traffic = no data ≠ event-based)
+
+AI services (Azure OpenAI, AI Search, Document Intelligence) behave differently from truly event-based metrics. Their metrics are **registered** in `list-definitions` and have valid definitions, but return **zero data points** when the service receives no API traffic. This is distinct from §1.6:
+
+| Pattern | `list-definitions` | Data when idle | Data when active | Example |
+|---|---|---|---|---|
+| Event-based (§1.6) | May or may not appear | No data | Emits only when condition fires | `FailedPodCounts` |
+| AI service idle | Always appears | No data (0 samples) | Normal time-series | `AzureOpenAIRequests`, `SearchLatency` |
+| Standard metric | Always appears | Emits `0` or baseline value | Normal time-series | `CpuPercentage`, `ServiceAvailability` |
+
+**Detection**: Run Recipe 3 (sample 1h baseline) against the resource. If `n: 0` for all golden-signal candidates, the resource is idle — not broken.
+
+**Handling idle AI resources**:
+1. **Suppress until traffic starts**: Set entity `impact` to `Suppressed` with a note. After traffic begins, promote to `Limited` or `Standard`.
+2. **KQL with zero-guard**: Use diagnostic logs (if configured) with `coalesce(count(), 0)` to return 0 instead of empty.
+3. **Synthetic health-check**: Generate minimal traffic (e.g., a simple completions call on a schedule) so metrics always have data. This is operationally heavier but eliminates Unknown signals.
+4. **Separate idle vs live entities**: If only some deployments are active, use `ModelDeploymentName` dimension filtering via KQL to scope signals to active deployments only.
+
+> **⚠️ Do not confuse idle with broken**: An `Unknown` signal on an AI resource often means "no traffic in the evaluation window" — not a misconfigured signal or missing RBAC. Check Recipe 3 baseline data before debugging RBAC or signal definitions.
+
+### 1.8 CognitiveServices metric namespace split
+
+Azure OpenAI resources (`Microsoft.CognitiveServices/accounts` with `kind=OpenAI`) expose **two** sets of metrics under different logical categories:
+
+- **Legacy** (category `Cognitive Services - HTTP Requests`): `Latency`, `SuccessfulCalls`, `BlockedCalls`, `TotalCalls`, `TotalErrors` — these are generic Cognitive Services metrics designed for Speech, Vision, etc. **Do not use these for Azure OpenAI** — they produce misleading results (e.g., `Latency` averages across all API operations, not just chat completions).
+- **Modern** (categories `Azure OpenAI - *`): `AzureOpenAIRequests`, `AzureOpenAITimeToResponse`, `AzureOpenAITTLTInMS`, `ProcessedPromptTokens`, `GeneratedTokens`, `AzureOpenAIProvisionedManagedUtilizationV2`, etc. — **use these exclusively**.
+- **Foundry Models** (if deployed via AI Foundry): `ModelRequests`, `InputTokens`, `OutputTokens`, `TimeToResponse`, `ProvisionedUtilization` — covers non-OpenAI models (DeepSeek, Phi, etc.) under the `Models` category.
+- **Content Safety**: `RAIHarmfulRequests`, `RAIRejectedRequests`, `RAITotalRequests` — available under the `ContentSafety - Risks & Safety` category.
+
+**To filter for the right metrics**, use Recipe 12 (namespace discovery) and prefix-match:
+
+```bash
+# Show only modern Azure OpenAI metrics
+az monitor metrics list-definitions --resource "$RID" -o json \
+  | jq '[.[] | select(.name.value | test("^AzureOpenAI|^Processed|^Generated|^Token|^Active|^Audio|^RAI|^FineTuned"; "i"))
+         | {name: .name.value, category: .category, unit, primaryAgg: .primaryAggregationType}]'
+```
+
+> **DS Export limitations**: Several high-value OpenAI metrics have `DS Export = No` and **cannot** be sent to Log Analytics via diagnostic settings: `AzureOpenAIAvailabilityRate`, `AzureOpenAIProvisionedManagedUtilizationV2`, `AzureOpenAIContextTokensCacheMatchRate`. These must be monitored via ARM metric signals or direct `az monitor metrics list` queries — KQL signals will not work for them.
 
 ---
 
@@ -207,22 +254,81 @@ Multiply by `100` so the result is in percent — that matches `dataUnit: "Perce
 
 ### 2.6 Test PromQL against the AMW before deploying
 
+Uses `az rest` with `--resource` for authentication — no curl, no Python, no tokens to manage:
+
 ```bash
-AMW_QUERY_ENDPOINT="$(az monitor account show \
-  --ids '/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Monitor/accounts/<amw>' \
-  -o json | jq -r '.metrics.prometheusQueryEndpoint')"
+AMW='/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Monitor/accounts/<amw>'
 
-TOKEN="$(az account get-access-token --resource "$AMW_QUERY_ENDPOINT" -o json | jq -r '.accessToken')"
+# Get the Prometheus endpoint
+ENDPOINT=$(az rest --method GET \
+  --url "https://management.azure.com${AMW}?api-version=2023-04-03" \
+  -o json | jq -r '.properties.metrics.prometheusQueryEndpoint')
 
+# URL-encode the query with jq (no python)
 QUERY='sum(rate(kube_pod_container_status_restarts_total{namespace="prod"}[5m])) or vector(0)'
+ENCODED=$(printf '%s' "$QUERY" | jq -Rr @uri)
 
-curl -sG "$AMW_QUERY_ENDPOINT/api/v1/query" \
-  --data-urlencode "query=$QUERY" \
-  -H "Authorization: Bearer $TOKEN" \
-  | jq '.data.result'
+# Execute
+az rest --method GET \
+  --url "${ENDPOINT}/api/v1/query?query=${ENCODED}" \
+  --resource "https://prometheus.monitor.azure.com" \
+  -o json | jq '.data.result'
 ```
 
-A non-empty `result` array means the query is wired correctly. An empty array (or `[{"value":[..,"0"]}]` thanks to `or vector(0)`) is still healthy — the signal will report `0`.
+A non-empty `result` array means the query is wired correctly. A `[{"value":[..,"0"]}]` result (from `or vector(0)`) is still healthy — the signal will report `0`.
+
+For batch validation of all PromQL signals in a design, use the automated script:
+
+```bash
+bash .agents/skills/healthmodel-deploy/scripts/validate-promql.sh "$AMW"
+```
+
+See [references/promql-validation.md](./references/promql-validation.md) for the full development workflow.
+
+### 2.7 AKS / Kubernetes PromQL signal catalog
+
+When the architecture graph contains `Microsoft.ContainerService/managedClusters` **and** `Microsoft.Monitor/accounts`, design PromQL signals instead of (or in addition to) ARM metric signals for AKS-specific health.
+
+See [references/promql-cheatsheet.md](./references/promql-cheatsheet.md) for ready-to-use queries organized by signal category:
+
+| Category | Example signals | Cheatsheet section |
+|---|---|---|
+| Pod health | Restarts, OOMKilled, CrashLoopBackOff, Pending | §2 |
+| CPU & Memory | CPU vs requests %, throttling %, memory vs limits % | §3 |
+| Node pressure | Pods on high-CPU/memory nodes, DiskPressure, NotReady | §4 |
+| Deployment & scaling | Min replicas, unavailable replicas, HPA ceiling | §5 |
+| Networking | Container network errors, Istio 5xx/4xx, P99 latency | §6 |
+| Cert Manager | Days to expiry, certificates not ready | §7 |
+
+Start with pod health + CPU/memory (the highest-signal categories), then layer in node pressure and networking based on the brief's golden-signal priority (§7 of the interview).
+
+### 2.8 PromQL development workflow
+
+1. **Discover** — list available metrics with `az rest` against `{endpoint}/api/v1/label/__name__/values` (see [promql-validation.md](./references/promql-validation.md) Step 1).
+2. **Explore** — use discovery queries from the [cheatsheet §1](./references/promql-cheatsheet.md#1--discovery--investigation-queries) to understand what namespaces and labels have data.
+3. **Draft** — pick a query from the cheatsheet, substitute the real namespace.
+4. **Test** — run the query via `az rest` (§2.6 above) and verify: `status=success`, exactly 1 result series, reasonable value.
+5. **Write** — create the signal-definition JSON (see `healthmodel-design/SKILL.md` Step 1).
+6. **Validate** — run `validate-promql.sh` to batch-test all PromQL signals.
+7. **Mark broken** — if a query fails validation, the script marks it `(broken)` in `displayName`. See §2.9.
+
+### 2.9 The "(broken)" marking convention
+
+If a PromQL query cannot be validated (metric not scraped, parse error, AMW unreachable), the signal is still valuable to keep in the design — it documents the monitoring intent. Mark it clearly:
+
+```json
+{
+  "displayName": "AKS Pod Restarts (broken)",
+  "signalKind": "PrometheusMetricsQuery",
+  "queryText": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"prod\"}[15m])) or vector(0)"
+}
+```
+
+Rules:
+- `(broken)` goes in `displayName`, visible in the Azure portal.
+- `validate-promql.sh` adds/removes the marker automatically.
+- A broken signal still deploys — it will show `Unknown` in the health model until the underlying issue is fixed.
+- To fix: check if the AMW is receiving the metric (Step 1 of the [validation guide](./references/promql-validation.md)), adjust the query, re-run validation.
 
 ---
 
@@ -454,5 +560,8 @@ Run on every signal-definition file before handing off to deploy.
 ## References
 
 - [./references/metrics.md](./references/metrics.md) — copy-pasteable discovery & verification recipes.
+- [./references/promql-cheatsheet.md](./references/promql-cheatsheet.md) — Kubernetes PromQL patterns for AKS health signals.
+- [./references/promql-validation.md](./references/promql-validation.md) — PromQL development, testing, and validation workflow using `az rest`.
 - `healthmodel-design/SKILL.md` — the consumer of this skill; defines the sparse signal-definition JSON shape.
 - `healthmodel-deploy/scripts/validate.sh` — offline Bicep schema check for every signal file.
+- `healthmodel-deploy/scripts/validate-promql.sh` — live PromQL validation against an AMW.
