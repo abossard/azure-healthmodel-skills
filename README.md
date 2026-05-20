@@ -42,16 +42,24 @@ az bicep version
 
 ## Install
 
-### As a Copilot / Claude Code plugin
+### As a Copilot CLI plugin
+
+From within a Copilot CLI session:
+
+```
+/plugin install abossard/azure-healthmodel-skills
+```
+
+Or from the shell:
 
 ```bash
-# GitHub Copilot CLI
-copilot plugin marketplace add abossard/azure-healthmodel-skills
-copilot plugin install healthmodel@healthmodel
+copilot plugin install abossard/azure-healthmodel-skills
+```
 
-# Claude Code
-claude plugin marketplace add abossard/azure-healthmodel-skills
-claude plugin install healthmodel@healthmodel
+### As a Claude Code plugin
+
+```bash
+claude plugin install abossard/azure-healthmodel-skills
 ```
 
 ### Manual install
@@ -76,6 +84,42 @@ cp -R azure-healthmodel-skills/skills/healthmodel-* ~/.agents/skills/
 ```bash
 mkdir -p .agents/skills
 cp -R skills/healthmodel-* .agents/skills/
+```
+
+## Update
+
+### Plugin update
+
+From within a Copilot CLI session:
+
+```
+/plugin update abossard/azure-healthmodel-skills
+```
+
+Or from the shell:
+
+```bash
+# Copilot CLI
+copilot plugin update abossard/azure-healthmodel-skills
+
+# Claude Code
+claude plugin update abossard/azure-healthmodel-skills
+```
+
+### Manual update
+
+Re-run the install commands — they overwrite the existing skills:
+
+```bash
+# From release
+curl -fsSL -o /tmp/healthmodel-skills.tar.gz \
+  "https://github.com/abossard/azure-healthmodel-skills/releases/latest/download/healthmodel-skills-latest.tar.gz"
+tar -xzf /tmp/healthmodel-skills.tar.gz -C ~/.agents/skills/
+rm /tmp/healthmodel-skills.tar.gz
+
+# Or from git
+cd azure-healthmodel-skills && git pull
+cp -R skills/healthmodel-* ~/.agents/skills/
 ```
 
 ## Quick Start
