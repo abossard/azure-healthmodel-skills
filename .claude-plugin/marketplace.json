@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "healthmodel",
+  "description": "Azure Monitor Health Model agent skills — discovery, architecture, design, deploy, orchestrator, and signal catalog.",
+  "owner": {
+    "name": "abossard"
+  },
+  "plugins": [
+    {
+      "name": "healthmodel",
+      "source": "./",
+      "description": "Six-phase Azure Monitor Health Model workflow (discovery → architecture → design → deploy) with orchestrator and signal catalog. Uses only az CLI + jq — no extensions, no Python SDK."
+    }
+  ]
+}

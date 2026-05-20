@@ -1,0 +1,90 @@
+name: Health Model Skills Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'skills/healthmodel-*/**'
+      - '.claude-plugin/**'
+  workflow_dispatch:
+
+concurrency:
+  group: healthmodel-skills-release
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Package & Release Skills
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Determine version
+        id: version
+        run: |
+          DATE=$(date -u +%Y%m%d)
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+          VERSION="skills-v${DATE}-${SHORT_SHA}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Version: ${VERSION}"
+
+      - name: Create VERSION file
+        run: echo "${{ steps.version.outputs.version }}" > skills/VERSION
+
+      - name: Package skills archive
+        run: |
+          cd skills
+          tar -czf "../healthmodel-skills-${{ steps.version.outputs.version }}.tar.gz" \
+            VERSION \
+            healthmodel-*/
+          cd ..
+          ls -lh "healthmodel-skills-${{ steps.version.outputs.version }}.tar.gz"
+
+      - name: Create or update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: "Health Model Skills ${{ steps.version.outputs.version }}"
+          make_latest: true
+          body: |
+            ## Health Model Agent Skills ${{ steps.version.outputs.version }}
+
+            Auto-published from `main` (${{ github.sha }}).
+
+            ### Install as plugin (Claude Code / Copilot CLI)
+
+            ```bash
+            claude plugin marketplace add ${{ github.repository }}
+            claude plugin install healthmodel@healthmodel
+            ```
+
+            or with `copilot`:
+
+            ```bash
+            copilot plugin marketplace add ${{ github.repository }}
+            copilot plugin install healthmodel@healthmodel
+            ```
+
+            ### Update / Uninstall
+
+            ```bash
+            claude plugin update healthmodel    # or: copilot plugin update healthmodel
+            claude plugin uninstall healthmodel  # or: copilot plugin uninstall healthmodel
+            ```
+
+            ### Manual install (tar.gz)
+
+            ```bash
+            mkdir -p ~/.agents/skills
+            curl -fsSL -o /tmp/healthmodel-skills.tar.gz \
+              "https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.version }}/healthmodel-skills-${{ steps.version.outputs.version }}.tar.gz"
+            tar -xzf /tmp/healthmodel-skills.tar.gz -C ~/.agents/skills/
+            rm /tmp/healthmodel-skills.tar.gz
+            ```
+          files: healthmodel-skills-${{ steps.version.outputs.version }}.tar.gz
+          fail_on_unmatched_files: true
