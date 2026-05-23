@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
-# Validate every sparse design file against its bicep schema (offline).
+# Validate every sparse design file against its bicep schema (offline),
+# then validate the full Bicep project if it exists.
 # Usage: validate.sh [design-dir]   (default: .healthmodel/03-design)
 set -euo pipefail
 
 SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEMPLATES="${SKILL_DIR}/templates"
 DESIGN="${1:-.healthmodel/03-design}"
+BICEP_PROJECT=".healthmodel/05-bicep"
 
 # shellcheck source=lib/arm.sh
 . "${SKILL_DIR}/scripts/lib/arm.sh"
@@ -52,10 +54,28 @@ walk() {
   done
 }
 
+echo "== validating individual design files =="
 walk auth          "auth.bicep"
 walk signals       "@signal"
 walk entities      "entity.bicep"
 walk relationships "relationship.bicep"
+
+# Validate the full Bicep project if it exists
+if [ -d "$BICEP_PROJECT" ] && [ -f "$BICEP_PROJECT/main.bicep" ]; then
+  echo ""
+  echo "== validating full Bicep project =="
+  if ! out=$(az bicep build --file "$BICEP_PROJECT/main.bicep" --stdout 2>&1); then
+    echo "  ✘ $BICEP_PROJECT/main.bicep — bicep error"
+    echo "$out" | grep -E "ERROR|Warning BCP" | sed 's/^/      /'
+    fail=1
+  elif echo "$out" | grep -qE "Warning BCP"; then
+    echo "  ✘ $BICEP_PROJECT/main.bicep — warnings"
+    echo "$out" | grep "Warning BCP" | sed 's/^/      /'
+    fail=1
+  else
+    echo "  ✓ $BICEP_PROJECT/main.bicep — full project validates clean"
+  fi
+fi
 
 if [ "$fail" -ne 0 ]; then
   echo

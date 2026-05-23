@@ -65,7 +65,8 @@ Skills are loaded by semantic/keyword matching against each skill's `description
 
 ### Phase 4: Deploy — `healthmodel-deploy`
 - Input contract: `.healthmodel/03-design/` (sparse files)
-- Pipeline: `validate.sh` (offline Bicep schema check) → `bootstrap.sh` (create model root, optionally attach UAMI) → RBAC setup (if UAMI) → `plan.sh` (GET live, merge, diff) → human checkpoint → `apply.sh` (PUT confirmed items, write receipt) → `smoke.sh` (read entity signal health)
+- Pipeline: `validate.sh` (offline Bicep schema check) → `bootstrap.sh` (create model root, attach UAMI + **auto-assign Monitoring Reader on target RG**) → ⛔ verify RBAC assignment succeeded → `plan.sh` (GET live, merge, diff) → human checkpoint → `apply.sh` (PUT confirmed items, write receipt) → `smoke.sh` (read entity signal health)
+- ⛔ MANDATORY: When using a UAMI, `bootstrap.sh` automatically assigns `Monitoring Reader` on the target RG. If the UAMI also reads from an AMW (PromQL signals), manually assign `Monitoring Data Reader` on the AMW resource. Without these roles, signals return `Unknown`.
 - Output contract: live model in Azure + `.healthmodel/04-plan.json` + `.healthmodel/04-deployed.json`
 - **Granular by design**: every apply only touches resources whose merged body differs from live; unmanaged fields (portal edits) are preserved.
 

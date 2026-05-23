@@ -1,29 +1,30 @@
 ---
 name: healthmodel-deploy
-description: "Deploy and incrementally adapt an Azure Monitor Health Model using only standard az CLI (az rest, az bicep) — no extensions. Uses sparse design files: the skill owns the fields it writes, leaves portal edits intact. WHEN: 'deploy the health model', 'apply the design', 'update health model in Azure', 'push the health model', 'adapt the existing health model'. DO NOT USE FOR: designing entities (use healthmodel-design), discovering resources (use healthmodel-discovery), or operations against unrelated Azure Monitor features."
+description: "Deploy and incrementally adapt an Azure Monitor Health Model using Bicep and standard az CLI — no extensions. Uses design files as source of truth, generates a Bicep project, deploys via az deployment group create. WHEN: 'deploy the health model', 'apply the design', 'update health model in Azure', 'push the health model', 'adapt the existing health model'. DO NOT USE FOR: designing entities (use healthmodel-design), discovering resources (use healthmodel-discovery), or operations against unrelated Azure Monitor features."
 ---
 
-# Health Model Deployment (extension-free)
+# Health Model Deployment (Bicep-based)
 
-Apply a designed health model to Azure using **only** standard `az` CLI tooling: `az rest`, `az bicep build` (for offline schema validation), `jq`, bash. No third-party extension, no Python SDK, no ARM template orchestration.
+Deploy a designed health model to Azure using a generated **Bicep project**. The design skill creates JSON files under `.healthmodel/03-design/` and generates a modular Bicep project under `.healthmodel/05-bicep/`. This skill validates, previews, and deploys that Bicep project using `az deployment group create`.
 
 ## How it works
 
-The skill follows a **sparse-design = ownership** model:
-
-- Each file in `.healthmodel/03-design/{auth,signals,entities,relationships}/*.json` is a *partial* `properties` body. It lists **only the fields the skill is responsible for** — nothing else.
-- On every apply, the skill `GET`s the live resource, **deep-merges** the sparse design on top (design wins on overlapping keys), and `PUT`s the result back via `az rest`. Fields the design doesn't mention — including portal edits, manually-added signals, custom tags — are preserved.
-- Bicep is used **offline as a schema validator** (`loadJsonContent('body.json')` against the typed `Microsoft.CloudHealth@2026-01-01-preview` resource). Nothing is ever deployed via Bicep or ARM templates.
-- "Azure is the state." No local state file. If you want the skill to stop touching a field you tuned in the portal, delete it from the design file.
+1. **JSON is the source of truth** — users edit design files under `.healthmodel/03-design/`
+2. **Bicep is generated** from those JSON files using `loadJsonContent()` — each JSON file maps to one Bicep resource declaration
+3. **Deployment** uses `az deployment group create` — ARM handles idempotency, ordering, and state reconciliation
+4. **Granular updates** — changing one JSON file changes one resource in the `what-if` diff
+5. **Signal verification is mandatory** — live metric/PromQL validation runs BEFORE deployment, not just schema checks
 
 ## Rules
 
 1. ⛔ MANDATORY: `.healthmodel/03-design/` must exist and validate cleanly (`bash .agents/skills/healthmodel-deploy/scripts/validate.sh`).
-2. ⛔ MANDATORY: `az` CLI must be authenticated to the same subscription the design targets (`az account show`).
-3. ⛔ MANDATORY: The `Microsoft.CloudHealth` provider must be registered (`bash .agents/skills/healthmodel-deploy/scripts/bootstrap.sh` does this).
-4. ⛔ MANDATORY: Always run `bash .agents/skills/healthmodel-deploy/scripts/plan.sh` and review the per-resource verdicts before `bash .agents/skills/healthmodel-deploy/scripts/apply.sh`.
-5. ⛔ MANDATORY: Apply order is fixed by file ordering — auth, then signal-definitions, then entities, then relationships. Plan walks them in that order; entity signal references must point at existing signal-definitions before the entity PUT.
-6. ⛔ MANDATORY: Never DELETE resources from this skill. Manual portal action required for removal — the skill is additive/merge-only.
+2. ⛔ MANDATORY: `.healthmodel/05-bicep/` must exist with a valid `main.bicep`. If missing or stale, regenerate from design (re-run the Bicep generation step from healthmodel-design).
+3. ⛔ MANDATORY: `az` CLI must be authenticated to the same subscription the design targets (`az account show`).
+4. ⛔ MANDATORY: The `Microsoft.CloudHealth` provider must be registered (`bash .agents/skills/healthmodel-deploy/scripts/bootstrap.sh` does this).
+5. ⛔ MANDATORY: Signal verification (Step 2) is **blocking** — do not proceed to deployment if live metric validation fails.
+6. ⛔ MANDATORY: Always run `what-if` (Step 5) and review the output before deploying.
+7. ⛔ MANDATORY: Deploy order is enforced by Bicep module dependencies — auth → signals → entities → relationships. The generated Bicep handles this via `dependsOn`.
+8. ⛔ MANDATORY: Never DELETE resources from this skill. Manual portal action required for removal — the skill is additive only.
 
 ## Prerequisites
 
@@ -38,7 +39,7 @@ az account show -o json | jq '{subscription: .id, name: .name}'
 ```
 healthmodel-deploy/
 ├── SKILL.md                      ← this file
-├── templates/                    ← Bicep schemas (validation only, never deployed)
+├── templates/                    ← Bicep schemas (used for offline validation of individual files)
 │   ├── auth.bicep
 │   ├── signal-arm.bicep          ← AzureResourceMetric kind
 │   ├── signal-prom.bicep         ← PrometheusMetricsQuery kind
@@ -48,12 +49,12 @@ healthmodel-deploy/
 │   └── health-model.bicep        ← root resource (for reference)
 └── scripts/
     ├── lib/arm.sh                ← sourced: ARM URL builder, az rest wrappers, API_VERSION
-    ├── validate.sh               ← offline bicep build for every design file
+    ├── validate.sh               ← offline bicep build for every design file + full project
     ├── validate-promql.sh        ← live PromQL validation against an AMW
-    ├── bootstrap.sh              ← create the model root resource (idempotent)
-    ├── plan.sh                   ← GET live, merge with design, write .healthmodel/04-plan.json
-    ├── apply.sh                  ← PUT every non-no-op item from the plan; writes 04-deployed.json receipt
-    └── smoke.sh                  ← GET entities, read signal healthState from response body
+    ├── bootstrap.sh              ← register provider, verify RBAC (narrowed — no longer creates model root)
+    ├── what-if.sh                ← az deployment group what-if wrapper
+    ├── deploy.sh                 ← az deployment group create wrapper
+    └── smoke.sh                  ← GET entities, read signal healthState with retry/backoff
 ```
 
 ## Steps
@@ -61,110 +62,130 @@ healthmodel-deploy/
 ### Step 1: Validate the design offline
 
 ```bash
-bash .agents/skills/healthmodel-deploy/scripts/validate.sh           # walks .healthmodel/03-design/
+bash .agents/skills/healthmodel-deploy/scripts/validate.sh
 ```
 
-For every file the script: writes it as `body.json` next to the matching `templates/<kind>.bicep`, runs `az bicep build` against the typed schema, fails on any `BCP` warning (missing required prop, wrong type, disallowed field, etc.). No Azure call. Fix any reported error before continuing.
+This validates BOTH:
+1. **Individual JSON files** — each design file against its typed Bicep schema template (existing validation)
+2. **Full Bicep project** — `az bicep build` on `.healthmodel/05-bicep/main.bicep` to verify the complete project compiles
 
-### Step 1b: Validate PromQL queries against the live AMW (optional but recommended)
+Fix any reported error before continuing.
 
-If the design contains `PrometheusMetricsQuery` signals, test them against the actual Azure Monitor Workspace before deploying:
+### Step 2: Verify signals against live Azure (BLOCKING)
+
+This step is **mandatory before deployment**. It catches failures that schema validation cannot: wrong metric names, non-existent namespaces, broken PromQL queries.
+
+#### 2a: Verify ARM metric signals exist
+
+For each signal with `signalKind: AzureResourceMetric`, verify the metric exists on the target resource:
+
+```bash
+# For each signal, check that the metric namespace + metric name are valid
+jq -r 'select(.signalKind == "AzureResourceMetric") | "\(.metricNamespace) \(.metricName)"' \
+  .healthmodel/03-design/signals/*.json | while read -r ns metric; do
+    # Find a matching resource ID from resources.json
+    RID=$(jq -r --arg ns "$ns" '.[].id | select(ascii_downcase | contains($ns | ascii_downcase | split("/") | .[1]))' .healthmodel/resources.json | head -1)
+    [ -n "$RID" ] && az monitor metrics list-definitions --resource "$RID" -o json \
+      | jq -e --arg m "$metric" '[.[].name.value] | map(ascii_downcase) | index($m | ascii_downcase)' >/dev/null 2>&1 \
+      && echo "  ✓ $ns/$metric" \
+      || echo "  ✘ $ns/$metric — metric not found"
+done
+```
+
+#### 2b: Validate PromQL queries against live AMW
 
 ```bash
 AMW='/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Monitor/accounts/<amw>'
 bash .agents/skills/healthmodel-deploy/scripts/validate-promql.sh "$AMW"
 ```
 
-The script:
-- Finds all signal files with `signalKind: PrometheusMetricsQuery`
-- Executes each `queryText` via `az rest` against the AMW's Prometheus endpoint
-- Reports pass/fail/skip per signal
-- Automatically marks failing signals with `(broken)` in `displayName`
-- Removes `(broken)` from signals that now pass
+#### 2c: Validate Log Analytics queries (if any)
 
-**This step is non-blocking**: broken signals still deploy but show `Unknown` in the health model until fixed. The `(broken)` marker is visible in the Azure portal.
+For `LogAnalyticsQuery` signals, verify the query executes without error against the workspace.
 
-### Step 2: Bootstrap (create/ensure the model exists)
+**If any signal fails verification**: either fix the signal definition, mark it `(broken)` in `displayName`, or remove it. Do NOT proceed to deployment with signals that reference non-existent metrics.
+
+### Step 3: Bootstrap (provider registration + RBAC verification)
 
 ```bash
 RG="rg-myapp"; MODEL="hm-myapp"; LOC="swedencentral"
-# Without UAMI (system-assigned identity only):
-bash .agents/skills/healthmodel-deploy/scripts/bootstrap.sh "$RG" "$MODEL" "$LOC"
-
-# With UAMI (required when auth settings reference a user-assigned managed identity):
-UAMI="/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-healthmodel-myapp"
-bash .agents/skills/healthmodel-deploy/scripts/bootstrap.sh "$RG" "$MODEL" "$LOC" "$UAMI"
+bash .agents/skills/healthmodel-deploy/scripts/bootstrap.sh "$RG" "$MODEL" "$LOC" ["$UAMI"]
 ```
 
-Registers `Microsoft.CloudHealth` if needed and `PUT`s the model root. If a UAMI is provided, creates the model with `SystemAssigned,UserAssigned` identity — required before auth settings can reference that UAMI. Idempotent — safe to re-run.
+Bootstrap is **narrowed** to:
+- Register `Microsoft.CloudHealth` provider if needed
+- Verify subscription/RG/location exist
+- If UAMI provided: verify it exists, verify `Monitoring Reader` role on target RG
+- **Does NOT create the health model root** — Bicep handles that
 
-### Step 2b: Identity & RBAC setup (when using UAMI)
+### Step 3b: ⛔ MANDATORY — Identity & RBAC setup (when using UAMI)
 
-After bootstrap, before apply, ensure the identity is ready:
+> ⛔ **This step is NOT optional.** Without RBAC, signals return `Unknown` because the identity cannot read metrics.
 
 1. **Verify the UAMI exists**: `az identity show --ids "$UAMI"`
-2. **Assign Monitoring Reader** on each monitored RG:
+2. **Verify Monitoring Reader** on each monitored RG:
    ```bash
    PRINCIPAL=$(az identity show --ids "$UAMI" --query principalId -o tsv)
-   az role assignment create --assignee "$PRINCIPAL" --role "Monitoring Reader" --scope "/subscriptions/<sub>/resourceGroups/<rg>"
+   EXISTING=$(az role assignment list --assignee "$PRINCIPAL" --role "Monitoring Reader" \
+     --scope "/subscriptions/<sub>/resourceGroups/<rg>" -o json | jq 'length')
+   echo "Monitoring Reader assignments: $EXISTING"  # must be ≥ 1
    ```
 3. **Assign Monitoring Data Reader** on the AMW (for PromQL signals):
    ```bash
    az role assignment create --assignee "$PRINCIPAL" --role "Monitoring Data Reader" --scope "<amw-resource-id>"
    ```
-4. **Wait for RBAC propagation** (~2-5 min). Signals **will** return `Unknown` until propagation completes. The `apply.sh` script emits a `⚠ Auth changed` warning when auth items are modified — the orchestrating agent should wait 2-5 minutes before running smoke tests.
-   > ⚠️ Do NOT skip the wait. Proceeding directly to smoke tests after auth changes is the most common cause of `Unknown` signals on first deploy. The health model evaluator runs under the UAMI identity — if RBAC hasn't propagated, every signal query returns 403 and the signal goes Unknown.
+4. **Wait for RBAC propagation** (~2-5 min).
 
-### Step 3: Plan
+### Step 4: Regenerate Bicep (if needed)
 
-```bash
-bash .agents/skills/healthmodel-deploy/scripts/plan.sh "$RG" "$MODEL"
-```
-
-For every design file: `arm_get` the live resource → deep-merge → emit a verdict:
-
-| Symbol | Meaning |
-|---|---|
-| `+ create` | Resource doesn't exist in Azure yet |
-| `~ modify` | Resource exists and merged body differs (diff is printed) |
-| `= no-op`  | Merged body already matches live — nothing to do |
-
-The full plan is saved to `.healthmodel/04-plan.json` with the merged body for each item.
-
-### Step 4: Review the plan
-
-Show the user:
-- Per-resource verdict counts
-- For `~ modify` items, the diff between live and merged (preserves user-edited fields *unless* the design explicitly asserts them)
-- Any item where design changes a field the user appears to have tuned in the portal — call this out explicitly
-
-Ask: *"Apply all, apply a subset, or abort?"*
-
-### Step 5: Apply
+If any design files were changed since the last Bicep generation, regenerate:
 
 ```bash
-bash .agents/skills/healthmodel-deploy/scripts/apply.sh              # interactive: prompts y/N
-# or
-bash .agents/skills/healthmodel-deploy/scripts/apply.sh --yes        # non-interactive (after user explicit OK)
-# or
-bash .agents/skills/healthmodel-deploy/scripts/apply.sh --only signaldefinitions/sd-cosmos-avail   # one resource
+# Check if any design file is newer than the Bicep output
+NEWEST_DESIGN=$(find .healthmodel/03-design -name '*.json' -newer .healthmodel/05-bicep/main.bicep 2>/dev/null | head -1)
+if [ -n "$NEWEST_DESIGN" ]; then
+  echo "Design files changed — regenerate Bicep by re-running the design skill's Bicep generation step"
+fi
 ```
 
-Each non-no-op plan item is `PUT` via `az rest`. The merged body (live ∪ design) is sent, so portal edits to unmanaged fields survive.
+### Step 5: Preview changes (what-if)
 
-### Step 6: Smoke test
+```bash
+bash .agents/skills/healthmodel-deploy/scripts/what-if.sh "$RG"
+```
+
+This runs `az deployment group what-if` against the generated Bicep project. Show the user:
+- Per-resource change summary (Create / Modify / Delete / NoChange)
+- For modified resources: which properties changed
+- **Advisory note**: `what-if` may show false positives (changes that aren't actually changes). This is a known Azure behavior.
+
+Ask: *"Apply all changes, or abort?"*
+
+### Step 6: Deploy
+
+```bash
+bash .agents/skills/healthmodel-deploy/scripts/deploy.sh "$RG"
+```
+
+This runs `az deployment group create` with the generated Bicep project. Deployment is atomic — ARM handles ordering via the Bicep `dependsOn` chain.
+
+### Step 7: Smoke test with retry
 
 ```bash
 bash .agents/skills/healthmodel-deploy/scripts/smoke.sh "$RG" "$MODEL"
 ```
 
-`GET .../entities?api-version=...` and reads `.properties.signalGroups.*.signals[].status.healthState` from each entity. Prints health state per signal and a summary. Exits non-zero if any signal returns `Unhealthy`.
+The smoke test reads entity signal health states via `az rest GET`. Because signal evaluation and RBAC propagation take time after deployment, the smoke test **retries with backoff**:
 
-> **Note**: The signal `/execute` endpoint does NOT exist. Always verify signal health by reading entity state via GET.
+- **Retry while signals show `Unknown`** — this is expected immediately after deployment
+- **Timeout after 10 minutes** — if still Unknown, likely an RBAC or signal configuration issue
+- **Fail immediately on API errors** (404, 403)
+- **Fail on `Unhealthy`** — a signal went red
+- **Warn (don't fail) on `Degraded`** — may be expected for some thresholds
 
-### Step 7: Receipt
+### Step 8: Receipt
 
-`.healthmodel/04-deployed.json` (write after a successful apply):
+`.healthmodel/04-deployed.json` (written after successful deploy):
 
 ```json
 {
@@ -172,18 +193,21 @@ bash .agents/skills/healthmodel-deploy/scripts/smoke.sh "$RG" "$MODEL"
   "resourceGroup": "rg-myapp",
   "subscription": "<sub-id>",
   "deployedAt": "<ISO-timestamp>",
-  "appliedCount": 0,
-  "noopCount": 0
+  "deploymentMethod": "bicep",
+  "bicepProject": ".healthmodel/05-bicep/main.bicep"
 }
 ```
 
 ## Adapting an existing model
 
-If someone hand-created the model in the portal, or edited it after a previous apply: just run the skill normally. Plan shows what the merge *would* change. Apply only touches fields the sparse design names. Anything you set in the portal that isn't in design files is left alone.
+If someone hand-created the model in the portal, or edited it after a previous deploy:
 
-To stop the skill from managing a field: **remove the key from the design file**. Next plan will show that field as a no-op (since live and merged agree, because design doesn't speak).
+1. Update the design JSON files under `.healthmodel/03-design/` with complete properties (include portal-tuned values you want to keep)
+2. Regenerate the Bicep project (re-run healthmodel-design's Bicep generation step)
+3. Run `what-if` to see what would change
+4. Deploy — Bicep/ARM treats the declared state as desired state
 
-To force-overwrite a portal change: re-add the field to the design file with the value you want. Plan will show `~ modify`, apply will PUT.
+**Important**: With Bicep deployment, the declared properties ARE the complete desired state. Properties not in the design files may be reset to defaults by the resource provider. This is different from the previous sparse merge approach. Ensure design files contain ALL properties you care about.
 
 ## Read-only inspection helpers
 
@@ -207,21 +231,36 @@ az rest --method GET --url "$BASE/entities/e-cosmos?api-version=$API" \
 
 > **Note**: The `POST .../signals/{s}/execute` endpoint does **not** exist. Always read signal health from the entity GET response.
 
+## Pipeline summary
+
+The full deployment pipeline follows this strict order:
+
+```
+1. validate.sh     — offline Bicep schema check (individual files + full project)
+2. verify signals  — live metric existence + PromQL validation (BLOCKING)
+3. regenerate      — Bicep from design JSON (if stale)
+4. az bicep build  — compile full Bicep project
+5. what-if         — az deployment group what-if (advisory diff)
+6. deploy          — az deployment group create (atomic deployment)
+7. smoke           — entity health check with retry/backoff
+```
+
+Signal verification (step 2) catches failures that schema validation cannot: wrong metric names, non-existent namespaces, broken PromQL queries. It runs BEFORE Bicep generation and deployment, not after.
+
 ## Error handling
 
 | Symptom | Cause | Fix |
 |---|---|---|
 | `validate.sh` reports `BCP037` on a property | Field name wrong for the resource type | Check the template — Bicep tells you the permissible properties |
 | `validate.sh` reports `BCP036` (type) | Sent a string where the schema expects int (common with thresholds) | Use a number literal in the JSON: `"threshold": 100`, not `"100"` |
-| `validate.sh` reports `BCP035` (missing required) | Sparse body too sparse — the schema requires this field even for partial updates | Add the field to the design file |
-| `arm_put` returns 403 | Identity lacks `Monitoring Reader` on the monitored RG(s) | `az role assignment create --assignee <principalId> --role "Monitoring Reader" --scope /subscriptions/<sub>/resourceGroups/<rg>` |
-| `AuthenticationSettingUserAssignedIdentityMissing` | Auth settings reference a UAMI not in the model's identity block | Re-run `bootstrap.sh` with the UAMI parameter, or manually PUT the identity block with `SystemAssigned,UserAssigned` + the UAMI ref |
-| Signal returns `Unknown` always | Wrong AMW resource ID, metric not emitted yet, or event-based metric with no data (see note below) | Check `azureMonitorWorkspaceResourceId`; verify the metric in `az monitor metrics list-definitions`; for event-based metrics, switch to PromQL/KQL |
-| `ResourceTypeRegistrationNotFound` on signal execute | The `/signals/{s}/execute` endpoint does not exist | Use `GET .../entities` and read `.properties.signalGroups.*.signals[].status.healthState` instead |
-| `arm_get` fails with unrecognized error | Azure error format includes `Not Found` (with space) or `ResourceReadFailed` | Already handled in `lib/arm.sh`; if new patterns appear, add to the case statement |
+| `validate.sh` reports `BCP035` (missing required) | Design body missing a required field — add it with a sensible default | Add the field to the design file |
+| `az deployment group create` returns 403 | Identity lacks permissions on the target RG | Verify RBAC: `Monitoring Reader` on monitored RGs, `Monitoring Data Reader` on AMW |
+| `AuthenticationSettingUserAssignedIdentityMissing` | Auth settings reference a UAMI not in the model's identity block | Update `main.bicep` identity block or use `identityMode=existing` with the correct UAMI ID |
+| Signal returns `Unknown` always | Wrong AMW resource ID, metric not emitted yet, RBAC not propagated, or event-based metric | Retry smoke after 5 min; check `azureMonitorWorkspaceResourceId`; for event-based metrics, switch to PromQL |
+| `what-if` shows false positives | Known Azure behavior — `what-if` sometimes reports changes that aren't actual changes | Compare with previous deploy; if confident, proceed with deployment |
 | `Provider not registered` | `Microsoft.CloudHealth` not registered | `bootstrap.sh` does this; manual: `az provider register -n Microsoft.CloudHealth` |
-| Plan shows `~ modify` for a field the user clearly tuned in the portal | Design file asserts that field — apply will overwrite | Either accept (apply) or remove the key from the design file (ownership-release) |
-| Apply overwrites portal edits made between plan and apply | `apply.sh` uses the pre-computed plan body, not live state | Re-run `plan.sh` to refresh before applying if the model was edited between plan and apply |
+| Smoke test `Unknown` after 10 min | RBAC propagation issue or signal configuration error | Verify role assignments; check signal definitions against live metrics; inspect entity GET response |
+| `az bicep build` fails on `main.bicep` | `loadJsonContent` path is wrong or JSON file missing | Verify all JSON files exist in `03-design/`; regenerate Bicep |
 
 ## API version
 
@@ -230,6 +269,6 @@ az rest --method GET --url "$BASE/entities/e-cosmos?api-version=$API" \
 ## Out of scope
 
 - No DELETE operations. Resource removal requires manual portal action.
-- No state file. Source of truth is Azure (`az rest GET`) + the sparse design files.
-- No bulk MCP mode. Single-PUT-per-resource is the only path; plan/apply is the granularity boundary.
-- No ARM template deployments — Bicep is used purely as an offline validator.
+- No ARM template deployments — Bicep only.
+- No sparse merge with live state — design files must contain complete properties.
+- No bulk MCP mode.

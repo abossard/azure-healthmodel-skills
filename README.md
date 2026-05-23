@@ -42,37 +42,33 @@ az bicep version
 
 ## Install
 
-### As a Copilot CLI plugin
+### Add as a plugin marketplace (recommended)
 
-From within a Copilot CLI session:
+Open a **Copilot CLI** or **Claude Code** session:
+
+```
+/plugin
+```
+
+Select **Add marketplace**, then enter the repository:
+
+```
+abossard/azure-healthmodel-skills
+```
+
+The health model skills will appear in your plugin browser, ready to install with automatic updates.
+
+### Direct install
+
+If you prefer a one-liner from within a session:
 
 ```
 /plugin install abossard/azure-healthmodel-skills
 ```
 
-Or from the shell:
-
-```bash
-copilot plugin install abossard/azure-healthmodel-skills
-```
-
-### As a Claude Code plugin
-
-```bash
-claude plugin install abossard/azure-healthmodel-skills
-```
-
 ### Manual install
 
-```bash
-mkdir -p ~/.agents/skills
-curl -fsSL -o /tmp/healthmodel-skills.tar.gz \
-  "https://github.com/abossard/azure-healthmodel-skills/releases/latest/download/healthmodel-skills-latest.tar.gz"
-tar -xzf /tmp/healthmodel-skills.tar.gz -C ~/.agents/skills/
-rm /tmp/healthmodel-skills.tar.gz
-```
-
-Or clone and copy:
+Clone the repo and copy the skills into your agent skills directory:
 
 ```bash
 git clone https://github.com/abossard/azure-healthmodel-skills.git
@@ -88,39 +84,7 @@ cp -R skills/healthmodel-* .agents/skills/
 
 ## Update
 
-### Plugin update
-
-From within a Copilot CLI session:
-
-```
-/plugin update abossard/azure-healthmodel-skills
-```
-
-Or from the shell:
-
-```bash
-# Copilot CLI
-copilot plugin update abossard/azure-healthmodel-skills
-
-# Claude Code
-claude plugin update abossard/azure-healthmodel-skills
-```
-
-### Manual update
-
-Re-run the install commands — they overwrite the existing skills:
-
-```bash
-# From release
-curl -fsSL -o /tmp/healthmodel-skills.tar.gz \
-  "https://github.com/abossard/azure-healthmodel-skills/releases/latest/download/healthmodel-skills-latest.tar.gz"
-tar -xzf /tmp/healthmodel-skills.tar.gz -C ~/.agents/skills/
-rm /tmp/healthmodel-skills.tar.gz
-
-# Or from git
-cd azure-healthmodel-skills && git pull
-cp -R skills/healthmodel-* ~/.agents/skills/
-```
+Marketplace plugins update automatically. For manual installs, re-run the install commands — they overwrite existing skills.
 
 ## Quick Start
 

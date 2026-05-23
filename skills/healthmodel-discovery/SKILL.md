@@ -5,7 +5,7 @@ description: "Discover Azure resources and interview user to prepare health mode
 
 # Health Model Discovery
 
-Guide the user through sequential steps of resource discovery and architecture interview, ensuring inputs are prepared for health model creation. Uses only `az resource list` + `jq`.
+Guide the user through sequential steps of resource discovery and interactive interview using the `ask_user` tool to collect structured answers. The brief (`00-brief.md`) is auto-generated from interview answers — the user never edits it manually. Uses only `az resource list` + `jq`.
 
 ## Rules
 
@@ -14,8 +14,10 @@ Guide the user through sequential steps of resource discovery and architecture i
 3. ⛔ MANDATORY: Refuse if no compute resources are found in any RG.
 4. ⛔ MANDATORY: Save all answers to `.healthmodel/01-discovery.json` before handing off.
 5. ⛔ MANDATORY: Use `jq` for JSON parsing — never `grep` or `sed` on JSON.
-6. ⛔ MANDATORY: Do not proceed past discovery until the user has reviewed and confirmed `.healthmodel/00-brief.md`.
+6. ⛔ MANDATORY: Do not proceed past discovery until the user has confirmed the objectives summary (Step 4d).
 7. ⛔ MANDATORY: Every `az` command that queries Azure must persist its full output (including errors) to `.healthmodel/data/<phase>/<category>/`. Use `2>&1 | tee` for commands where you also need stdout, or `> file 2>&1` for background collection. File names should include the resource name for easy lookup. Timestamps are optional but recommended for baselines. The `.healthmodel/data/` directory is gitignored — never commit collected data.
+8. ⛔ MANDATORY: Use the `ask_user` copilot agent tool for ALL interview questions. Never direct the user to manually edit a markdown file for interview answers.
+9. ⛔ MANDATORY: If `.healthmodel/00-brief.md` already exists from a previous run, ask the user (via `ask_user`) whether to use it or re-interview. Do not silently overwrite.
 
 ## Prerequisites
 
@@ -27,27 +29,286 @@ command -v jq >/dev/null && echo "jq: ok"
 
 ## Steps
 
-### Step 1: Interview
+### Step 1: Azure Scope
 
-Ask the user interactively. Offer "skip / use defaults" for non-essentials.
+Confirm the Azure subscription with the user. Run `az account show` and present the result. If the user needs a different subscription, run `az account set --subscription <id>`.
 
-Required:
-1. **Subscription**: Confirm `az account show` or ask for ID
-2. **Resource groups**: Comma-separated list, or "all"
-3. **Application name**: Used as model name prefix (`hm-<name>`)
-4. **Location**: Region for the health model resource (default: first RG's location)
+### Step 2: Resource Export
 
-Architecture:
-5. **Compute pattern**: `AKS-microservices` / `Container-Apps` / `App-Service` / `Functions` / `mixed`
-6. **Multi-stamp?**: `single-region` / `active-active` / `active-passive`
-7. **Golden signal priority** (rank 1-4): availability, latency, error-rate, saturation
-8. **Data tier**: `Cosmos` / `SQL` / `PostgreSQL` / `Storage` / `Redis` / `none`
-9. **Async messaging**: `Service-Bus` / `Event-Hubs` / `Storage-Queues` / `none`
-10. **Ingress**: `Front-Door` / `App-Gateway` / `direct-LB` / `Istio` / `none`
-11. **Observability stack**: `AMW+Grafana` / `Log-Analytics-only` / `App-Insights` / `mix`
-12. **AI services**: `Azure-OpenAI` / `AI-Search` / `AI-Foundry` / `Document-Intelligence` / `Content-Safety` / `none`
-13. **AI on request path?**: `yes-critical` (inference is in the hot path) / `yes-background` (batch/async enrichment) / `no`
-14. **Content safety monitoring**: `built-in-filters` / `custom-safety-pipeline` / `none`
+```bash
+bash .agents/skills/healthmodel-discovery/scripts/export-resources.sh "$SUB" rg-1 rg-2  # or: $(echo "$RG_LIST")
+```
+
+### Step 3: Resource Inventory
+
+```bash
+bash .agents/skills/healthmodel-discovery/scripts/inventory.sh
+```
+
+Writes `.healthmodel/resources.json` and prints type counts + stamp grouping.
+
+### Step 3b: Resource Graph Topology (optional, complements Step 2)
+
+If `az graph query` is available, use Resource Graph to discover cross-resource relationships:
+
+```bash
+az extension add --name resource-graph 2>/dev/null
+# (same Resource Graph queries as before — discover types, details, and health)
+```
+
+### Step 4: Interactive Interview
+
+Use the `ask_user` tool to conduct a structured interview across multiple forms. Each form collects a category of inputs. The user can decline any form (defaults apply).
+
+#### Backward compatibility check
+
+Before starting the interview, check for an existing brief:
+
+```bash
+if [ -f .healthmodel/00-brief.md ]; then
+  echo "Existing brief found"
+fi
+```
+
+If `.healthmodel/00-brief.md` exists, present the user with a choice via `ask_user`:
+
+```json
+{
+  "message": "An existing health model brief was found at `.healthmodel/00-brief.md`. Would you like to use it or start a fresh interview?",
+  "requestedSchema": {
+    "properties": {
+      "briefAction": {
+        "type": "string",
+        "title": "Existing brief action",
+        "enum": ["use-existing", "re-interview"],
+        "enumNames": ["Use the existing brief as-is", "Start a fresh interview (overwrites the brief)"],
+        "default": "use-existing"
+      }
+    },
+    "required": ["briefAction"]
+  }
+}
+```
+
+If the user chooses `use-existing`, skip to Step 5 (Relationship Discovery). Otherwise, continue with the interview forms below.
+
+#### Step 4a: Form 1 — App Basics & Mode Selection
+
+Use `ask_user` with this schema:
+
+```json
+{
+  "message": "Let's set up your health model. First, tell me about your application and what kind of health model you want.\n\n**Opinionated mode**: I'll ask about your SLOs, user journeys, and concerns to build a focused, production-grade health model that monitors what matters most.\n\n**Exploration mode**: I'll discover ALL available metrics for your resources and create a learning-oriented health model. Great for understanding what signals are available before committing to specific monitoring.",
+  "requestedSchema": {
+    "properties": {
+      "appName": {
+        "type": "string",
+        "title": "Application name",
+        "description": "Used as the health model name prefix (e.g., 'myapp' → 'hm-myapp')"
+      },
+      "resourceGroups": {
+        "type": "string",
+        "title": "Resource groups",
+        "description": "Comma-separated list of resource groups to monitor, or 'all'"
+      },
+      "location": {
+        "type": "string",
+        "title": "Azure region",
+        "description": "Region for the health model resource (e.g., 'swedencentral'). Default: first RG's location."
+      },
+      "mode": {
+        "type": "string",
+        "title": "Health model mode",
+        "enum": ["opinionated", "exploration"],
+        "enumNames": [
+          "Opinionated — focused, SLO-driven, production-grade",
+          "Exploration — discover all available metrics for learning"
+        ],
+        "default": "opinionated"
+      }
+    },
+    "required": ["appName", "resourceGroups", "mode"]
+  }
+}
+```
+
+#### Step 4b: Form 2 — Architecture & Priorities (opinionated mode only)
+
+Skip this form if `mode == "exploration"`.
+
+```json
+{
+  "message": "Now let's understand your architecture and monitoring priorities.",
+  "requestedSchema": {
+    "properties": {
+      "compute": {
+        "type": "string",
+        "title": "Compute pattern",
+        "enum": ["AKS-microservices", "Container-Apps", "App-Service", "Functions", "mixed"],
+        "default": "AKS-microservices"
+      },
+      "multiStamp": {
+        "type": "string",
+        "title": "Deployment topology",
+        "enum": ["single-region", "active-active", "active-passive"],
+        "default": "single-region"
+      },
+      "goldenSignals": {
+        "type": "array",
+        "title": "Golden signal priority (order matters — first = highest priority)",
+        "items": {
+          "type": "string",
+          "enum": ["availability", "latency", "error-rate", "saturation"]
+        },
+        "default": ["availability", "latency", "error-rate", "saturation"],
+        "minItems": 1,
+        "maxItems": 4
+      },
+      "dataTier": {
+        "type": "string",
+        "title": "Primary data tier",
+        "enum": ["Cosmos", "SQL", "PostgreSQL", "Storage", "Redis", "none"],
+        "default": "Cosmos"
+      },
+      "messaging": {
+        "type": "string",
+        "title": "Async messaging",
+        "enum": ["Service-Bus", "Event-Hubs", "Storage-Queues", "none"],
+        "default": "none"
+      },
+      "ingress": {
+        "type": "string",
+        "title": "Ingress / load balancer",
+        "enum": ["Front-Door", "App-Gateway", "direct-LB", "Istio", "none"],
+        "default": "Front-Door"
+      },
+      "observability": {
+        "type": "string",
+        "title": "Observability stack",
+        "enum": ["AMW+Grafana", "Log-Analytics-only", "App-Insights", "mix"],
+        "default": "AMW+Grafana"
+      },
+      "aiServices": {
+        "type": "string",
+        "title": "AI services in use",
+        "enum": ["Azure-OpenAI", "AI-Search", "AI-Foundry", "Document-Intelligence", "Content-Safety", "none"],
+        "default": "none"
+      },
+      "aiOnRequestPath": {
+        "type": "string",
+        "title": "AI on the request path?",
+        "enum": ["yes-critical", "yes-background", "no"],
+        "enumNames": [
+          "Yes — inference is in the hot path (latency-critical)",
+          "Yes — batch/async enrichment (background)",
+          "No AI services"
+        ],
+        "default": "no"
+      },
+      "contentSafety": {
+        "type": "string",
+        "title": "Content safety monitoring",
+        "enum": ["built-in-filters", "custom-safety-pipeline", "none"],
+        "default": "none"
+      },
+      "criticalJourneys": {
+        "type": "string",
+        "title": "Critical user journeys",
+        "description": "Describe 1-3 critical user journeys (e.g., 'User searches products → adds to cart → checks out'). One per line."
+      },
+      "sloTargets": {
+        "type": "string",
+        "title": "SLO / SLA targets",
+        "description": "e.g., 'P95 latency < 500ms, availability > 99.95%, error rate < 0.1%'"
+      },
+      "topConcerns": {
+        "type": "string",
+        "title": "Top concerns (rank by importance)",
+        "description": "e.g., 'Silent failures in payment processing, Database connection pool exhaustion, AI model latency spikes'"
+      }
+    },
+    "required": ["compute"]
+  }
+}
+```
+
+#### Step 4c: Form 3 — Alert Philosophy & Stamps (opinionated mode only)
+
+Skip this form if `mode == "exploration"`.
+
+```json
+{
+  "message": "Almost done — let's set your alerting philosophy and any stamp-specific behavior.",
+  "requestedSchema": {
+    "properties": {
+      "sensitivity": {
+        "type": "string",
+        "title": "Alert sensitivity",
+        "description": "How sensitive should health signals be?",
+        "enum": ["quiet", "balanced", "noisy"],
+        "enumNames": [
+          "Quiet — wide thresholds, fewer alerts, only escalate real issues",
+          "Balanced — use signal-catalog recommendations as-is",
+          "Noisy — tight thresholds, aggressive early warning"
+        ],
+        "default": "balanced"
+      },
+      "stamps": {
+        "type": "string",
+        "title": "Stamp names",
+        "description": "If multi-stamp: comma-separated stamp identifiers (e.g., 'swedencentral-001, westeurope-001'). Leave empty for single-region."
+      },
+      "stampFailBehavior": {
+        "type": "string",
+        "title": "One stamp goes down — what happens at root?",
+        "enum": ["unhealthy", "degraded"],
+        "enumNames": [
+          "Unhealthy — one stamp down = root goes red",
+          "Degraded — one stamp down = root goes yellow (other stamps serve traffic)"
+        ],
+        "default": "degraded"
+      },
+      "excludedResources": {
+        "type": "string",
+        "title": "Resources to exclude from monitoring",
+        "description": "Comma-separated resource names or types to skip (e.g., 'test-storage, Microsoft.Insights/components')"
+      }
+    },
+    "required": ["sensitivity"]
+  }
+}
+```
+
+#### Step 4d: Objectives Summary — confirm before proceeding
+
+After collecting all interview answers, present the user's main objectives back to them as a summary. Use `ask_user` for confirmation:
+
+```json
+{
+  "message": "Here's a summary of your health model objectives. Please confirm or request changes.\n\n**Application**: {{appName}} ({{mode}} mode)\n**Scope**: {{resourceGroups}} in {{location}}\n**Mode**: {{modeDescription}}\n\n{{#if opinionated}}\n**Critical journeys**: {{criticalJourneys}}\n**SLO targets**: {{sloTargets}}\n**Top concerns**: {{topConcerns}}\n**Alert sensitivity**: {{sensitivity}}\n**Stamp behavior**: {{stampBehavior}}\n{{/if}}\n\n{{#if exploration}}\n**Approach**: I'll discover all available metrics for each resource and create signals with permissive thresholds. You'll see every metric Azure exposes — useful for learning what's available before narrowing down.\n{{/if}}",
+  "requestedSchema": {
+    "properties": {
+      "confirmed": {
+        "type": "boolean",
+        "title": "Objectives look correct?",
+        "default": true
+      },
+      "corrections": {
+        "type": "string",
+        "title": "Any corrections or additions?",
+        "description": "Leave empty if everything looks good."
+      }
+    },
+    "required": ["confirmed"]
+  }
+}
+```
+
+Replace the `{{...}}` placeholders with actual values from the interview answers before presenting.
+
+If the user sets `confirmed: false` or provides corrections, incorporate the changes and re-present the summary until confirmed.
+
+**CHECKPOINT** — do not proceed until the user confirms the objectives summary.
 
 ### Step 2: Resource Export
 
@@ -100,31 +361,21 @@ az graph query -q "
 
 Resource Graph results are advisory — they complement, not replace, the `resources.json` from Step 3.
 
-### Step 4: User Brief — fill the human context
+### Step 5: Auto-generate Brief
 
-The infra shape alone can't tell you SLOs, user journeys, or what the user actually cares about. Generate a brief and have the user fill it in.
+Generate `.healthmodel/00-brief.md` automatically from the confirmed interview answers. The user never edits this file manually — it is a derived artifact.
 
 ```bash
 mkdir -p .healthmodel
-cp .agents/skills/healthmodel-discovery/templates/health-model-brief.md .healthmodel/00-brief.md
-
-# Pre-fill {{APP_NAME}} from interview
-APP_NAME=$(jq -r '.appName // "your-app"' .healthmodel/01-discovery.json 2>/dev/null || echo "your-app")
-sed -i.bak "s/{{APP_NAME}}/$APP_NAME/g" .healthmodel/00-brief.md && rm .healthmodel/00-brief.md.bak
 ```
 
-Pre-fill `## 1. Azure Scope` from the interview answers and current `az account`:
+Use the template from `.agents/skills/healthmodel-discovery/templates/health-model-brief.md` as the structure, but fill ALL sections programmatically from the interview answers:
 
-```bash
-SUB_ID=$(jq -r '.subscription' .healthmodel/01-discovery.json)
-SUB_NAME=$(az account show --query name -o tsv)
-LOCATION=$(jq -r '.location' .healthmodel/01-discovery.json)
-RGS=$(jq -r '.resourceGroups[]' .healthmodel/01-discovery.json)
-```
-
-Fill in subscription ID, name, location, and generate the Resource Groups table rows from the interview answers. If a UAMI named `id-healthmodel-*` was found during resource export, pre-fill the managed identity field.
-
-Then pre-fill `## 6. What to Observe` from `.healthmodel/resources.json` — one row per discovered resource. For each resource, dynamically discover golden-signal candidates:
+- **§1 Azure Scope**: subscription, resource groups, location, managed identity from discovery
+- **§2 Critical User Journeys**: from interview `criticalJourneys` (opinionated) or "Exploration mode — all metrics" (exploration)
+- **§3 SLO / SLA Targets**: from interview `sloTargets` (opinionated) or "N/A — exploration mode uses permissive thresholds" (exploration)
+- **§4 Top Concerns**: from interview `topConcerns` (opinionated) or "Discover available metrics" (exploration)
+- **§5 What to Observe**: auto-generated from `.healthmodel/resources.json` — one row per resource with discovered metrics:
 
 ```bash
 DATA_METRICS=".healthmodel/data/discovery/metric-definitions"
@@ -139,25 +390,20 @@ jq -r '.[].id' .healthmodel/resources.json | while read -r rid; do
 done
 ```
 
-Then apply the golden-signal classifier from the signal catalog (Recipe 2) to each resource to highlight the most relevant metrics. The classifier groups metrics into availability, latency, errors, saturation, usage, safety, etc. — pick 2-4 per entity.
+Apply the golden-signal classifier from the signal catalog (Recipe 2) to highlight the most relevant metrics per resource.
 
-Build the rows with `jq` from `.healthmodel/resources.json`, then append into the brief between the table header and the trailing `---`.
+- **§6 Alert Philosophy**: from interview `sensitivity` (opinionated) or "permissive — exploration mode" (exploration)
+- **§7 Stamp & Regional Behavior**: from interview `stamps`, `stampFailBehavior`, `multiStamp`
+- **§8 Environment & Exclusions**: from interview `excludedResources`
+- **§9 Defaults**: filled with standard defaults
+- **§10 Mode**: `opinionated` or `exploration` — this field drives design behavior
 
-**CHECKPOINT** — stop and tell the user:
-
-> Brief template written to `.healthmodel/00-brief.md`. Please review and fill in sections 1-5 and 7-9, then tell me when ready to continue.
-
-Do not run Step 5 until the user confirms.
-
-### Step 5: Relationship Discovery
+Write the file:
 
 ```bash
-bash .agents/skills/healthmodel-discovery/scripts/relationships.sh "$SUB"
+# Write the auto-generated brief (all sections filled from interview answers)
+# Use jq to read values from 01-discovery.json and template them into the brief
 ```
-
-Prints AKS / Cosmos / ingress / AMW anchors and writes `.healthmodel/data/relationships/rbac/all-assignments.json` (scoped to monitored RGs only).
-
-> **Note**: `.healthmodel/data/` contains potentially sensitive data (RBAC assignments, full resource IDs, diagnostic settings). A `.gitignore` excludes this directory from version control. Regenerate with `export-resources.sh` and `relationships.sh`.
 
 ### Step 5b: Diagnostic Settings Coverage Check
 
@@ -182,7 +428,17 @@ done
 
 Resources without diagnostic settings can still use `AzureResourceMetric` signal kind, but `LogAnalyticsQuery` signals require diagnostic log routing to a workspace.
 
-### Step 6: Validate & Present
+### Step 6: Relationship Discovery
+
+```bash
+bash .agents/skills/healthmodel-discovery/scripts/relationships.sh "$SUB"
+```
+
+Prints AKS / Cosmos / ingress / AMW anchors and writes `.healthmodel/data/relationships/rbac/all-assignments.json` (scoped to monitored RGs only).
+
+> **Note**: `.healthmodel/data/` contains potentially sensitive data (RBAC assignments, full resource IDs, diagnostic settings). A `.gitignore` excludes this directory from version control. Regenerate with `export-resources.sh` and `relationships.sh`.
+
+### Step 7: Validate & Present
 
 Present to the user:
 - Resource type inventory table
@@ -192,7 +448,7 @@ Present to the user:
 
 Ask: "Does this look right? Any corrections?"
 
-### Step 7: Save
+### Step 8: Save
 
 `.healthmodel/01-discovery.json`:
 ```json
@@ -201,6 +457,7 @@ Ask: "Does this look right? Any corrections?"
   "resourceGroups": ["rg-1", "rg-2"],
   "appName": "myapp",
   "location": "swedencentral",
+  "mode": "opinionated",
   "compute": "AKS-microservices",
   "multiStamp": "active-active",
   "goldenSignals": ["availability", "latency", "error-rate", "saturation"],
@@ -211,14 +468,21 @@ Ask: "Does this look right? Any corrections?"
   "aiServices": "Azure-OpenAI",
   "aiOnRequestPath": "yes-critical",
   "contentSafety": "built-in-filters",
+  "sensitivity": "balanced",
   "stamps": ["swedencentral-001", "swedencentral-002"],
+  "stampFailBehavior": "degraded",
+  "sloTargets": "P95 < 500ms, availability > 99.95%",
+  "criticalJourneys": "...",
+  "topConcerns": "...",
+  "excludedResources": [],
+  "interviewConfirmed": true,
   "resources": { }
 }
 ```
 
 ## Next Step
 
-Announce: *"Discovery complete. `.healthmodel/00-brief.md` (user-confirmed), `.healthmodel/01-discovery.json`, and `.healthmodel/resources.json` are written. Load `healthmodel-architecture` to continue."* Then stop — do not auto-proceed.
+Announce: *"Discovery complete. `.healthmodel/00-brief.md` (auto-generated from confirmed interview), `.healthmodel/01-discovery.json`, and `.healthmodel/resources.json` are written. Mode: {{mode}}. Load `healthmodel-architecture` to continue."* Then stop — do not auto-proceed.
 
 ## Error Handling
 

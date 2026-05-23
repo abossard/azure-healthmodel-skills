@@ -93,6 +93,8 @@ Impact is determined by **the resource's role in the user's architecture**, not 
 | Background/async processing — users don't notice immediately | `Limited` | Visible, doesn't escalate |
 | Telemetry, monitoring, management infrastructure | `Suppressed` | Informational |
 
+> **Impact is set on the parent grouping entity, not on its children.** When a group of entities is `Limited` or `Suppressed`, set that impact on the **parent** entity that groups them. All children within the group use `Standard` — so failures are visible within the group, but the parent's impact level controls whether the group's health propagates further up the tree. Setting `Suppressed` on children is redundant and loses the ability to distinguish between siblings within the group.
+
 > **Any** resource type can be `Standard` — an Azure OpenAI service powering a chatbot, a PostgreSQL database holding user sessions, a Storage account serving static assets. Don't assume impact from the resource type alone. The brief and the user's architecture determine impact.
 
 **Critical path** = longest directed path from any public ingress to a stateful node — *unless* §2 of the brief specifies user journeys, in which case the critical path follows the journeys.
@@ -128,52 +130,60 @@ Design a hierarchy that reflects the **actual architecture**, not a predefined t
 - Each entity has at most one parent (tree, not DAG)
 - 2-4 signals per leaf entity (one per relevant golden-signal category)
 - Name entities after their role ("Payment Processing", "Document Ingestion"), not their Azure type ("Cosmos DB", "Storage Account")
+- **Do NOT create a custom root entity.** The health model resource itself IS the root — ARM creates an implicit entity named after the model (e.g., `hm-myapp`). Top-level groups connect directly to the model root.
+- **Impact is set on parent grouping entities only.** Children within a `Limited` or `Suppressed` group use `Standard` impact (see Step 2).
 
-**Example hierarchies** — these are illustrations, not templates. Your architecture will likely differ:
+**Example hierarchies** — these are illustrations, not templates. "Root" below means the implicit model root entity (e.g., `hm-myapp`), NOT a custom `e-root` entity. Your architecture will likely differ:
 
 *Microservices with multi-stamp:*
 ```
-Root (<appName>)
-├── Failures        (aggregates error signals across stamps)
-├── Latency         (aggregates latency signals across stamps)
-├── Resource Pressure (per stamp)
+hm-myapp (implicit root — Standard)
+├── Failures (Standard)     ← children use Standard
+├── Latency (Standard)
+├── Resource Pressure (Standard)
 └── Side groups (as needed)
 ```
 
 *PaaS web app:*
 ```
-Root
-├── Frontend (errors, latency, resource usage)
-├── Database (availability, query performance)
-├── Ingress (error rate, origin latency)
-└── Telemetry (Suppressed)
+hm-myapp (implicit root — Standard)
+├── Frontend (Standard)
+├── Database (Standard)
+├── Ingress (Standard)
+└── Telemetry (Suppressed)  ← parent is Suppressed
+    ├── App Insights (Standard) ← children are Standard
+    └── Log Analytics (Standard)
 ```
 
 *Event-driven processing:*
 ```
-Root
-├── Producers (HTTP errors, latency)
-├── Message Bus (dead letters, throttling)
-└── Consumers (execution failures, processing latency)
+hm-myapp (implicit root — Standard)
+├── Producers (Standard)
+├── Message Bus (Standard)
+└── Consumers (Standard)
 ```
 
 *AI-powered application (e.g., RAG chatbot):*
 ```
-Root
-├── Frontend (errors, latency, resource usage)
-├── AI Inference (request rate, latency, throttling, content safety)
-├── Knowledge Base (search latency, indexer health, throttling)
-├── Data Store (availability, latency)
-└── Telemetry (Suppressed)
+hm-myapp (implicit root — Standard)
+├── RAG Pipeline (Standard)
+│   ├── Backend (Standard)
+│   ├── AI Inference (Standard)
+│   └── Knowledge Search (Standard)
+├── Observability (Suppressed)  ← doesn't escalate to root
+│   ├── App Telemetry (Standard) ← Standard within group
+│   └── Log Analytics (Standard)
+└── Platform (Limited)          ← visible but won't turn root red
+    └── Container Platform (Standard)
 ```
 
 *Batch/ETL pipeline:*
 ```
-Root
-├── Ingestion (trigger rate, failures, queue depth)
-├── Processing (execution time, error rate, resource usage)
-├── Output (write latency, failures)
-└── Orchestration (pipeline status, scheduling)
+hm-myapp (implicit root — Standard)
+├── Ingestion (Standard)
+├── Processing (Standard)
+├── Output (Standard)
+└── Orchestration (Standard)
 ```
 
 These are starting points. Combine, modify, or ignore them entirely based on what `resources.json` and the brief tell you. If the architecture doesn't fit any pattern, design the hierarchy from scratch — the user confirms in Step 6.
@@ -203,14 +213,22 @@ If the user requests changes, update the files and re-save before handing off.
     {"from": "<fd-id>", "to": "<aks-id>", "kind": "serves"}
   ],
   "entityHierarchy": {
-    "root": "Root",
+    "root": "hm-myapp",
     "children": [
-      {"name": "Failures", "impact": "Suppressed", "children": []},
-      {"name": "Latency", "impact": "Limited", "children": []}
+      {"name": "RAG Pipeline", "impact": "Standard", "children": [
+        {"name": "Backend", "impact": "Standard", "children": []},
+        {"name": "AI Inference", "impact": "Standard", "children": []}
+      ]},
+      {"name": "Observability", "impact": "Suppressed", "children": [
+        {"name": "App Telemetry", "impact": "Standard", "children": []},
+        {"name": "Log Analytics", "impact": "Standard", "children": []}
+      ]}
     ]
   }
 }
 ```
+
+> **Note**: `entityHierarchy.root` is the health model name — the implicit root entity created by ARM. Do NOT create a custom `e-root` entity. Children under `Suppressed`/`Limited` parents use `Standard` impact.
 
 ## Next Step
 
