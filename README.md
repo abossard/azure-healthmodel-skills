@@ -42,49 +42,42 @@ az bicep version
 
 ## Install
 
-### Add as a plugin marketplace (recommended)
+### 1. Add the marketplace
 
-Open a **Copilot CLI** or **Claude Code** session:
-
-```
-/plugin
+```bash
+copilot plugin marketplace add abossard/azure-healthmodel-skills
 ```
 
-Select **Add marketplace**, then enter the repository:
+Or from inside a session:
 
 ```
-abossard/azure-healthmodel-skills
+/plugin marketplace add abossard/azure-healthmodel-skills
 ```
 
-The health model skills will appear in your plugin browser, ready to install with automatic updates.
+### 2. Install the plugin
 
-### Direct install
+```bash
+copilot plugin install azure-healthmodel-skills@azure-healthmodel-skills
+```
 
-If you prefer a one-liner from within a session:
+Or from inside a session:
 
 ```
-/plugin install abossard/azure-healthmodel-skills
+/plugin install azure-healthmodel-skills@azure-healthmodel-skills
 ```
 
 ### Manual install
-
-Clone the repo and copy the skills into your agent skills directory:
 
 ```bash
 git clone https://github.com/abossard/azure-healthmodel-skills.git
 cp -R azure-healthmodel-skills/skills/healthmodel-* ~/.agents/skills/
 ```
 
-### Project-local install
-
-```bash
-mkdir -p .agents/skills
-cp -R skills/healthmodel-* .agents/skills/
-```
-
 ## Update
 
-Marketplace plugins update automatically. For manual installs, re-run the install commands — they overwrite existing skills.
+```bash
+copilot plugin update azure-healthmodel-skills
+```
 
 ## Quick Start
 
