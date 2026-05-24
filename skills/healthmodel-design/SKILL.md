@@ -522,18 +522,15 @@ Generate a modular Bicep project under `.healthmodel/05-bicep/` from the design 
    }
    module signalDefinitions './modules/signals.bicep' = {
      name: 'signal-definitions'
-     params: { healthModelName: healthModel.name }
-     dependsOn: [authSettings]
+     params: { healthModelName: healthModel.name, authId: authSettings.outputs.id }
    }
    module entities './modules/entities.bicep' = {
      name: 'entities'
-     params: { healthModelName: healthModel.name }
-     dependsOn: [signalDefinitions]
+     params: { healthModelName: healthModel.name, signalsId: signalDefinitions.outputs.id }
    }
    module relationships './modules/relationships.bicep' = {
      name: 'relationships'
-     params: { healthModelName: healthModel.name }
-     dependsOn: [entities]
+     params: { healthModelName: healthModel.name, entitiesId: entities.outputs.id }
    }
    ```
 

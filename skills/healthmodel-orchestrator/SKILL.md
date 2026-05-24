@@ -7,6 +7,15 @@ description: "Build an Azure Monitor Health Model end-to-end from resource disco
 
 End-to-end workflow for creating and adapting an Azure Monitor Health Model. Uses **only** the standard `az` CLI (`az resource`, `az rest`, `az bicep`) plus `jq` — no extensions, no Python SDK, no ARM template deployments.
 
+## Guiding Principles (from Azure Well-Architected service guide)
+
+These principles shape every phase. Reference: [Azure Monitor Health Models service guide](https://learn.microsoft.com/en-us/azure/well-architected/service-guides/azure-monitor-health-models).
+
+1. **Top-down, use-case-driven design** — Start from user journeys and SLOs, not from the resource list. The health model answers "is *this scenario* healthy?" not "are all my resources green?". Discovery interviews the user about their critical paths first.
+2. **"Fits my screen"** — A health model should be comprehensible at a glance. If the entity tree doesn't fit on one screen, it has too many nodes. Group resources into meaningful aggregates; don't create one entity per resource.
+3. **Don't monitor everything** (opinionated mode) — Pick the 3–5 signals per entity that actually indicate health. Avoid metric sprawl. Every signal should answer "would I page someone for this?" If not, it's noise.
+4. **Health models as learning tools** (exploration mode) — When the user selects exploration mode, the model surfaces ALL discoverable metrics with permissive thresholds. The goal is observability literacy, not alerting. The user observes real metric behavior and graduates to an opinionated model later.
+
 ## Rules
 
 1. ⛔ MANDATORY: Discovery MUST always run before architecture — no exceptions. For later phases (design, deploy), direct entry is allowed ONLY if all required input contracts (checkpoint files) are present and validated.

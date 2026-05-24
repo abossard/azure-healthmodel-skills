@@ -25,6 +25,7 @@ Integrate a generated health model Bicep project (`.healthmodel/05-bicep/`) into
 6. ⛔ MANDATORY: Verify BOTH the health model Bicep AND the user's entrypoint (if a snippet was generated) with `az bicep build`.
 7. ⛔ MANDATORY: All generated files go under `.healthmodel/06-integrate/`. Never write to user IaC directories.
 8. ⛔ MANDATORY: Present every integration change as a diff preview before asking the user to apply it.
+9. ⛔ MANDATORY: **Avoid `dependsOn` — use output references instead.** Referencing a resource's output property (e.g. `parentEntity.id`) creates an implicit dependency that Bicep enforces at compile time. Explicit `dependsOn` is fragile, redundant, and hides the actual data flow.
 
 ## Prerequisites
 
@@ -322,7 +323,7 @@ Create `.healthmodel/06-integrate/health-model-full.bicep` — a single-file mod
 4. **Identity** resources (UAMI + role assignments)
 5. **Conditional entity** resources with `if` guards based on feature flags
 6. **Signal definitions** inline (NOT `loadJsonContent()`) for signals whose resource references come from parameters
-7. **Relationships** with `dependsOn` chains
+7. **Relationships** using output references (implicit dependencies), NOT `dependsOn`
 
 Follow the reference pattern from `azure-search-openai-demo/infra/core/monitor/health-model.bicep`:
 

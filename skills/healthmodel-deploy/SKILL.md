@@ -23,7 +23,7 @@ Deploy a designed health model to Azure using a generated **Bicep project**. The
 4. ⛔ MANDATORY: The `Microsoft.CloudHealth` provider must be registered (`bash .agents/skills/healthmodel-deploy/scripts/bootstrap.sh` does this).
 5. ⛔ MANDATORY: Signal verification (Step 2) is **blocking** — do not proceed to deployment if live metric validation fails.
 6. ⛔ MANDATORY: Always run `what-if` (Step 5) and review the output before deploying.
-7. ⛔ MANDATORY: Deploy order is enforced by Bicep module dependencies — auth → signals → entities → relationships. The generated Bicep handles this via `dependsOn`.
+7. ⛔ MANDATORY: Deploy order is enforced by Bicep output references — auth → signals → entities → relationships. Each module receives an output from the previous module as a parameter, creating implicit dependencies. Do NOT use `dependsOn`.
 8. ⛔ MANDATORY: Never DELETE resources from this skill. Manual portal action required for removal — the skill is additive only.
 
 ## Prerequisites
@@ -167,7 +167,7 @@ Ask: *"Apply all changes, or abort?"*
 bash .agents/skills/healthmodel-deploy/scripts/deploy.sh "$RG"
 ```
 
-This runs `az deployment group create` with the generated Bicep project. Deployment is atomic — ARM handles ordering via the Bicep `dependsOn` chain.
+This runs `az deployment group create` with the generated Bicep project. Deployment is atomic — ARM handles ordering via implicit dependencies from output references.
 
 ### Step 7: Smoke test with retry
 
