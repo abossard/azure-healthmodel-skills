@@ -587,7 +587,7 @@ Ask: *"Ready to deploy? Or adjust thresholds first?"*
 
 ## Next Step
 
-Announce: *"Design complete. Design files written under `.healthmodel/03-design/`. Bicep project generated at `.healthmodel/05-bicep/`. Load `healthmodel-deploy` to validate and deploy."* Then stop — do not auto-proceed.
+Announce: *"Design complete. Design files written under `.healthmodel/03-design/`. Bicep project generated at `.healthmodel/05-bicep/`. Load `healthmodel-integrate` to integrate into existing IaC, or load `healthmodel-deploy` to validate and deploy standalone."* Then stop — do not auto-proceed.
 
 ## Error Handling
 

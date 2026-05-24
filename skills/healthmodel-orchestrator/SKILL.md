@@ -37,13 +37,18 @@ No CLI extensions required. No Python SDK. No ARM templates.
 graph LR
   classDef phase fill:#1a5276,stroke:#2980b9,color:#fff
   classDef check fill:#0e4d2c,stroke:#27ae60,color:#fff
+  classDef optional fill:#4a235a,stroke:#8e44ad,color:#fff
   D[1. Discovery<br/>Interview + Export]:::phase --> B[Brief<br/>User fills 00-brief.md]:::check
   B --> A[2. Architecture<br/>Graph + Diagram]:::phase
-  A --> S[3. Design<br/>Sparse JSON]:::phase
-  S --> P[4. Deploy<br/>Validate / Plan / Apply / Smoke]:::phase
+  A --> S[3. Design<br/>Sparse JSON + Bicep]:::phase
+  S --> I[3b. Integrate<br/>IaC Integration]:::optional
+  I --> P[4. Deploy<br/>Validate / What-if / Deploy / Smoke]:::phase
+  S --> P
 ```
 
 Skills are loaded by semantic/keyword matching against each skill's `description` metadata (intent-level match, not exact-string equality), not called like functions. To hand off, tell the user which skill is next and which files it expects — then stop. The user (or agent harness) will load the next skill, which sees the checkpoint files on disk and resumes.
+
+**Note**: Phase 3b (Integrate) is **optional**. Skip it when deploying the health model standalone. Use it when the user has existing Bicep IaC and wants the health model integrated as a module.
 
 ### Phase 1: Discovery — `healthmodel-discovery`
 - Input contract: user answers + active Azure subscription
@@ -61,7 +66,22 @@ Skills are loaded by semantic/keyword matching against each skill's `description
 - Input contract: `.healthmodel/02-graph.json` + `.healthmodel/01-discovery.json`
 - Output contract: **sparse** design files under `.healthmodel/03-design/{auth,signals,entities,relationships}/*.json` — each file contains only the `properties` body, only the fields the skill manages.
 - **Checkpoint**: Show entity tree with signal counts and thresholds. Ask *"Ready to deploy?"*
-- Handoff: *"Design approved. Load `healthmodel-deploy` and start with `.agents/skills/healthmodel-deploy/scripts/validate.sh`."*
+- Handoff: *"Design approved. Load `healthmodel-integrate` to integrate into existing IaC, or load `healthmodel-deploy` for standalone deployment."*
+
+### Phase 3b (optional): Integrate — `healthmodel-integrate`
+- Input contract: `.healthmodel/05-bicep/` (generated Bicep project from design phase) + user's existing IaC files
+- Output contract: `.healthmodel/06-integrate/` containing:
+  - `iac-detection.json` — detected IaC type, entrypoint, conventions
+  - `integration-state.json` — chosen level, generated artifacts list
+  - Integration-level artifacts: standalone docs (NONE), module wrapper + `.bicepparam` + snippet (SOME), or inline Bicep module + snippet (FULL)
+- Three integration levels:
+  - **NONE** (default for Terraform, Azure Export Bicep, or no IaC): standalone deployment, no user file changes
+  - **SOME**: parameterized module wrapper with `.bicepparam` + snippet for user to copy into their entrypoint
+  - **FULL**: inline Bicep module with feature flags, object params, conditional entities (matches azure-search-openai-demo pattern)
+- ⛔ MANDATORY: Never modify user IaC files directly — generate snippets only
+- ⛔ MANDATORY: Never run the user's full deployment pipeline
+- **Checkpoint**: Show integration artifacts + verification results. Ask user to deploy and report back.
+- Handoff: *"Integration complete. Load `healthmodel-deploy` to deploy, or apply snippets to your IaC and deploy via your existing pipeline."*
 
 ### Phase 4: Deploy — `healthmodel-deploy`
 - Input contract: `.healthmodel/03-design/` (sparse files)
@@ -84,6 +104,10 @@ Skills are loaded by semantic/keyword matching against each skill's `description
 | `03-design/signals/*.json` | 3 | Sparse signalDefinitions bodies |
 | `03-design/entities/*.json` | 3 | Sparse entities bodies |
 | `03-design/relationships/*.json` | 3 | Sparse relationships bodies |
+| `06-integrate/iac-detection.json` | 3b | Detected IaC type, entrypoint, conventions |
+| `06-integrate/integration-state.json` | 3b | Chosen level, generated artifacts list |
+| `06-integrate/*.bicep` | 3b | Integration-level Bicep artifacts (SOME/FULL) |
+| `06-integrate/snippet-for-main.bicep` | 3b | Module-reference snippet for user's entrypoint |
 | `04-plan.json` | 4 | Per-resource verdict (`+`/`~`/`=`) + merged body |
 | `04-deployed.json` | 4 | Apply receipt |
 
