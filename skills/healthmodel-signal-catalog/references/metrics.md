@@ -155,9 +155,9 @@ az rest --method GET \
 
 A non-empty `result` array confirms the query parses and the AMW has data. The `or vector(0)` tail guarantees you'll never get an empty result — perfect for health signals.
 
-For batch validation of all PromQL signals, use:
+For batch validation of all signals (ARM + PromQL + KQL), use:
 ```bash
-bash .agents/skills/healthmodel-deploy/scripts/validate-promql.sh "$AMW"
+bash .agents/skills/healthmodel-deploy/scripts/validate-signals.sh --amw "$AMW"
 ```
 
 See [promql-validation.md](./promql-validation.md) for the full development workflow.
@@ -260,7 +260,7 @@ Match against the requirements:
 
 ## Recipe 10 — Local sanity check on a draft signal-definition file
 
-Before invoking `healthmodel-deploy/scripts/validate.sh`:
+Before invoking `healthmodel-deploy/scripts/validate-signals.sh`:
 
 ```bash
 FILE=.healthmodel/03-design/signals/sd-my-signal.json
@@ -430,4 +430,4 @@ done
 
 - [../SKILL.md §1](../SKILL.md) — full discovery narrative.
 - `healthmodel-design/SKILL.md` Step 1 — exact JSON shape of a signal definition.
-- `healthmodel-deploy/scripts/validate.sh` — Bicep schema validator (the deploy gate).
+- `healthmodel-deploy/scripts/validate-signals.sh` — pre-deploy unified signal validator (ARM + PromQL + KQL).

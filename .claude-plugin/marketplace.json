@@ -9,7 +9,7 @@
     {
       "name": "azure-healthmodel-skills",
       "source": "./",
-      "description": "Six-phase Azure Monitor Health Model workflow (discovery → architecture → design → deploy) with orchestrator and signal catalog. Uses only az CLI + jq — no extensions, no Python SDK."
+      "description": "Six-skill Azure Monitor Health Model workflow (discovery → architecture → design → deploy) with orchestrator and signal catalog. Drives the az monitor health-models CLI extension (preview)."
     }
   ]
 }

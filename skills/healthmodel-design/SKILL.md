@@ -1,15 +1,15 @@
 ---
 name: healthmodel-design
-description: "Design health model entities, signal definitions, and relationships from the architecture graph. Emits complete design files and generates a modular Bicep project for deployment. WHEN: 'design entities and signals', 'propose health thresholds', 'create health model spec', 'generate signal definitions', 'generate bicep for health model'. DO NOT USE FOR: discovery (use healthmodel-discovery), deployment to Azure (use healthmodel-deploy), modifying live health models directly."
+description: "Design health model entities, signal definitions, and relationships from the architecture graph. Emits sparse JSON design files that the deploy skill reconciles via `az monitor health-models`. WHEN: 'design entities and signals', 'propose health thresholds', 'create health model spec', 'generate signal definitions'. DO NOT USE FOR: discovery (use healthmodel-discovery), deployment to Azure (use healthmodel-deploy), modifying live health models directly."
 ---
 
 # Health Model Design
 
-Transform the architecture graph into concrete signal definitions, entities, and relationships. Generates a modular Bicep project under `.healthmodel/05-bicep/` for deployment. Supports two modes: **opinionated** (SLO-driven, production-grade) and **exploration** (all available metrics for learning).
+Transform the architecture graph into concrete signal definitions, entities, and relationships. Writes sparse JSON design files under `.healthmodel/03-design/{auth,signals,entities,relationships,discovery-rules}/`; the deploy skill forwards each file's `properties` body directly to the matching `az monitor health-models <kind> create` invocation. Supports two modes: **opinionated** (SLO-driven, production-grade) and **exploration** (all available metrics for learning).
 
 ## What "complete design" means
 
-Each design file contains the **full `properties` body** for the resource — all required fields populated with either user-derived values (opinionated mode) or permissive defaults (exploration mode). This is required because Bicep/ARM treats declared resources as desired state — unspecified properties may be removed or defaulted by the resource provider.
+Each design file contains the **full `properties` body** for the resource — all required fields populated with either user-derived values (opinionated mode) or permissive defaults (exploration mode). This is required because the extension's `create` is full-PUT: the resource provider replaces the resource body with the declared state, so any field not declared may be reset to its default.
 
 The agent fills in all required defaults during design. The user only needs to provide the values they care about (via the interview in discovery). Everything else gets sensible defaults.
 
@@ -28,19 +28,19 @@ The filename (without `.json`) is the resource's ARM name. Use deterministic sho
 
 1. ⛔ MANDATORY: `.healthmodel/02-graph.json` and `.healthmodel/01-discovery.json` must exist and contain real Azure resource IDs (from a live `az resource list`, not placeholders). If they contain placeholder or empty data, **stop** and direct the user to run discovery + architecture first.
 2. ⛔ MANDATORY: Design files contain **only the `properties` body** — no top-level `name`, `type`, or wrapper. The deploy phase derives URLs from the filename + kind directory.
-3. ⛔ MANDATORY: Each design file contains **all required fields** for the resource type. The agent fills in sensible defaults for any field the user didn't explicitly configure. This ensures clean Bicep deployment.
-4. ⛔ MANDATORY: Signal-definition `signalKind`-specific fields are **flat under `properties`** (NOT nested under `azureResourceMetric`/`prometheusMetricsQuery`/etc. sub-objects). Bicep enforces this; `healthmodel-deploy/scripts/validate.sh` will catch the mistake.
+3. ⛔ MANDATORY: Each design file contains **all required fields** for the resource type. The agent fills in sensible defaults for any field the user didn't explicitly configure. The extension's `create` is full-PUT — any field not declared may be reset to the resource provider default.
+4. ⛔ MANDATORY: Signal-definition `signalKind`-specific fields are **flat under `properties`** (NOT nested under `azureResourceMetric`/`prometheusMetricsQuery`/etc. sub-objects). The deploy skill's `reconcile.sh` unwraps the right subset into the matching `--*-file` argument; the server rejects nested sub-objects.
 5. ⛔ MANDATORY: Thresholds are integers (`100`), not strings (`"100"`).
 6. ⛔ MANDATORY: PromQL queries end with `or vector(0)` to avoid `Unknown` on no-data.
 7. ⛔ MANDATORY: Each entity has at most one parent (tree, not DAG). Leaf entities carry signal groups; branch entities have no signals (health rolls up).
-8. ⛔ MANDATORY: For unknown resource types, omit `evaluationRules` and tag the design file with `"_review": "needs human review"` (the underscore key won't be sent because bicep would reject it — strip before deploy, OR populate evaluationRules to the best guess and document the rationale).
+8. ⛔ MANDATORY: For unknown resource types, omit `evaluationRules` and tag the design file with `"_review": "needs human review"`. `reconcile.sh` strips the leading underscore key before forwarding to the extension. Alternatively, populate `evaluationRules` to the best guess and document the rationale in the file's surrounding context.
 9. ⛔ MANDATORY: Stop after Step 7 and present the design for user approval before handing off to deploy.
 10. ⛔ MANDATORY: When the architecture graph contains `Microsoft.ContainerService/managedClusters` **and** `Microsoft.Monitor/accounts` (AMW), propose PromQL signals for AKS workloads using the [PromQL cheatsheet](../healthmodel-signal-catalog/references/promql-cheatsheet.md). AKS ARM metrics alone (`FailedPodCounts`, `cluster_autoscaler_*`) are event-based and unreliable — PromQL with `or vector(0)` is the correct approach.
 11. ⛔ MANDATORY: If a PromQL signal cannot be validated against the live AMW, mark it `(broken)` in `displayName` — e.g., `"displayName": "AKS Pod Restarts (broken)"`. A broken signal still deploys (shows `Unknown`) but is visibly flagged. See [promql-validation.md](../healthmodel-signal-catalog/references/promql-validation.md).
 12. ⛔ MANDATORY: Do NOT create a custom root entity (e.g., `e-root`). The health model resource itself IS the root entity — ARM automatically creates an implicit entity named after the model (e.g., `hm-myapp`). Top-level entities connect to this implicit root via relationships with `parentEntityName` set to the model name.
 13. ⛔ MANDATORY: Children under a `Limited` or `Suppressed` parent entity MUST use `Standard` impact. Impact controls upward propagation and is set on the parent grouping entity only, not on its children.
 14. ⛔ MANDATORY: Read the `mode` field from `.healthmodel/01-discovery.json` before starting. If `mode == "exploration"`, follow the exploration-mode path in Step 0. Default: `opinionated`.
-15. ⛔ MANDATORY: Generated Bicep under `.healthmodel/05-bicep/` must include a `// GENERATED FILE — edit .healthmodel/03-design instead` header. Regenerate before every deploy.
+15. ⛔ MANDATORY: Every signal-definition must satisfy `refreshInterval <= timeGrain`. The extension server returns `(InvalidPayload) Refresh interval should be equal or less than time grain.` otherwise — this constraint is enforced at create time, not at design time.
 
 ## Prerequisites
 
@@ -249,14 +249,9 @@ For each AKS cluster in the graph:
 }
 ```
 
-**Validation** — after writing signal files, test them against the live AMW:
+**Validation** — after writing signal files, validate PromQL queries against the live AMW by running them through Azure Monitor's `metrics` REST surface. Easiest path: deploy the signal-definition with `reconcile.sh`, then read `entity get-signal-history` after a refresh interval. If the history stays empty or `Unknown` past 2× the refresh interval with RBAC in place, the query is broken.
 
-```bash
-AMW='/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Monitor/accounts/<amw>'
-bash .agents/skills/healthmodel-deploy/scripts/validate-promql.sh "$AMW"
-```
-
-If any query fails, the script marks it `(broken)` in `displayName`. Fix or accept and move on — a broken signal still deploys but shows `Unknown` until fixed. See [promql-validation.md](../healthmodel-signal-catalog/references/promql-validation.md) for troubleshooting.
+For pre-deploy syntax checks, run the query directly against the AMW via `az monitor metrics query` (Azure Monitor query API) or via the Grafana data source explorer. Tag broken queries `(broken)` in `displayName` so they deploy as visible-but-failed signals; see [promql-validation.md](../healthmodel-signal-catalog/references/promql-validation.md) for troubleshooting recipes.
 
 ### Step 2: Entities
 
@@ -406,27 +401,26 @@ One file per managed identity in `.healthmodel/03-design/auth/`:
 
 The identity needs `Monitoring Reader` on every RG containing monitored resources (and `Monitoring Data Reader` on the AMW for Prometheus queries).
 
-### Step 5: Local validation (offline schema check)
+### Step 5: Local validation (offline cross-reference check)
 
-Run the deploy skill's validator without touching Azure — it uses `az bicep build` to verify every file against the `Microsoft.CloudHealth@2026-01-01-preview` schema:
-
-```bash
-bash .agents/skills/healthmodel-deploy/scripts/validate.sh .healthmodel/03-design
-```
-
-Fix anything reported as `BCP035` (missing required), `BCP036` (wrong type — usually a quoted threshold), or `BCP037` (disallowed property — usually a field on the wrong `signalKind`) before continuing.
-
-Also sanity-check cross-references:
+Before handing off to deploy, sanity-check cross-references and the constraints that the extension's server-side validation will enforce:
 
 ```bash
-# Every signal binding's signalDefinitionName matches a signal file
+# Every entity's signalDefinitionName must match a signal file
 jq -r '.. | objects | .signalDefinitionName // empty' .healthmodel/03-design/entities/*.json | sort -u \
   | while read -r ref; do
       [ -f ".healthmodel/03-design/signals/$ref.json" ] \
         || echo "MISSING signal definition: $ref"
     done
 
-# Every relationship's parent/child matches an entity file (or the model root)
+# Every entity's authenticationSetting must match an auth file
+jq -r '.. | objects | .authenticationSetting // empty' .healthmodel/03-design/entities/*.json | sort -u \
+  | while read -r ref; do
+      [ -f ".healthmodel/03-design/auth/$ref.json" ] \
+        || echo "MISSING authentication setting: $ref"
+    done
+
+# Every relationship's parent/child must match an entity file (or the model root)
 MODEL_NAME=$(jq -r '.modelName // empty' .healthmodel/01-discovery.json 2>/dev/null || echo "")
 jq -r '.parentEntityName, .childEntityName' .healthmodel/03-design/relationships/*.json | sort -u \
   | while read -r e; do
@@ -434,142 +428,62 @@ jq -r '.parentEntityName, .childEntityName' .healthmodel/03-design/relationships
       [ -f ".healthmodel/03-design/entities/$e.json" ] \
         || echo "MISSING entity: $e (not a design entity and not the model root '$MODEL_NAME')"
     done
+
+# Every signal-definition: refreshInterval must be <= timeGrain (server-enforced)
+for f in .healthmodel/03-design/signals/*.json; do
+  RI=$(jq -r '.refreshInterval // empty' "$f")
+  TG=$(jq -r '.timeGrain // empty' "$f")
+  # ISO durations sort lexicographically only for matched units; quick guard for common values
+  if [ -n "$RI" ] && [ -n "$TG" ] && [ "$RI" != "$TG" ]; then
+    case "$RI/$TG" in
+      PT1M/PT5M|PT1M/PT10M|PT1M/PT30M|PT1M/PT1H|PT1M/PT2H|\
+      PT5M/PT10M|PT5M/PT30M|PT5M/PT1H|PT5M/PT2H|\
+      PT10M/PT30M|PT10M/PT1H|PT10M/PT2H|\
+      PT30M/PT1H|PT30M/PT2H|PT1H/PT2H)
+        : ;;  # OK
+      *) echo "WARN ${f##*/}: refreshInterval=$RI > timeGrain=$TG — server will reject" ;;
+    esac
+  fi
+done
 ```
 
-### Step 6: Generate Bicep Project
+The server-side cross-reference check happens automatically during reconcile (`reconcile.sh`); doing it offline first surfaces obvious typos in seconds instead of after a partial deploy.
 
-Generate a modular Bicep project under `.healthmodel/05-bicep/` from the design JSON files. This Bicep is the **deployable output** — the deploy skill uses `az deployment group create` with it.
+### Step 6: Discovery rules (optional)
 
-#### File Structure
+If the user wants a fast-path scaffolding pass before manual signal authoring, add one or more discovery-rule design files under `.healthmodel/03-design/discovery-rules/<name>.json`. The shape:
 
+```json
+{
+  "displayName": "Auto-discover VMs",
+  "authenticationSetting": "auth-system",
+  "addRecommendedSignals": "Enabled",
+  "discoverRelationships": "Enabled",
+  "specification": {
+    "resourceGraphQuery": {
+      "resourceGraphQuery": "resources | where type =~ 'microsoft.compute/virtualmachines' | where resourceGroup =~ 'rg-myapp' | project id"
+    }
+  }
+}
 ```
-.healthmodel/05-bicep/
-├── main.bicep                  # Root: params, health model resource, module calls
-├── modules/
-│   ├── identity.bicep          # UAMI + role assignments (if identity mode = create)
-│   ├── auth.bicep              # Auth settings — one resource per auth JSON file
-│   ├── signals.bicep           # Signal definitions — one resource per signal JSON file
-│   ├── entities.bicep          # Entities — one resource per entity JSON file
-│   └── relationships.bicep     # Relationships — one resource per relationship JSON file
+
+Alternatively, use Application Insights topology as the discovery source:
+
+```json
+{
+  "displayName": "Auto-discover from App Insights topology",
+  "authenticationSetting": "auth-system",
+  "addRecommendedSignals": "Enabled",
+  "discoverRelationships": "Enabled",
+  "specification": {
+    "applicationInsightsTopology": {
+      "applicationInsightsResourceId": "/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Insights/components/<ai>"
+    }
+  }
+}
 ```
 
-#### Generation Rules
-
-1. **Header**: Every generated `.bicep` file starts with:
-   ```bicep
-   // GENERATED FILE — edit .healthmodel/03-design instead
-   // Regenerated by healthmodel-design skill. Do not edit directly.
-   ```
-
-2. **Individual resource declarations**: Each JSON file in `03-design/` becomes ONE resource declaration with a literal `loadJsonContent()` path. **Do NOT use loops with variable paths** — Bicep requires compile-time string literals for `loadJsonContent()`.
-
-   Example for a signal definition:
-   ```bicep
-   resource sdCosmosAvail 'Microsoft.CloudHealth/healthModels/signalDefinitions@2026-01-01-preview' = {
-     parent: healthModel
-     name: 'sd-cosmos-avail'
-     properties: loadJsonContent('../../03-design/signals/sd-cosmos-avail.json')
-   }
-   ```
-
-3. **Symbolic names**: Derive Bicep symbolic names from filenames by replacing hyphens with underscores and prefixing with the resource kind:
-   - `signals/sd-cosmos-avail.json` → `signal_sd_cosmos_avail`
-   - `entities/e-rag-pipeline.json` → `entity_e_rag_pipeline`
-   - `relationships/r-root-rag.json` → `rel_r_root_rag`
-   - `auth/id-healthmodel-myapp.json` → `auth_id_healthmodel_myapp`
-
-4. **Deterministic ordering**: Within each module, sort resource declarations alphabetically by filename. This ensures stable diffs across regenerations.
-
-5. **main.bicep structure**:
-   ```bicep
-   // GENERATED FILE — edit .healthmodel/03-design instead
-   targetScope = 'resourceGroup'
-
-   @description('Name of the health model')
-   param healthModelName string
-
-   @description('Azure region for the health model')
-   param location string
-
-   @description('Identity mode: existing = attach provided UAMI, create = create UAMI + role assignments')
-   @allowed(['existing', 'create'])
-   param identityMode string = 'existing'
-
-   @description('Full resource ID of existing UAMI (required when identityMode=existing)')
-   param existingUamiId string = ''
-
-   @description('Name for new UAMI (required when identityMode=create)')
-   param createUamiName string = ''
-
-   resource healthModel 'Microsoft.CloudHealth/healthModels@2026-01-01-preview' = {
-     name: healthModelName
-     location: location
-     identity: identityMode == 'existing' ? {
-       type: 'SystemAssigned,UserAssigned'
-       userAssignedIdentities: {
-         '${existingUamiId}': {}
-       }
-     } : {
-       type: 'SystemAssigned'
-     }
-     properties: {}
-   }
-
-   // Module imports for auth, signals, entities, relationships
-   module authSettings './modules/auth.bicep' = {
-     name: 'auth-settings'
-     params: { healthModelName: healthModel.name }
-   }
-   module signalDefinitions './modules/signals.bicep' = {
-     name: 'signal-definitions'
-     params: { healthModelName: healthModel.name, authId: authSettings.outputs.id }
-   }
-   module entities './modules/entities.bicep' = {
-     name: 'entities'
-     params: { healthModelName: healthModel.name, signalsId: signalDefinitions.outputs.id }
-   }
-   module relationships './modules/relationships.bicep' = {
-     name: 'relationships'
-     params: { healthModelName: healthModel.name, entitiesId: entities.outputs.id }
-   }
-   ```
-
-   > **Note**: If `identityMode == 'create'`, add the identity module before auth and include UAMI creation + role assignments.
-
-6. **Module structure** — each module file follows this pattern:
-   ```bicep
-   // GENERATED FILE — edit .healthmodel/03-design instead
-   param healthModelName string
-
-   resource healthModel 'Microsoft.CloudHealth/healthModels@2026-01-01-preview' existing = {
-     name: healthModelName
-   }
-
-   // One resource per JSON file (enumerate all files in the corresponding 03-design subdirectory):
-   resource signal_sd_cosmos_avail 'Microsoft.CloudHealth/healthModels/signalDefinitions@2026-01-01-preview' = {
-     parent: healthModel
-     name: 'sd-cosmos-avail'
-     properties: loadJsonContent('../../03-design/signals/sd-cosmos-avail.json')
-   }
-   // ... repeat for each JSON file
-   ```
-
-7. **Granular updates** (AC9): Because each JSON file maps to exactly one Bicep resource declaration via `loadJsonContent()`, changing a single JSON file affects only that one resource in the next `az deployment group what-if` diff. The user edits JSON → regenerates Bicep → runs what-if → sees only the changed resource.
-
-8. **Regeneration**: The Bicep project should be regenerated before every deploy (the deploy skill does this). To regenerate: enumerate all JSON files in `03-design/`, generate the corresponding Bicep declarations, write to `05-bicep/`.
-
-#### Generation Process
-
-For each subdirectory in `.healthmodel/03-design/` (`auth/`, `signals/`, `entities/`, `relationships/`):
-1. List all `.json` files, sorted alphabetically
-2. For each file, generate a resource declaration with:
-   - Symbolic name derived from filename
-   - `parent: healthModel`
-   - `name: '<filename-without-extension>'`
-   - `properties: loadJsonContent('../../03-design/<subdir>/<filename>')`
-3. Write the module file to `.healthmodel/05-bicep/modules/<kind>.bicep`
-
-Generate `main.bicep` with parameters derived from `01-discovery.json` (model name, location, identity config).
+Discovery-rule entities and signal-definitions are auto-created with UUID names by Azure — useful for portal-managed coverage, less useful for opinionated SLOs. Combine: use discovery rules for scaffolding, then layer manual entity/signal files on top for business-critical signals.
 
 ### Step 7: Present the design
 
@@ -578,26 +492,25 @@ Show:
 - Signal binding count per entity, total signal-definition count
 - Any signal where thresholds were guessed (flag for human review)
 - **Brief traceability**: for each SLO target in `.healthmodel/00-brief.md` §3, name the signal(s) that cover it. For each Top Concern (§4), name the entity/signal that surfaces it. Call out any SLO or concern with no covering signal.
-- Reminder: every field listed in a design file will be asserted on apply. Anything omitted will be left to live state.
+- Reminder: every field listed in a design file will be asserted on reconcile (`create` is full-PUT). Anything omitted will be left to defaults set by the resource provider.
 
 Ask: *"Ready to deploy? Or adjust thresholds first?"*
 
 ## Next Step
 
-Announce: *"Design complete. Design files written under `.healthmodel/03-design/`. Bicep project generated at `.healthmodel/05-bicep/`. Load `healthmodel-integrate` to integrate into existing IaC, or load `healthmodel-deploy` to validate and deploy standalone."* Then stop — do not auto-proceed.
+Announce: *"Design complete. Design files written under `.healthmodel/03-design/`. Load `healthmodel-deploy` to reconcile to Azure via `az monitor health-models`."* Then stop — do not auto-proceed.
 
 ## Error Handling
 
 | Error | Cause | Fix |
 |---|---|---|
 | `02-graph.json` missing | Architecture phase skipped | Run **healthmodel-architecture** first |
-| `validate.sh` reports BCP037 on `queryText` for AzureResourceMetric | Nesting bug — `queryText` is for Prometheus/LogAnalytics, not ARM metrics | Replace with flat `metricNamespace` + `metricName` + `aggregationType` |
-| `validate.sh` reports BCP037 on `azureResourceMetric`/`prometheusMetricsQuery` sub-object | Old nested shape | Flatten the kind-specific fields directly under `properties` |
-| `validate.sh` reports BCP036 on `threshold` | Quoted number | Use `"threshold": 100`, not `"threshold": "100"` |
-| Signal binding references a missing definition | Typo / file rename | Cross-check filename equals `signalDefinitionName` in entities |
+| `(InvalidPayload) Refresh interval should be equal or less than time grain` (during reconcile) | `refreshInterval > timeGrain` | Set `refreshInterval` ≤ `timeGrain` (e.g. both `PT5M`) |
+| `(MissingSignalDefinition)` (during reconcile) | Entity references a signal that's not in `signals/` | Cross-check filename equals `signalDefinitionName` in entities; the offline Step 5 cross-ref check would have caught this |
+| Sub-object field rejected (`metricFilter`, `metricSource`, etc.) | Old nested shape | Flatten the kind-specific fields directly into `properties` |
+| `threshold` rejected as wrong type | Quoted number | Use `"threshold": 100`, not `"threshold": "100"` |
 | Threshold ordering invalid | `degraded` ≥ `unhealthy` on `GreaterThan` (or reverse on `LessThan`) | Re-check direction; degraded is the early warning, unhealthy is action-required |
 | Unknown resource type | Not in signal catalog | Run `az monitor metrics list-definitions --resource <id>` to find metrics; document threshold rationale in a comment |
 | Cyclic relationship | Entity reused as parent and child | One parent per entity — promote one to root or move to a side group |
 | Signal always `Unknown` for event-based ARM metrics | Metric only emits data when the condition is active (e.g., `cluster_autoscaler_unschedulable_pods_count`) | Switch to PromQL with `or vector(0)` or KQL with `coalesce`; see signal-catalog § 1.6 |
 | AKS cluster found but no AMW in graph | Can't write PromQL signals without an Azure Monitor Workspace | Ask user if managed Prometheus is enabled; if not, fall back to AKS ARM metrics (with caveats about event-based metrics) |
-| PromQL signal marked `(broken)` | Query failed validation against live AMW | See [promql-validation.md](../healthmodel-signal-catalog/references/promql-validation.md) — check metric availability, fix query, re-validate |

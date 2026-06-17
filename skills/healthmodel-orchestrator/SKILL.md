@@ -1,11 +1,11 @@
 ---
 name: healthmodel-orchestrator
-description: "Build an Azure Monitor Health Model end-to-end from resource discovery to deployment, using only the standard az CLI. Chains four phase skills with human checkpoints. WHEN: 'create health model', 'build health model', 'monitor my Azure resources with health model', 'set up Azure Monitor health model from scratch'. DO NOT USE FOR: general Azure monitoring setup without health models, Application Insights configuration, or Grafana dashboard creation."
+description: "Build an Azure Monitor Health Model end-to-end from resource discovery to deployment, using the `az monitor health-models` CLI extension (Microsoft.CloudHealth preview). Chains the design phases with human checkpoints. WHEN: 'create health model', 'build health model', 'monitor my Azure resources with health model', 'set up Azure Monitor health model from scratch'. DO NOT USE FOR: general Azure monitoring setup without health models, Application Insights configuration, or Grafana dashboard creation."
 ---
 
 # Health Model Orchestrator
 
-End-to-end workflow for creating and adapting an Azure Monitor Health Model. Uses **only** the standard `az` CLI (`az resource`, `az rest`, `az bicep`) plus `jq` — no extensions, no Python SDK, no ARM template deployments.
+End-to-end workflow for creating and adapting an Azure Monitor Health Model. Uses the **`az monitor health-models`** CLI extension exclusively — no Bicep, no ARM templates, no Python SDK.
 
 ## Guiding Principles (from Azure Well-Architected service guide)
 
@@ -18,11 +18,12 @@ These principles shape every phase. Reference: [Azure Monitor Health Models serv
 
 ## Rules
 
-1. ⛔ MANDATORY: Discovery MUST always run before architecture — no exceptions. For later phases (design, deploy), direct entry is allowed ONLY if all required input contracts (checkpoint files) are present and validated.
-2. ⛔ MANDATORY: Stop at each human checkpoint and wait for user approval before continuing.
-3. ⛔ MANDATORY: All intermediate state goes to `.healthmodel/` checkpoint files. Never hold state in memory between phases.
-4. ⛔ MANDATORY: Refuse to operate across multiple Azure subscriptions in a single model.
-5. ⛔ MANDATORY: Provider `Microsoft.CloudHealth` must be registered before deploy. `bash .agents/skills/healthmodel-deploy/scripts/bootstrap.sh` does this; manual: `az provider register -n Microsoft.CloudHealth`.
+1. ⛔ MANDATORY: The `health-models` Azure CLI extension must be installed. The deploy phase's `bootstrap.sh` does this; manual fallback: `az extension add --name health-models --yes`.
+2. ⛔ MANDATORY: Discovery MUST always run before architecture — no exceptions. For later phases (design, deploy), direct entry is allowed ONLY if all required input contracts (checkpoint files) are present and validated.
+3. ⛔ MANDATORY: Stop at each human checkpoint and wait for user approval before continuing.
+4. ⛔ MANDATORY: All intermediate state goes to `.healthmodel/` checkpoint files. Never hold state in memory between phases.
+5. ⛔ MANDATORY: Refuse to operate across multiple Azure subscriptions in a single model.
+6. ⛔ MANDATORY: Provider `Microsoft.CloudHealth` must be registered before deploy. `bootstrap.sh` does this; manual: `az provider register -n Microsoft.CloudHealth`.
 
 ## Prerequisites
 
@@ -30,15 +31,17 @@ These principles shape every phase. Reference: [Azure Monitor Health Models serv
 # Azure CLI authenticated
 az account show -o json | jq '{subscriptionId: .id, name: .name}'
 
-# Required tooling (ships with modern az)
-command -v jq >/dev/null  && echo "jq: ok"
-az bicep version          # used offline by deploy to validate schemas
+# Required tooling
+command -v jq >/dev/null && echo "jq: ok"
 
-# Provider — needed for deploy phase, bootstrap.sh handles it
-az provider show -n Microsoft.CloudHealth --query registrationState -o tsv
+# Install the extension if missing — exits 0 if already installed
+az extension show --name health-models >/dev/null 2>&1 || az extension add --name health-models --yes
+
+# Verify the command surface is loaded
+az monitor health-models --help >/dev/null
 ```
 
-No CLI extensions required. No Python SDK. No ARM templates.
+If `az monitor health-models --help` fails, the deploy phase will not work. Run the bootstrap script directly: `bash .agents/skills/healthmodel-deploy/scripts/bootstrap.sh`.
 
 ## Workflow
 
@@ -47,22 +50,20 @@ graph LR
   classDef phase fill:#1a5276,stroke:#2980b9,color:#fff
   classDef check fill:#0e4d2c,stroke:#27ae60,color:#fff
   classDef optional fill:#4a235a,stroke:#8e44ad,color:#fff
-  D[1. Discovery<br/>Interview + Export]:::phase --> B[Brief<br/>User fills 00-brief.md]:::check
+  D[1. Discovery<br/>Interview + Export]:::phase --> B[Brief<br/>Auto-generated]:::check
   B --> A[2. Architecture<br/>Graph + Diagram]:::phase
-  A --> S[3. Design<br/>Sparse JSON + Bicep]:::phase
-  S --> I[3b. Integrate<br/>IaC Integration]:::optional
-  I --> P[4. Deploy<br/>Validate / What-if / Deploy / Smoke]:::phase
-  S --> P
+  A --> S[3. Design<br/>Sparse JSON files]:::phase
+  S --> P[4. Deploy<br/>Reconcile via az CLI]:::phase
+  D -.fast path.-> F[Discovery Rule<br/>Auto-populate]:::optional
+  F --> P
 ```
 
-Skills are loaded by semantic/keyword matching against each skill's `description` metadata (intent-level match, not exact-string equality), not called like functions. To hand off, tell the user which skill is next and which files it expects — then stop. The user (or agent harness) will load the next skill, which sees the checkpoint files on disk and resumes.
-
-**Note**: Phase 3b (Integrate) is **optional**. Skip it when deploying the health model standalone. Use it when the user has existing Bicep IaC and wants the health model integrated as a module.
+Skills are loaded by semantic/keyword matching against each skill's `description` metadata, not called like functions. To hand off, tell the user which skill is next and which files it expects — then stop. The user (or agent harness) loads the next skill, which sees the checkpoint files on disk and resumes.
 
 ### Phase 1: Discovery — `healthmodel-discovery`
 - Input contract: user answers + active Azure subscription
 - Output contract: `.healthmodel/00-brief.md` + `.healthmodel/01-discovery.json` + `.healthmodel/resources.json`
-- **Checkpoint**: Brief template written to `.healthmodel/00-brief.md`. User fills sections 1-4 and 6-8 (SLOs, journeys, concerns, alert philosophy, stamp behavior, exclusions) and confirms before proceeding.
+- **Checkpoint**: brief auto-generated from interview answers; user confirms summary in Step 4d.
 - Handoff: *"Discovery complete and brief confirmed. Load `healthmodel-architecture` to continue."*
 
 ### Phase 2: Architecture — `healthmodel-architecture`
@@ -73,103 +74,102 @@ Skills are loaded by semantic/keyword matching against each skill's `description
 
 ### Phase 3: Design — `healthmodel-design` (reads `healthmodel-signal-catalog`)
 - Input contract: `.healthmodel/02-graph.json` + `.healthmodel/01-discovery.json`
-- Output contract: **sparse** design files under `.healthmodel/03-design/{auth,signals,entities,relationships}/*.json` — each file contains only the `properties` body, only the fields the skill manages.
+- Output contract: sparse JSON design files under `.healthmodel/03-design/{auth,signals,entities,relationships,discovery-rules}/*.json` — each file's body is forwarded verbatim to `az monitor health-models <kind> create`.
 - **Checkpoint**: Show entity tree with signal counts and thresholds. Ask *"Ready to deploy?"*
-- Handoff: *"Design approved. Load `healthmodel-integrate` to integrate into existing IaC, or load `healthmodel-deploy` for standalone deployment."*
-
-### Phase 3b (optional): Integrate — `healthmodel-integrate`
-- Input contract: `.healthmodel/05-bicep/` (generated Bicep project from design phase) + user's existing IaC files
-- Output contract: `.healthmodel/06-integrate/` containing:
-  - `iac-detection.json` — detected IaC type, entrypoint, conventions
-  - `integration-state.json` — chosen level, generated artifacts list
-  - Integration-level artifacts: standalone docs (NONE), module wrapper + `.bicepparam` + snippet (SOME), or inline Bicep module + snippet (FULL)
-- Three integration levels:
-  - **NONE** (default for Terraform, Azure Export Bicep, or no IaC): standalone deployment, no user file changes
-  - **SOME**: parameterized module wrapper with `.bicepparam` + snippet for user to copy into their entrypoint
-  - **FULL**: inline Bicep module with feature flags, object params, conditional entities (matches azure-search-openai-demo pattern)
-- ⛔ MANDATORY: Never modify user IaC files directly — generate snippets only
-- ⛔ MANDATORY: Never run the user's full deployment pipeline
-- **Checkpoint**: Show integration artifacts + verification results. Ask user to deploy and report back.
-- Handoff: *"Integration complete. Load `healthmodel-deploy` to deploy, or apply snippets to your IaC and deploy via your existing pipeline."*
+- Handoff: *"Design approved. Load `healthmodel-deploy` to reconcile to Azure."*
 
 ### Phase 4: Deploy — `healthmodel-deploy`
 - Input contract: `.healthmodel/03-design/` (sparse files)
-- Pipeline: `validate.sh` (offline Bicep schema check) → `bootstrap.sh` (create model root, attach UAMI + **auto-assign Monitoring Reader on target RG**) → ⛔ verify RBAC assignment succeeded → `plan.sh` (GET live, merge, diff) → human checkpoint → `apply.sh` (PUT confirmed items, write receipt) → `smoke.sh` (read entity signal health)
-- ⛔ MANDATORY: When using a UAMI, `bootstrap.sh` automatically assigns `Monitoring Reader` on the target RG. If the UAMI also reads from an AMW (PromQL signals), manually assign `Monitoring Data Reader` on the AMW resource. Without these roles, signals return `Unknown`.
-- Output contract: live model in Azure + `.healthmodel/04-plan.json` + `.healthmodel/04-deployed.json`
-- **Granular by design**: every apply only touches resources whose merged body differs from live; unmanaged fields (portal edits) are preserved.
+- Pipeline:
+  1. `bootstrap.sh` — install extension + register provider (one-time per workstation).
+  2. RBAC — assign `Monitoring Reader` on each monitored RG (and `Monitoring Data Reader` on the AMW for PromQL, `Log Analytics Reader` on the workspace for KQL).
+  3. `reconcile.sh` — idempotent per-file `az monitor health-models <kind> create` in fixed order: auth → signal → entity → relationship → discovery-rule.
+  4. `smoke.sh --wait` — `entity list` + tabulate every `signalGroups[].signals[].status.healthState`; retry while `Unknown`.
+- ⛔ MANDATORY: When the model is new, pass `--location <region>` to `reconcile.sh`. Region must support `Microsoft.CloudHealth/healthModels` (verified: `swedencentral`, `uksouth`, `westeurope`).
+- ⛔ MANDATORY: Without RBAC, signals stay `Unknown`. RBAC propagation: 2-10 min.
+- Output contract: live model in Azure + `.healthmodel/data/deploy/reconcile/reconcile-<ts>.log` + optional `.healthmodel/04-deployed.json` receipt.
+
+### Alternative fast path: `discovery-rule`
+
+If the user doesn't want to author entities and signals manually, the deploy skill's `discover-auto.sh` script creates a `discovery-rule` from a single Resource Graph query and Azure auto-populates entities + recommended signals + relationships:
+
+```bash
+RG="rg-myapp"; MODEL="hm-myapp"
+# bootstrap first if needed
+bash .agents/skills/healthmodel-deploy/scripts/bootstrap.sh
+az monitor health-models create -g "$RG" -n "$MODEL" -l swedencentral --mi-system-assigned
+az monitor health-models authentication-setting create -g "$RG" --health-model-name "$MODEL" \
+  -n auth-system --managed-identity managed-identity-name=SystemAssigned
+# auto-discover
+bash .agents/skills/healthmodel-deploy/scripts/discover-auto.sh \
+  "$RG" "$MODEL" dr-vms auth-system \
+  "resources | where type =~ 'microsoft.compute/virtualmachines' | project id"
+```
+
+Auto-discovered entities/signals get UUID names — fine for portal-managed lifecycle, less ideal for opinionated SLOs. Combine both: use the fast path for scaffolding, then layer manual design files on top for the business-critical signals.
 
 ## Checkpoint Files
 
 | File | Phase | Content |
 |---|---|---|
-| `00-brief.md` | 1 | Human-authored brief: role, journeys, SLOs, concerns, alert philosophy, stamp behavior, exclusions |
+| `00-brief.md` | 1 | Auto-generated brief: role, journeys, SLOs, concerns, alert philosophy, stamp behavior, exclusions |
 | `01-discovery.json` | 1 | Interview answers + resource inventory |
 | `resources.json` | 1 | Minimal resource projections |
-| `raw/*.json` | 1 | Full `az resource list` output per RG |
+| `data/discovery/**/*.json` | 1 | Full `az` outputs per resource (gitignored — may contain sensitive RBAC data) |
 | `02-architecture.md` | 2 | Mermaid diagram + resource table |
 | `02-graph.json` | 2 | Dependency graph + entity hierarchy |
-| `03-design/auth/*.json` | 3 | Sparse authenticationSettings bodies |
-| `03-design/signals/*.json` | 3 | Sparse signalDefinitions bodies |
-| `03-design/entities/*.json` | 3 | Sparse entities bodies |
-| `03-design/relationships/*.json` | 3 | Sparse relationships bodies |
-| `06-integrate/iac-detection.json` | 3b | Detected IaC type, entrypoint, conventions |
-| `06-integrate/integration-state.json` | 3b | Chosen level, generated artifacts list |
-| `06-integrate/*.bicep` | 3b | Integration-level Bicep artifacts (SOME/FULL) |
-| `06-integrate/snippet-for-main.bicep` | 3b | Module-reference snippet for user's entrypoint |
-| `04-plan.json` | 4 | Per-resource verdict (`+`/`~`/`=`) + merged body |
+| `03-design/auth/*.json` | 3 | Authentication-setting bodies (`managedIdentityName`, `authenticationKind`, `displayName`) |
+| `03-design/signals/*.json` | 3 | Signal-definition bodies (`signalKind`, `dataUnit`, `refreshInterval`, flat metric fields, `evaluationRules`) |
+| `03-design/entities/*.json` | 3 | Entity bodies (`displayName`, `impact`, `icon`, `canvasPosition`, `signalGroups`) |
+| `03-design/relationships/*.json` | 3 | Relationship bodies (`parentEntityName`, `childEntityName`) |
+| `03-design/discovery-rules/*.json` | 3 | Discovery-rule bodies (`authenticationSetting`, `addRecommendedSignals`, `discoverRelationships`, `specification`) |
+| `data/deploy/reconcile/*.log` | 4 | Per-call `az` output and exit codes |
+| `data/deploy/smoke/smoke-<ts>.txt` | 4 | Tabulated signal health |
 | `04-deployed.json` | 4 | Apply receipt |
 
-Users can re-run any phase independently, edit JSON, version-control `.healthmodel/` (note: `raw/` is gitignored — it may contain sensitive RBAC data), or resume after interruption.
+Users can re-run any phase independently, edit JSON, version-control `.healthmodel/` (note: `data/` is gitignored), or resume after interruption.
 
 ## Quick Start
 
-Experienced users can hand-author `.healthmodel/01-discovery.json` and jump to Phase 2, or hand-author sparse files under `.healthmodel/03-design/` and jump straight to Phase 4 — provided the required checkpoint files for that phase exist and are valid (see Input Contract per phase above).
+Experienced users can hand-author `.healthmodel/01-discovery.json` and jump to Phase 2, or hand-author `.healthmodel/03-design/{auth,signals,entities,relationships}/*.json` and jump straight to Phase 4 — provided the required checkpoint files for that phase exist and validate.
 
 ## After Deployment — read-only inspection
 
-All standard `az rest` against the ARM endpoints. No extension required:
+All inspection uses extension verbs (no `az rest`):
 
 ```bash
-SUB=$(az account show --query id -o tsv); RG=…; MODEL=…
-API=2026-01-01-preview
-BASE="https://management.azure.com/subscriptions/$SUB/resourceGroups/$RG/providers/Microsoft.CloudHealth/healthModels/$MODEL"
-
-# List entities / signals / relationships
-az rest --method GET --url "$BASE/entities?api-version=$API"          | jq '.value[].name'
-az rest --method GET --url "$BASE/signalDefinitions?api-version=$API" | jq '.value[].name'
-az rest --method GET --url "$BASE/relationships?api-version=$API"     | jq '.value[].name'
-
-# Read signal health from entity state (the /execute endpoint does NOT exist)
-az rest --method GET --url "$BASE/entities/<entity>?api-version=$API" \
-  | jq '.properties.signalGroups | to_entries[].value.signals[]? | {name, healthState: .status.healthState}'
-
-# Re-run the deploy smoke against the whole model
-bash .agents/skills/healthmodel-deploy/scripts/smoke.sh "$RG" "$MODEL"
+RG=…; MODEL=…
+az monitor health-models entity list -g "$RG" --health-model-name "$MODEL" --query '[].name' -o tsv
+az monitor health-models entity show -g "$RG" --health-model-name "$MODEL" -n e-cosmos \
+  --query 'properties.signalGroups.*.signals[].{name:name, state:status.healthState, value:status.value}'
+az monitor health-models entity get-signal-history -g "$RG" --health-model-name "$MODEL" \
+  --entity-name e-cosmos --signal-name sa-cosmos-avail
+az monitor health-models entity get-history -g "$RG" --health-model-name "$MODEL" --entity-name e-cosmos
 ```
 
-For continuous "watch", poll the entities endpoint on a cadence:
+For continuous "watch", poll `entity list` and project the health states:
 
 ```bash
 while :; do
-  az rest --method GET --url "$BASE/entities?api-version=$API" \
-    | jq -r '.value[] | "\(.properties.healthState // "?")\t\(.name)"'
+  az monitor health-models entity list -g "$RG" --health-model-name "$MODEL" \
+    --query '[].{name:name, signals:properties.signalGroups.*.signals[].{n:name, s:status.healthState}}' \
+    -o json | jq -r '.[] | "\(.name)\t\(.signals)"'
   sleep 30; echo "---"
 done
 ```
 
 ## Adapting an Existing Model
 
-If someone created the model in the portal or hand-edited it between runs of this workflow: just re-run phases 3 and 4. Sparse design = the skill only touches fields it explicitly asserts. Plan output shows exactly what will change. To stop the skill from managing a field tuned in the portal, **remove that field from the design file**. See `healthmodel-deploy/SKILL.md` § "Adapting an existing model" for details.
+If someone created the model in the portal or hand-edited it between runs of this workflow: re-run phase 3 and 4. The reconcile uses `create` semantics (idempotent full-PUT) — the declared properties become the live state. To stop the skill from managing a field tuned in the portal, **remove that field's enclosing resource from the design** (the resource stays in Azure; reconcile no longer touches it). See `healthmodel-deploy/SKILL.md` § "Adapting an existing model" for details.
 
 ## Error Handling
 
 | Error | Cause | Fix |
 |---|---|---|
 | `az: command not found` | Azure CLI missing | Install: <https://docs.microsoft.com/cli/azure/install-azure-cli> |
-| `az bicep` errors | Bicep not installed | `az bicep install` (then it ships with `az` going forward) |
+| `'health-models' is misspelled or not recognized` | Extension missing | `az extension add --name health-models --yes` (or run `bootstrap.sh`) |
 | Cross-subscription resources detected | User mixed subscriptions | Refuse; ask user to pick one |
-| Checkpoint file invalid or corrupted | Required `.healthmodel/` file exists but is malformed, missing required fields, or does not satisfy the next phase input contract | Stop immediately, identify the exact file and validation failure, ask the user to repair or regenerate it by re-running the producing phase, then retry only after the file validates |
-| `Microsoft.CloudHealth` not registered | Provider not yet registered in subscription | `az provider register -n Microsoft.CloudHealth` (or run `bash .agents/skills/healthmodel-deploy/scripts/bootstrap.sh`) |
-| `validate.sh` BCP errors | Sparse design uses wrong field/type/shape for the `2026-01-01-preview` schema | Read the BCP message — it names the exact field; fix the design file |
-| Plan shows unexpected `~ modify` | Design asserts a field someone tuned in the portal | Either accept (apply will overwrite) or remove the field from the design (ownership release) |
+| Checkpoint file invalid or corrupted | Required `.healthmodel/` file exists but is malformed | Stop immediately, identify the exact file and validation failure, ask user to repair or regenerate by re-running the producing phase |
+| `Microsoft.CloudHealth` not registered | Provider not yet registered in subscription | `bootstrap.sh` handles it; manual: `az provider register -n Microsoft.CloudHealth` |
+| Reconcile fails with `MissingSignalDefinition` | Entity references a signal-definition that hasn't been created yet | Verify the signal JSON file exists under `signals/`; reconcile ordering is fixed in `reconcile.sh` (auth → signal → entity → relationship → discovery-rule) |
+| Smoke stays `Unknown` after 10 min | RBAC propagation incomplete | Re-check role assignments on monitored RG / AMW / workspace; wait another 5 min; re-run `smoke.sh --wait` |

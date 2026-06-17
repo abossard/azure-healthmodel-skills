@@ -1,12 +1,12 @@
 ---
 name: healthmodel-signal-catalog
-description: "Discovery-driven reference for building Azure Monitor Health Model signals. Shows how to discover metrics with `az monitor metrics list-definitions`, write PromQL / KQL that the design schema accepts, derive thresholds from real data, and verify signals after deploy via `az rest`. WHEN: loaded by healthmodel-design when authoring signal definitions for any resource type. DO NOT USE FOR: direct user invocation, deploying signals (use healthmodel-deploy), discovering resources (use healthmodel-discovery)."
+description: "Discovery-driven reference for building Azure Monitor Health Model signals. Shows how to discover metrics with `az monitor metrics list-definitions`, write PromQL / KQL that the extension's signal-definition surface accepts, derive thresholds from real data, verify signals via `az monitor health-models entity get-signal-history`, and push external probe results via `entity ingest-health-report`. WHEN: loaded by healthmodel-design when authoring signal definitions for any resource type. DO NOT USE FOR: direct user invocation, deploying signals (use healthmodel-deploy), discovering resources (use healthmodel-discovery)."
 disable-model-invocation: true
 ---
 
 # Signal Catalog — Discovery Recipes
 
-Reference data for **healthmodel-design**. Instead of a frozen table of resource-types → metrics, this skill teaches the design phase **how to discover, evaluate, and verify signals for any Azure resource** using only the standard `az` CLI, `jq`, and `az rest`. Loaded by other skills — not invoked directly by users.
+Reference data for **healthmodel-design**. Instead of a frozen table of resource-types → metrics, this skill teaches the design phase **how to discover, evaluate, and verify signals for any Azure resource** using the standard `az` CLI plus the `az monitor health-models` extension. PromQL-development helpers also use `az rest` against the Azure Monitor Prometheus HTTP API (this is a dev tool, not part of the deploy operational path). Loaded by other skills — not invoked directly by users.
 
 ## Why discovery-driven
 
@@ -20,14 +20,15 @@ Reference data for **healthmodel-design**. Instead of a frozen table of resource
 1. ⛔ MANDATORY: Direction is the source of truth — `higher-is-worse` → `GreaterThan`; `lower-is-worse` → `LessThan`. Pick direction **before** the threshold.
 2. ⛔ MANDATORY: `degraded` is the early warning; `unhealthy` means action required. Degraded must trip strictly before unhealthy on the same direction.
 3. ⛔ MANDATORY: Every PromQL query ends with `or vector(0)` so absence-of-data evaluates to `0`, not `Unknown`. Same for KQL — return `0` on empty time-bucket via `make-series` or a `coalesce` projection.
-4. ⛔ MANDATORY: Azure-Metric signals use the **exact** `metricName` and `metricNamespace` from `az monitor metrics list-definitions`. Fields go **flat under `properties`** — no `azureResourceMetric`/`prometheusMetricsQuery`/`logAnalyticsQuery` sub-object. `healthmodel-deploy/scripts/validate.sh` (Bicep) enforces this.
+4. ⛔ MANDATORY: Azure-Metric signals use the **exact** `metricName` and `metricNamespace` from `az monitor metrics list-definitions`. Fields go **flat under `properties`** — no `azureResourceMetric`/`prometheusMetricsQuery`/`logAnalyticsQuery` sub-object. The extension's `--azure-resource-metric` accepts a flat JSON body via `@file` and rejects nested sub-objects.
 5. ⛔ MANDATORY: `aggregationType` must be one of the values listed in the metric definition's `supportedAggregationTypes`. Using an unsupported aggregation silently returns null and the signal goes `Unknown`.
-6. ⛔ MANDATORY: Thresholds are integer-typed in JSON (`100`, not `"100"`). Bicep rejects strings. See [Threshold design](#5-threshold-design) for handling sub-integer cases.
+6. ⛔ MANDATORY: Thresholds are number-typed in JSON (`100`, not `"100"`). The extension rejects strings. See [Threshold design](#5-threshold-design) for handling sub-integer cases.
 7. ⛔ MANDATORY: Don't reference dimensions in the signal-definition body. The ARM-metric path of the schema has **no dimension filter** — `TotalRequests dim=StatusCode=429` cannot be expressed. Pick a metric that is already pre-filtered (e.g., `Http5xx` instead of `Requests dim=StatusCode=5xx`), or switch the signal to KQL / PromQL.
-8. ⛔ MANDATORY: Use only standard `az` CLI commands — `az monitor metrics list-definitions`, `az monitor metrics list`, `az rest`. No extensions, no Python SDK.
+8. ⛔ MANDATORY: Use the `az monitor health-models` extension and standard `az monitor metrics` commands. `az rest` is allowed only for the Prometheus HTTP API helpers in Section 2.6 (development-time PromQL exploration) and the Log Analytics Query API helpers in Section 3 (KQL testing) — these have no extension equivalent. Never use `az rest` for `Microsoft.CloudHealth/healthModels/...` URLs; the extension covers them.
 9. ⛔ MANDATORY: Never use `grep` or `sed` to parse `az` JSON output — always `jq`.
 10. ⛔ MANDATORY: For resource types you can't immediately classify, mark the signal `"_review": "needs human review — auto-derived"`, set entity `impact` to `Limited`, and document the rationale next to the design file.
 11. ⛔ MANDATORY: Every `az` command that queries Azure must persist its full output (including errors) to `.healthmodel/data/<phase>/<category>/`. Use `2>&1 | tee` for commands where you also need stdout, or `> file 2>&1` for background collection. File names should include the resource name for easy lookup. Timestamps are optional but recommended for baselines. The `.healthmodel/data/` directory is gitignored — never commit collected data.
+12. ⛔ MANDATORY: When the user wants to push health state from a custom probe (synthetic check, third-party monitoring, batch job), use `az monitor health-models entity ingest-health-report` rather than authoring a query-based signal-definition. See Section 4.5 below for the worked example.
 
 ## What this skill is consumed by
 
@@ -148,7 +149,7 @@ The `AzureResourceMetric` body has **no** field for dimension filters or metric 
 - Switch the signal to **LogAnalyticsQuery** against the resource's diagnostic logs (Section 3).
 - Switch to **PrometheusMetricsQuery** if the resource is in AKS and metrics are scraped (Section 2).
 
-Don't smuggle a dimension into `metricName` — Bicep validation passes but the query returns null and the signal goes `Unknown` forever.
+Don't smuggle a dimension into `metricName` — argument validation passes but the query returns null and the signal goes `Unknown` forever.
 
 ### 1.6 Event-based metrics (emit only on condition)
 
@@ -295,13 +296,14 @@ az rest --method GET \
 
 A non-empty `result` array means the query is wired correctly. A `[{"value":[..,"0"]}]` result (from `or vector(0)`) is still healthy — the signal will report `0`.
 
-For batch validation of all PromQL signals in a design, use the automated script:
+For batch validation of all PromQL signals in a design, the recommended path is:
 
-```bash
-bash .agents/skills/healthmodel-deploy/scripts/validate-promql.sh "$AMW"
-```
+1. Run `reconcile.sh` to push each signal-definition to Azure (idempotent).
+2. Wait one `refreshInterval` for the auto-evaluator to run.
+3. Run `az monitor health-models entity get-signal-history --entity-name <e> --signal-name <s>` for each signal.
+4. Any signal still returning empty history or `Unknown` after 2× the refresh interval (with RBAC in place) has a broken query.
 
-See [references/promql-validation.md](./references/promql-validation.md) for the full development workflow.
+See [references/promql-validation.md](./references/promql-validation.md) for the manual development workflow that uses the Prometheus HTTP API directly via `az rest`.
 
 ### 2.7 AKS / Kubernetes PromQL signal catalog
 
@@ -327,8 +329,8 @@ Start with pod health + CPU/memory (the highest-signal categories), then layer i
 3. **Draft** — pick a query from the cheatsheet, substitute the real namespace.
 4. **Test** — run the query via `az rest` (§2.6 above) and verify: `status=success`, exactly 1 result series, reasonable value.
 5. **Write** — create the signal-definition JSON (see `healthmodel-design/SKILL.md` Step 1).
-6. **Validate** — run `validate-promql.sh` to batch-test all PromQL signals.
-7. **Mark broken** — if a query fails validation, the script marks it `(broken)` in `displayName`. See §2.9.
+6. **Validate by deploy** — run `reconcile.sh`, wait `2× refreshInterval`, then call `az monitor health-models entity get-signal-history` for each new signal. Empty history or persistent `Unknown` = broken query.
+7. **Mark broken** — if you accept a query that fails the live test (e.g. waiting for a future metric to land), mark it `(broken)` in `displayName`. See §2.9.
 
 ### 2.9 The "(broken)" marking convention
 
@@ -344,9 +346,9 @@ If a PromQL query cannot be validated (metric not scraped, parse error, AMW unre
 
 Rules:
 - `(broken)` goes in `displayName`, visible in the Azure portal.
-- `validate-promql.sh` adds/removes the marker automatically.
+- The agent (or `validate-signals.sh`) adds/removes the marker on each run; markers never accumulate.
 - A broken signal still deploys — it will show `Unknown` in the health model until the underlying issue is fixed.
-- To fix: check if the AMW is receiving the metric (Step 1 of the [validation guide](./references/promql-validation.md)), adjust the query, re-run validation.
+- To fix: check if the AMW is receiving the metric (Step 1 of the [validation guide](./references/promql-validation.md)), adjust the query, re-run reconcile + signal-history check.
 
 ---
 
@@ -415,23 +417,20 @@ You should get exactly one row, one column, one numeric value.
 
 ---
 
-## 4. Signal verification via `az rest`
+## 4. Signal verification via the extension
 
-After `bash .agents/skills/healthmodel-deploy/scripts/apply.sh` finishes, **read entity state** to confirm each signal returns a real `healthState` — not `Unknown`.
+After `bash .agents/skills/healthmodel-deploy/scripts/reconcile.sh` finishes, **read entity state** with the extension to confirm each signal returns a real `healthState` — not `Unknown`.
 
 ### 4.1 Read health state from entities
 
 ```bash
-HM='/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.CloudHealth/healthModels/<name>'
-API='2026-01-01-preview'
+RG=…; MODEL=…
 DATA_ENTITY=".healthmodel/data/deploy/entity-state"
 mkdir -p "$DATA_ENTITY"
 
-az rest --method get \
-  --url "https://management.azure.com$HM/entities?api-version=$API" \
-  -o json 2>&1 \
+az monitor health-models entity list -g "$RG" --health-model-name "$MODEL" -o json 2>&1 \
   | tee "$DATA_ENTITY/entities.json" \
-  | jq '[.value[]? | {
+  | jq '[.[] | {
         entity: .name,
         state: .properties.healthState,
         signals: [.properties.signalGroups // {} | to_entries[].value.signals[]? | {
@@ -440,7 +439,21 @@ az rest --method get \
       } | select(.signals | length > 0)]'
 ```
 
-> **Note:** The `2026-01-01-preview` API does not expose a per-signal `/execute` POST endpoint. Signals auto-evaluate on their `refreshInterval` cadence. Read health state via `GET .../entities`.
+For a single entity (more detail):
+
+```bash
+az monitor health-models entity show -g "$RG" --health-model-name "$MODEL" -n e-cosmos \
+  --query 'properties.signalGroups.*.signals[].{name:name, state:status.healthState, value:status.value, reason:status.reason}'
+```
+
+For a time-series view of a single signal:
+
+```bash
+az monitor health-models entity get-signal-history -g "$RG" --health-model-name "$MODEL" \
+  --entity-name e-cosmos --signal-name sa-cosmos-avail
+```
+
+> **Note:** Signals auto-evaluate on their `refreshInterval` cadence. There is no per-signal `/execute` API — reading `entity show` or `entity get-signal-history` is the only way.
 
 ### 4.2 Interpret `healthState`
 
@@ -449,22 +462,21 @@ az rest --method get \
 | `Healthy` | Signal evaluated, threshold not crossed | Nothing — leave it. |
 | `Degraded` | `degradedRule` crossed, `unhealthyRule` not | Early warning surfaced as expected. |
 | `Unhealthy` | `unhealthyRule` crossed | Investigate the underlying resource. |
-| `Unknown` | Signal could not evaluate | **Almost always a signal-definition bug — see 4.3.** |
+| `Unknown` | Signal could not evaluate | **Almost always a signal-definition bug or missing RBAC — see 4.3.** |
 
 ### 4.3 Troubleshooting `Unknown`
 
 ```bash
-az rest --method get \
-  --url "https://management.azure.com$HM/entities?api-version=$API" -o json 2>&1 \
+az monitor health-models entity list -g "$RG" --health-model-name "$MODEL" -o json 2>&1 \
   | tee "$DATA_ENTITY/entities-unknown.json" \
-  | jq '[.value[]? | .properties.signalGroups // {} | to_entries[].value.signals[]?
+  | jq '[.[] | .properties.signalGroups // {} | to_entries[].value.signals[]?
          | select(.status.healthState == "Unknown")
-         | {name, state: .status.healthState}]'
+         | {name, state: .status.healthState, reason: .status.reason}]'
 ```
 
-Common reasons (`stateReason` field) and fixes:
+Common reasons (`status.reason`) and fixes:
 
-| `stateReason` substring | Cause | Fix |
+| `status.reason` substring | Cause | Fix |
 |---|---|---|
 | `No data` / `NoData` | Query returned empty | PromQL: append `or vector(0)`. KQL: add the `union (print 0)` guard. ARM metric: pick a metric you can confirm exists with `az monitor metrics list`. |
 | `AuthorizationFailed` / `403` | Managed identity missing RBAC | Section 4.4. |
@@ -478,16 +490,12 @@ Common reasons (`stateReason` field) and fixes:
 DATA_RBAC=".healthmodel/data/rbac"
 mkdir -p "$DATA_RBAC"
 
-IDENTITY_PRINCIPAL_ID="$(az rest --method get \
-  --url "https://management.azure.com$HM/authenticationSettings?api-version=$API" \
-  -o json 2>&1 \
-  | tee "$DATA_RBAC/auth-settings.json" \
-  | jq -r '.value[0].properties.managedIdentityName' \
-  | xargs -I {} az identity show --ids {} -o json \
-  | tee "$DATA_RBAC/identity.json" \
-  | jq -r '.principalId')"
+# Get the model's identity principal
+PRINCIPAL=$(az monitor health-models show -g "$RG" -n "$MODEL" --query identity.principalId -o tsv)
+echo "Principal: $PRINCIPAL" | tee "$DATA_RBAC/principal.txt"
 
-az role assignment list --assignee "$IDENTITY_PRINCIPAL_ID" --all -o json 2>&1 \
+# List role assignments for the identity
+az role assignment list --assignee "$PRINCIPAL" --all -o json 2>&1 \
   | tee "$DATA_RBAC/identity-roles.json" \
   | jq '[.[] | {role: .roleDefinitionName, scope}]'
 ```
@@ -501,6 +509,45 @@ Required role assignments:
 | `PrometheusMetricsQuery` | `Monitoring Data Reader` | The Azure Monitor Workspace |
 
 If the role is missing, signals stay `Unknown` even though the query itself is correct.
+
+### 4.5 External probe ingestion (no signal-definition needed)
+
+For synthetic checks, third-party monitoring, batch jobs, or any health signal that does not map to an ARM metric / PromQL / KQL query, push the result directly with `entity ingest-health-report`. The signal still appears in `entity show` and `entity get-signal-history` like any other.
+
+```bash
+# Push a Healthy probe with custom value + context, valid for 10 minutes
+az monitor health-models entity ingest-health-report \
+  -g "$RG" --health-model-name "$MODEL" \
+  --entity-name e-checkout --signal-name synthetic-probe \
+  --health-state Healthy --value 1 --expires-in-minutes 10 \
+  --additional-context "HTTP 200 from synthetic probe at $(date -u +%FT%TZ)"
+
+# Push an Unhealthy report with evaluation-rules metadata
+az monitor health-models entity ingest-health-report \
+  -g "$RG" --health-model-name "$MODEL" \
+  --entity-name e-checkout --signal-name synthetic-probe \
+  --health-state Unhealthy --value 503 --expires-in-minutes 10 \
+  --evaluation-rules degraded-rule='{operator:GreaterThan,threshold:400}' \
+                     unhealthy-rule='{operator:GreaterThan,threshold:500}' \
+  --additional-context "HTTP 503 from synthetic probe"
+```
+
+The CLI returns exit 0 with empty stdout on success. Verify with:
+
+```bash
+az monitor health-models entity show -g "$RG" --health-model-name "$MODEL" -n e-checkout \
+  --query 'properties.signalGroups.*.signals[?name==`synthetic-probe`].{state:status.healthState, value:status.value, reportedAt:status.reportedAt}'
+```
+
+The reported state persists until `expiresInMinutes` elapses; then the signal returns to `Unknown` until the next ingest. Recommended cadence: have the probe push every `expiresInMinutes / 2` seconds (e.g. push every 5 min with `--expires-in-minutes 10`).
+
+Common signal-name conventions for external probes:
+
+- `synthetic-probe` — generic HTTP/TCP/DNS check from outside Azure
+- `business-metric-<name>` — KPI from a batch job (orders/min, queue depth)
+- `third-party-<vendor>` — health relayed from Datadog/PagerDuty/etc.
+
+No signal-definition file is required for these — the signal name is created on first ingest. If you do want a signal-definition (e.g., to set `displayName` and `evaluationRules` for the portal), declare it as a normal `AzureResourceMetric`/`PrometheusMetricsQuery`/`LogAnalyticsQuery` shape but leave the metric/query empty — `ingest-health-report` overrides whatever the auto-evaluator computes.
 
 ---
 
@@ -536,10 +583,10 @@ For a brand-new workload with no baseline, start with public service limits (RU 
 
 ### 5.4 Integers vs decimals
 
-The deploy-phase Bicep validator (`signal-arm.bicep` / `signal-prom.bicep` / `signal-log.bicep` against `Microsoft.CloudHealth@2026-01-01-preview`) treats `threshold` as a number — but the convention enforced by `validate.sh` is **integer literals only**. Sub-integer values cause real problems:
+The extension treats `threshold` as a number — and the convention enforced here is **integer literals only** (e.g. `100`, not `"100"`). Sub-integer values cause real problems:
 
 - A threshold of `0.5` for `Percentage5xx` is ambiguous when the underlying metric is integer-counted.
-- JSON serializers occasionally emit `"0.5"` (string) which Bicep then rejects with `BCP036`.
+- JSON serializers occasionally emit `"0.5"` (string) which the extension then rejects.
 
 How to express sub-integer intent with integers:
 
@@ -595,5 +642,5 @@ Run on every signal-definition file before handing off to deploy.
 - [./references/promql-cheatsheet.md](./references/promql-cheatsheet.md) — Kubernetes PromQL patterns for AKS health signals.
 - [./references/promql-validation.md](./references/promql-validation.md) — PromQL development, testing, and validation workflow using `az rest`.
 - `healthmodel-design/SKILL.md` — the consumer of this skill; defines the sparse signal-definition JSON shape.
-- `healthmodel-deploy/scripts/validate.sh` — offline Bicep schema check for every signal file.
-- `healthmodel-deploy/scripts/validate-promql.sh` — live PromQL validation against an AMW.
+- `healthmodel-deploy/scripts/validate-signals.sh` — pre-deploy unified validator (ARM + PromQL + KQL). Marks broken signals and no-data signals in `displayName` idempotently.
+- `healthmodel-deploy/scripts/smoke.sh` — post-deploy verifier using `az monitor health-models entity get-signal-history`.

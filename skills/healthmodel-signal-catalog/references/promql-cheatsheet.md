@@ -353,4 +353,4 @@ histogram_quantile(0.99, sum by (le) (rate(my_bucket[5m])))
 - [promql-validation.md](./promql-validation.md) — how to develop, test, and validate PromQL queries with `az rest`
 - [metrics.md](./metrics.md) — Recipe 5 (probe PromQL) and Recipe 10 (local sanity check)
 - `healthmodel-design/SKILL.md` Step 1b — AKS PromQL signal generation
-- `healthmodel-deploy/scripts/validate-promql.sh` — automated validation script
+- `healthmodel-deploy/scripts/validate-signals.sh` — unified pre-deploy validator (ARM + PromQL + KQL)

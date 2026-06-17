@@ -1,60 +1,34 @@
 #!/usr/bin/env bash
-# Bootstrap: register provider and verify RBAC. Model root creation is handled by Bicep.
-# Usage: bootstrap.sh <rg> <model> <location> [uami-resource-id]
+# Ensure the az monitor health-models extension is installed and the CloudHealth
+# provider is registered. Idempotent.
+# Usage: bootstrap.sh
 set -euo pipefail
 
-SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-. "${SKILL_DIR}/scripts/lib/arm.sh"
+DATA=".healthmodel/data/deploy/bootstrap"
+mkdir -p "$DATA"
+TS="$(date -u +%Y%m%dT%H%M%SZ)"
 
-RG="${1:?resource group required}"
-MODEL="${2:?model name required}"
-LOC="${3:?location required}"
-UAMI="${4:-}"
-SUB=$(arm_sub)
+# 1. Extension
+if ! az extension show --name health-models >/dev/null 2>&1; then
+  echo "Installing az monitor health-models extension..."
+  az extension add --name health-models --yes >"$DATA/extension-add-$TS.log" 2>&1 \
+    || { echo "Failed to install extension. See $DATA/extension-add-$TS.log"; exit 1; }
+fi
+az extension show --name health-models -o json >"$DATA/extension-$TS.json"
 
-# Step 1: Register Microsoft.CloudHealth provider
+EXT_VERSION=$(jq -r '.version // "unknown"' "$DATA/extension-$TS.json")
+echo "✓ az monitor health-models extension installed (version: $EXT_VERSION)"
+
+# 2. Resource provider
+SUB=$(az account show --query id -o tsv)
 STATE=$(az provider show -n Microsoft.CloudHealth --query registrationState -o tsv 2>/dev/null || echo NotRegistered)
 if [ "$STATE" != "Registered" ]; then
-  echo "registering Microsoft.CloudHealth provider…"
-  az provider register -n Microsoft.CloudHealth
-  until [ "$(az provider show -n Microsoft.CloudHealth --query registrationState -o tsv)" = "Registered" ]; do sleep 5; done
+  echo "Registering Microsoft.CloudHealth (state: $STATE)..."
+  az provider register -n Microsoft.CloudHealth --wait >"$DATA/provider-register-$TS.log" 2>&1
+  STATE=$(az provider show -n Microsoft.CloudHealth --query registrationState -o tsv)
 fi
-echo "✓ Microsoft.CloudHealth provider registered"
+echo "✓ Microsoft.CloudHealth: $STATE (subscription: $SUB)"
 
-# Step 2: Verify resource group exists
-az group show --name "$RG" -o none 2>/dev/null \
-  || { echo "✘ resource group '$RG' not found"; exit 1; }
-echo "✓ resource group '$RG' exists"
-
-# Step 3: Verify UAMI and RBAC (if provided)
-if [ -n "$UAMI" ]; then
-  if ! az identity show --ids "$UAMI" -o none 2>&1; then
-    echo "⚠ UAMI not found or inaccessible: $UAMI"
-    echo "  Create it first:  az identity create -g <rg> -n <name>"
-    echo "  Or verify the resource ID is correct (full ARM path required)"
-    exit 1
-  fi
-  echo "✓ UAMI exists: $UAMI"
-
-  # Verify/assign Monitoring Reader on the target RG
-  PRINCIPAL=$(az identity show --ids "$UAMI" --query principalId -o tsv 2>/dev/null)
-  if [ -n "$PRINCIPAL" ]; then
-    EXISTING=$(az role assignment list --assignee "$PRINCIPAL" --role "Monitoring Reader" \
-      --scope "/subscriptions/$SUB/resourceGroups/$RG" -o json 2>/dev/null | jq 'length')
-    if [ "${EXISTING:-0}" = "0" ]; then
-      az role assignment create --assignee "$PRINCIPAL" --role "Monitoring Reader" \
-        --scope "/subscriptions/$SUB/resourceGroups/$RG" -o none 2>/dev/null \
-        && echo "  ✓ assigned Monitoring Reader to $PRINCIPAL on $RG" \
-        || echo "  ⚠ failed to assign Monitoring Reader — assign manually"
-    else
-      echo "  ✓ Monitoring Reader already assigned on $RG"
-    fi
-  else
-    echo "  ⚠ could not resolve UAMI principalId — verify RBAC manually"
-  fi
-fi
-
-echo ""
-echo "bootstrap complete — ready for Bicep deployment"
-echo "  model: $MODEL ($LOC)"
-echo "  Note: model root resource will be created by Bicep during deployment"
+# 3. Sanity check: command surface
+az monitor health-models --help >"$DATA/help-$TS.txt" 2>&1
+echo "✓ az monitor health-models is callable"

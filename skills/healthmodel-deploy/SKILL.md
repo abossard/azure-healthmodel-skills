@@ -1,274 +1,291 @@
 ---
 name: healthmodel-deploy
-description: "Deploy and incrementally adapt an Azure Monitor Health Model using Bicep and standard az CLI — no extensions. Uses design files as source of truth, generates a Bicep project, deploys via az deployment group create. WHEN: 'deploy the health model', 'apply the design', 'update health model in Azure', 'push the health model', 'adapt the existing health model'. DO NOT USE FOR: designing entities (use healthmodel-design), discovering resources (use healthmodel-discovery), or operations against unrelated Azure Monitor features."
+description: "Deploy and incrementally adapt an Azure Monitor Health Model using the `az monitor health-models` CLI extension. Reads sparse JSON design files under `.healthmodel/03-design/` and reconciles them by invoking `az monitor health-models <kind> create` per file (idempotent full-PUT). WHEN: 'deploy the health model', 'apply the design', 'update health model in Azure', 'push the health model', 'adapt the existing health model'. DO NOT USE FOR: designing entities (use healthmodel-design), discovering resources (use healthmodel-discovery), or operations against unrelated Azure Monitor features."
 ---
 
-# Health Model Deployment (Bicep-based)
+# Health Model Deployment
 
-Deploy a designed health model to Azure using a generated **Bicep project**. The design skill creates JSON files under `.healthmodel/03-design/` and generates a modular Bicep project under `.healthmodel/05-bicep/`. This skill validates, previews, and deploys that Bicep project using `az deployment group create`.
+Deploy a designed health model to Azure using the **`az monitor health-models`** CLI extension (preview, `health-models` v1.0.0b1+). The design skill writes JSON files under `.healthmodel/03-design/`; this skill reconciles each file with Azure by invoking the matching `az monitor health-models <kind> create` command.
 
 ## How it works
 
-1. **JSON is the source of truth** — users edit design files under `.healthmodel/03-design/`
-2. **Bicep is generated** from those JSON files using `loadJsonContent()` — each JSON file maps to one Bicep resource declaration
-3. **Deployment** uses `az deployment group create` — ARM handles idempotency, ordering, and state reconciliation
-4. **Granular updates** — changing one JSON file changes one resource in the `what-if` diff
-5. **Signal verification is mandatory** — live metric/PromQL validation runs BEFORE deployment, not just schema checks
+1. **JSON is the source of truth** — users edit design files under `.healthmodel/03-design/`.
+2. **`create` is idempotent** — the extension treats `create` as a full PUT. Re-running with the same body overwrites the resource cleanly; re-running with the same file is a safe no-op when content matches.
+3. **Cross-references are server-validated** — the reconcile order is fixed: `auth → signal → entity → relationship → discovery-rule`. An entity that references a missing signal-definition fails immediately with `MissingSignalDefinition`.
+4. **Live verification uses the extension's read endpoints** — `entity get-signal-history` and `entity show`, never `az rest`.
 
 ## Rules
 
-1. ⛔ MANDATORY: `.healthmodel/03-design/` must exist and validate cleanly (`bash .agents/skills/healthmodel-deploy/scripts/validate.sh`).
-2. ⛔ MANDATORY: `.healthmodel/05-bicep/` must exist with a valid `main.bicep`. If missing or stale, regenerate from design (re-run the Bicep generation step from healthmodel-design).
+1. ⛔ MANDATORY: The `health-models` Azure CLI extension must be installed (`bash .agents/skills/healthmodel-deploy/scripts/bootstrap.sh` does this).
+2. ⛔ MANDATORY: `.healthmodel/03-design/` must exist with at least one auth-setting or one entity. Empty design = nothing to deploy.
 3. ⛔ MANDATORY: `az` CLI must be authenticated to the same subscription the design targets (`az account show`).
-4. ⛔ MANDATORY: The `Microsoft.CloudHealth` provider must be registered (`bash .agents/skills/healthmodel-deploy/scripts/bootstrap.sh` does this).
-5. ⛔ MANDATORY: Signal verification (Step 2) is **blocking** — do not proceed to deployment if live metric validation fails.
-6. ⛔ MANDATORY: Always run `what-if` (Step 5) and review the output before deploying.
-7. ⛔ MANDATORY: Deploy order is enforced by Bicep output references — auth → signals → entities → relationships. Each module receives an output from the previous module as a parameter, creating implicit dependencies. Do NOT use `dependsOn`.
-8. ⛔ MANDATORY: Never DELETE resources from this skill. Manual portal action required for removal — the skill is additive only.
+4. ⛔ MANDATORY: When the model is new, pass `--location` to `reconcile.sh`. The location must be a region that supports `Microsoft.CloudHealth/healthModels` (e.g. `swedencentral`, `uksouth`, `westeurope`). See `~/.minime/wiki/orgs/Azure-Samples/AI-Gateway/cloudhealth-region-availability.md`.
+5. ⛔ MANDATORY: Never DELETE resources from this skill. The reconcile flow is additive only — removing a JSON file does not remove the resource in Azure. Manual cleanup via `az monitor health-models <kind> delete` is required.
+6. ⛔ MANDATORY: For every signal definition, `refreshInterval` must be ≤ `timeGrain`. The server returns `(InvalidPayload) Refresh interval should be equal or less than time grain.` otherwise.
+7. ⛔ MANDATORY: Use `jq` (never `grep`/`sed`) when parsing the extension's JSON output. Repository convention.
+8. ⛔ MANDATORY: Every `az` invocation persists its full output to `.healthmodel/data/deploy/<phase>/`. `bootstrap.sh`, `reconcile.sh`, `smoke.sh`, and `discover-auto.sh` already do this — keep the pattern when extending.
 
 ## Prerequisites
 
 ```bash
 command -v az jq >/dev/null && az version --output table | head -2
-az bicep version              # ships with az; install if missing
 az account show -o json | jq '{subscription: .id, name: .name}'
+
+# Required: health-models extension (install handled by bootstrap.sh)
+bash .agents/skills/healthmodel-deploy/scripts/bootstrap.sh
 ```
+
+`bootstrap.sh` is idempotent: it installs the `health-models` extension if missing, registers `Microsoft.CloudHealth`, and verifies `az monitor health-models --help` works.
 
 ## Layout
 
 ```
 healthmodel-deploy/
-├── SKILL.md                      ← this file
-├── templates/                    ← Bicep schemas (used for offline validation of individual files)
-│   ├── auth.bicep
-│   ├── signal-arm.bicep          ← AzureResourceMetric kind
-│   ├── signal-prom.bicep         ← PrometheusMetricsQuery kind
-│   ├── signal-log.bicep          ← LogAnalyticsQuery kind
-│   ├── entity.bicep
-│   ├── relationship.bicep
-│   └── health-model.bicep        ← root resource (for reference)
+├── SKILL.md                    ← this file
 └── scripts/
-    ├── lib/arm.sh                ← sourced: ARM URL builder, az rest wrappers, API_VERSION
-    ├── validate.sh               ← offline bicep build for every design file + full project
-    ├── validate-promql.sh        ← live PromQL validation against an AMW
-    ├── bootstrap.sh              ← register provider, verify RBAC (narrowed — no longer creates model root)
-    ├── what-if.sh                ← az deployment group what-if wrapper
-    ├── deploy.sh                 ← az deployment group create wrapper
-    └── smoke.sh                  ← GET entities, read signal healthState with retry/backoff
+    ├── bootstrap.sh            ← install extension + register provider
+    ├── reconcile.sh            ← idempotent per-file CLI reconcile
+    ├── validate-signals.sh     ← pre-deploy: verify each signal has data; auto-mark (broken)/(no data)
+    ├── smoke.sh                ← post-deploy: read entity signal health (with --wait retry)
+    └── discover-auto.sh        ← fast path: discovery-rule + wait for entities
 ```
 
 ## Steps
 
-### Step 1: Validate the design offline
+### Step 1: Bootstrap (one-time per workstation/CI runner)
 
 ```bash
-bash .agents/skills/healthmodel-deploy/scripts/validate.sh
+bash .agents/skills/healthmodel-deploy/scripts/bootstrap.sh
 ```
 
-This validates BOTH:
-1. **Individual JSON files** — each design file against its typed Bicep schema template (existing validation)
-2. **Full Bicep project** — `az bicep build` on `.healthmodel/05-bicep/main.bicep` to verify the complete project compiles
+This installs the `health-models` extension, registers `Microsoft.CloudHealth`, and confirms `az monitor health-models` is callable. Logs land in `.healthmodel/data/deploy/bootstrap/`.
 
-Fix any reported error before continuing.
+### Step 2 (optional): RBAC for the model's managed identity
 
-### Step 2: Verify signals against live Azure (BLOCKING)
-
-This step is **mandatory before deployment**. It catches failures that schema validation cannot: wrong metric names, non-existent namespaces, broken PromQL queries.
-
-#### 2a: Verify ARM metric signals exist
-
-For each signal with `signalKind: AzureResourceMetric`, verify the metric exists on the target resource:
+When a signal needs to read metrics from a target resource (any `signalKind`), the model's managed identity needs the right role:
 
 ```bash
-# For each signal, check that the metric namespace + metric name are valid
-jq -r 'select(.signalKind == "AzureResourceMetric") | "\(.metricNamespace) \(.metricName)"' \
-  .healthmodel/03-design/signals/*.json | while read -r ns metric; do
-    # Find a matching resource ID from resources.json
-    RID=$(jq -r --arg ns "$ns" '.[].id | select(ascii_downcase | contains($ns | ascii_downcase | split("/") | .[1]))' .healthmodel/resources.json | head -1)
-    [ -n "$RID" ] && az monitor metrics list-definitions --resource "$RID" -o json \
-      | jq -e --arg m "$metric" '[.[].name.value] | map(ascii_downcase) | index($m | ascii_downcase)' >/dev/null 2>&1 \
-      && echo "  ✓ $ns/$metric" \
-      || echo "  ✘ $ns/$metric — metric not found"
-done
+RG="rg-myapp"; MODEL="hm-myapp"
+PRINCIPAL=$(az monitor health-models show -g "$RG" -n "$MODEL" --query identity.principalId -o tsv)
+
+# Read ARM metrics (AzureResourceMetric)
+az role assignment create --assignee "$PRINCIPAL" --role "Monitoring Reader" \
+  --scope "/subscriptions/<sub>/resourceGroups/<monitored-rg>"
+
+# Read AMW Prometheus (PrometheusMetricsQuery)
+az role assignment create --assignee "$PRINCIPAL" --role "Monitoring Data Reader" \
+  --scope "<amw-resource-id>"
+
+# Read Log Analytics (LogAnalyticsQuery)
+az role assignment create --assignee "$PRINCIPAL" --role "Log Analytics Reader" \
+  --scope "<workspace-resource-id>"
 ```
 
-#### 2b: Validate PromQL queries against live AMW
+RBAC propagation takes 2-5 min. Signals show `Unknown` until propagation completes.
 
-```bash
-AMW='/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Monitor/accounts/<amw>'
-bash .agents/skills/healthmodel-deploy/scripts/validate-promql.sh "$AMW"
-```
-
-#### 2c: Validate Log Analytics queries (if any)
-
-For `LogAnalyticsQuery` signals, verify the query executes without error against the workspace.
-
-**If any signal fails verification**: either fix the signal definition, mark it `(broken)` in `displayName`, or remove it. Do NOT proceed to deployment with signals that reference non-existent metrics.
-
-### Step 3: Bootstrap (provider registration + RBAC verification)
+### Step 3: Reconcile design files
 
 ```bash
 RG="rg-myapp"; MODEL="hm-myapp"; LOC="swedencentral"
-bash .agents/skills/healthmodel-deploy/scripts/bootstrap.sh "$RG" "$MODEL" "$LOC" ["$UAMI"]
+bash .agents/skills/healthmodel-deploy/scripts/reconcile.sh "$RG" "$MODEL" --location "$LOC"
 ```
 
-Bootstrap is **narrowed** to:
-- Register `Microsoft.CloudHealth` provider if needed
-- Verify subscription/RG/location exist
-- If UAMI provided: verify it exists, verify `Monitoring Reader` role on target RG
-- **Does NOT create the health model root** — Bicep handles that
+`reconcile.sh` walks `.healthmodel/03-design/{auth,signals,entities,relationships,discovery-rules}/*.json` and invokes the matching `az monitor health-models <kind> create` per file. Each file's `properties` body is unwrapped into the relevant `--*-file` arguments (e.g. `.azureResourceMetric` → `--azure-resource-metric @<tmp>`).
 
-### Step 3b: ⛔ MANDATORY — Identity & RBAC setup (when using UAMI)
+Order is fixed because the extension validates cross-references server-side:
 
-> ⛔ **This step is NOT optional.** Without RBAC, signals return `Unknown` because the identity cannot read metrics.
+```
+authentication-setting → signal-definition → entity → relationship → discovery-rule
+```
 
-1. **Verify the UAMI exists**: `az identity show --ids "$UAMI"`
-2. **Verify Monitoring Reader** on each monitored RG:
-   ```bash
-   PRINCIPAL=$(az identity show --ids "$UAMI" --query principalId -o tsv)
-   EXISTING=$(az role assignment list --assignee "$PRINCIPAL" --role "Monitoring Reader" \
-     --scope "/subscriptions/<sub>/resourceGroups/<rg>" -o json | jq 'length')
-   echo "Monitoring Reader assignments: $EXISTING"  # must be ≥ 1
-   ```
-3. **Assign Monitoring Data Reader** on the AMW (for PromQL signals):
-   ```bash
-   az role assignment create --assignee "$PRINCIPAL" --role "Monitoring Data Reader" --scope "<amw-resource-id>"
-   ```
-4. **Wait for RBAC propagation** (~2-5 min).
+If a step fails, the script tails the last 20 lines of `.healthmodel/data/deploy/reconcile/reconcile-<ts>.log` and exits non-zero. Re-running is safe — `create` is idempotent.
 
-### Step 4: Regenerate Bicep (if needed)
+Optional flags:
+- `--design <dir>` — use a different design root (default `.healthmodel/03-design`).
+- `--dry-run` — print the `az` commands that would be run without executing them.
 
-If any design files were changed since the last Bicep generation, regenerate:
+### Step 3a (recommended): Validate signals against live data BEFORE deploy
 
 ```bash
-# Check if any design file is newer than the Bicep output
-NEWEST_DESIGN=$(find .healthmodel/03-design -name '*.json' -newer .healthmodel/05-bicep/main.bicep 2>/dev/null | head -1)
-if [ -n "$NEWEST_DESIGN" ]; then
-  echo "Design files changed — regenerate Bicep by re-running the design skill's Bicep generation step"
-fi
+AMW='/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Monitor/accounts/<amw>'
+WORKSPACE='/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.OperationalInsights/workspaces/<law>'
+
+bash .agents/skills/healthmodel-deploy/scripts/validate-signals.sh \
+  --amw "$AMW" --workspace "$WORKSPACE"
 ```
 
-### Step 5: Preview changes (what-if)
+`validate-signals.sh` walks `.healthmodel/03-design/signals/*.json` and tests each one against its live data source:
 
-```bash
-bash .agents/skills/healthmodel-deploy/scripts/what-if.sh "$RG"
-```
+| `signalKind` | Validation |
+|---|---|
+| `AzureResourceMetric` | `az monitor metrics list-definitions` confirms the metric exists and `aggregationType` is supported; `az monitor metrics list` confirms a non-null sample in the last hour |
+| `PrometheusMetricsQuery` | `az rest GET <amw-endpoint>/api/v1/query` confirms `status: success` and a non-empty result set |
+| `LogAnalyticsQuery` | `az monitor log-analytics query` confirms a non-empty result over the last hour |
 
-This runs `az deployment group what-if` against the generated Bicep project. Show the user:
-- Per-resource change summary (Create / Modify / Delete / NoChange)
-- For modified resources: which properties changed
-- **Advisory note**: `what-if` may show false positives (changes that aren't actually changes). This is a known Azure behavior.
+For each signal, the script mutates `displayName` **idempotently**:
 
-Ask: *"Apply all changes, or abort?"*
+| Outcome | Displayname suffix | Exit-code contribution |
+|---|---|---|
+| ✓ Query returned data | (none — clean) | 0 |
+| ⊘ Query is valid but returned no data in the last hour | `(no data)` | 0 (or 2 with `--strict`) |
+| ✘ Query is invalid (metric not found, parse error, unsupported aggregation) | `(broken: <reason>)` | 1 |
+| · Could not be tested (no AMW given for a PromQL signal, no matching resource for an ARM signal) | (none) | 0 |
 
-### Step 6: Deploy
+Re-running removes old markers before applying new ones — markers never accumulate. Use `--no-mark` to validate without mutating files (e.g. in CI).
 
-```bash
-bash .agents/skills/healthmodel-deploy/scripts/deploy.sh "$RG"
-```
+Resolve `broken` signals before deploy. `no-data` signals are deployable but will show `Unknown` until the underlying source starts emitting; keep the marker for portal visibility.
 
-This runs `az deployment group create` with the generated Bicep project. Deployment is atomic — ARM handles ordering via implicit dependencies from output references.
+Output: `.healthmodel/data/deploy/validate-signals/report-<ts>.tsv` plus per-signal raw response.
 
-### Step 7: Smoke test with retry
+### Step 4: Smoke test signal health
 
 ```bash
 bash .agents/skills/healthmodel-deploy/scripts/smoke.sh "$RG" "$MODEL"
 ```
 
-The smoke test reads entity signal health states via `az rest GET`. Because signal evaluation and RBAC propagation take time after deployment, the smoke test **retries with backoff**:
+`smoke.sh` enumerates entities with `az monitor health-models entity list`, then calls `az monitor health-models entity show` for each entity to project every `signalGroups[].signals[].status.healthState` using `jq`. Output is written to `.healthmodel/data/deploy/smoke/smoke-<ts>.txt`, with one `entity-<name>.json` snapshot saved per entity.
 
-- **Retry while signals show `Unknown`** — this is expected immediately after deployment
-- **Timeout after 10 minutes** — if still Unknown, likely an RBAC or signal configuration issue
-- **Fail immediately on API errors** (404, 403)
-- **Fail on `Unhealthy`** — a signal went red
-- **Warn (don't fail) on `Degraded`** — may be expected for some thresholds
+Exit codes: `0` (all Healthy), `1` (any Unhealthy), `2` (any Unknown remaining).
 
-### Step 8: Receipt
+Add `--with-history` to also call `az monitor health-models entity get-signal-history` for every signal — useful when debugging persistent `Unknown` or wanting raw time-series data:
 
-`.healthmodel/04-deployed.json` (written after successful deploy):
-
-```json
-{
-  "modelName": "hm-myapp",
-  "resourceGroup": "rg-myapp",
-  "subscription": "<sub-id>",
-  "deployedAt": "<ISO-timestamp>",
-  "deploymentMethod": "bicep",
-  "bicepProject": ".healthmodel/05-bicep/main.bicep"
-}
+```bash
+bash .agents/skills/healthmodel-deploy/scripts/smoke.sh "$RG" "$MODEL" --with-history
 ```
+
+Use `--wait` for post-deploy or post-RBAC propagation:
+
+```bash
+bash .agents/skills/healthmodel-deploy/scripts/smoke.sh "$RG" "$MODEL" --wait --timeout 600 --interval 30
+```
+
+Retries while signals are `Unknown` (expected for 2-10 min after RBAC propagation), fails fast on `Unhealthy`.
+
+For ad-hoc one-shot inspection (no script needed):
+
+```bash
+az monitor health-models entity show \
+  -g "$RG" --health-model-name "$MODEL" -n e-cosmos \
+  --query 'properties.signalGroups.*.signals[].{name:name, state:status.healthState, value:status.value}'
+
+az monitor health-models entity get-signal-history \
+  -g "$RG" --health-model-name "$MODEL" \
+  --entity-name e-cosmos --signal-name sa-cosmos-avail
+
+az monitor health-models entity get-history \
+  -g "$RG" --health-model-name "$MODEL" --entity-name e-cosmos
+```
+
+### Step 5 (alternative): Fast-path discovery via `discovery-rule`
+
+For users who do not want to author entities and signals by hand, `discovery-rule` lets Azure auto-populate the model from a Resource Graph query:
+
+```bash
+RG="rg-myapp"; MODEL="hm-myapp"
+bash .agents/skills/healthmodel-deploy/scripts/discover-auto.sh \
+  "$RG" "$MODEL" dr-vms auth-system \
+  "resources | where type =~ 'microsoft.compute/virtualmachines' | project id"
+```
+
+`discover-auto.sh`:
+1. Snapshots existing entity count.
+2. Creates a `discovery-rule` with `--add-recommended-signals Enabled --discover-relationships Enabled`.
+3. Polls `entity list` until the count rises (timeout 10 min by default).
+
+The CLR-generated entities and signal-definitions get UUID names — they are designed for the portal/auto-managed lifecycle. Combine with manually authored design files for opinionated SLOs alongside auto-discovered scaffolding.
+
+### Step 6: Receipt
+
+After a successful reconcile + smoke, write `.healthmodel/04-deployed.json` for audit:
+
+```bash
+DATA=".healthmodel/data/deploy"
+LATEST_LOG=$(ls -1t "$DATA"/reconcile/reconcile-*.log 2>/dev/null | head -1)
+jq -n \
+  --arg model "$MODEL" --arg rg "$RG" \
+  --arg sub "$(az account show --query id -o tsv)" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg log "$LATEST_LOG" \
+  '{modelName: $model, resourceGroup: $rg, subscription: $sub,
+    deployedAt: $ts, deploymentMethod: "az monitor health-models",
+    reconcileLog: $log}' > .healthmodel/04-deployed.json
+```
+
+## Pipeline summary
+
+```
+1. bootstrap.sh         — install extension + register provider (one-time)
+2. RBAC                 — assign Monitoring Reader / Monitoring Data Reader / Log Analytics Reader
+3. validate-signals.sh  — pre-deploy: confirm each signal has data; auto-mark (broken)/(no data)
+4. reconcile.sh         — per-file `az monitor health-models <kind> create` (idempotent)
+5. smoke.sh             — `entity list` + tabulate signalGroups[].signals[].status.healthState
+```
+
+Steps 3 (validate) and 5 (smoke) are complementary: validate catches *authoring* errors (wrong metric name, broken PromQL) against the data source directly, smoke catches *deployment* errors (RBAC, identity wiring) by reading what the deployed signal evaluators actually observed.
+
+For the fast path, replace steps 3-5 with `discover-auto.sh`. Combine both for hybrid models (manual SLO-driven entities + auto-discovered scaffolding).
+
+## External health reports
+
+Custom probes (synthetic checks, third-party monitoring, batch jobs) can push health state directly without any signal-definition wiring:
+
+```bash
+az monitor health-models entity ingest-health-report \
+  -g "$RG" --health-model-name "$MODEL" \
+  --entity-name e-checkout --signal-name synthetic-probe \
+  --health-state Healthy --value 1 --expires-in-minutes 10 \
+  --additional-context "HTTP 200 from synthetic probe at $(date -u +%FT%TZ)"
+```
+
+The next `entity show` reflects the reported state in `properties.signalGroups.*.signals[].status`. See `healthmodel-signal-catalog/SKILL.md` § External probes for the full pattern.
 
 ## Adapting an existing model
 
 If someone hand-created the model in the portal, or edited it after a previous deploy:
 
-1. Update the design JSON files under `.healthmodel/03-design/` with complete properties (include portal-tuned values you want to keep)
-2. Regenerate the Bicep project (re-run healthmodel-design's Bicep generation step)
-3. Run `what-if` to see what would change
-4. Deploy — Bicep/ARM treats the declared state as desired state
+1. Update the design JSON files under `.healthmodel/03-design/` with the complete `properties` body (include portal-tuned values you want to keep).
+2. Run `reconcile.sh` again — `create` is full-PUT, so the declared properties become the live state. Properties not in the design file may be reset to defaults.
+3. Run `smoke.sh --wait` to verify the updated signals report Healthy.
 
-**Important**: With Bicep deployment, the declared properties ARE the complete desired state. Properties not in the design files may be reset to defaults by the resource provider. This is different from the previous sparse merge approach. Ensure design files contain ALL properties you care about.
+To stop the skill from managing a field that someone tunes in the portal, **remove the entire enclosing resource from `.healthmodel/03-design/`**. The resource stays in Azure (additive-only contract); reconcile no longer touches it.
 
-## Read-only inspection helpers
+## Read-only inspection
 
-The standard `az rest` shapes work for ad-hoc inspection:
+All inspection uses the extension's read commands (no `az rest`):
 
 ```bash
 SUB=$(az account show --query id -o tsv); RG=…; MODEL=…
-API=2026-01-01-preview
-BASE="https://management.azure.com/subscriptions/$SUB/resourceGroups/$RG/providers/Microsoft.CloudHealth/healthModels/$MODEL"
 
-# List entities
-az rest --method GET --url "$BASE/entities?api-version=$API" | jq '.value[].name'
+az monitor health-models entity list -g "$RG" --health-model-name "$MODEL" --query '[].name' -o tsv
+az monitor health-models signal-definition list -g "$RG" --health-model-name "$MODEL" --query '[].name' -o tsv
+az monitor health-models relationship list -g "$RG" --health-model-name "$MODEL" --query '[].{n:name, p:properties.parentEntityName, c:properties.childEntityName}'
 
-# One entity body (includes signal health in .properties.signalGroups.*.signals[].status.healthState)
-az rest --method GET --url "$BASE/entities/e-cosmos?api-version=$API" | jq
+az monitor health-models entity show -g "$RG" --health-model-name "$MODEL" -n e-cosmos \
+  --query 'properties.signalGroups.*.signals[].{name:name, state:status.healthState, value:status.value}'
 
-# Read signal health for a specific entity
-az rest --method GET --url "$BASE/entities/e-cosmos?api-version=$API" \
-  | jq '.properties.signalGroups | to_entries[].value.signals[]? | {name, healthState: .status.healthState}'
+az monitor health-models entity get-signal-history -g "$RG" --health-model-name "$MODEL" \
+  --entity-name e-cosmos --signal-name sa-cosmos-avail
 ```
 
-> **Note**: The `POST .../signals/{s}/execute` endpoint does **not** exist. Always read signal health from the entity GET response.
+## API version
 
-## Pipeline summary
-
-The full deployment pipeline follows this strict order:
-
-```
-1. validate.sh     — offline Bicep schema check (individual files + full project)
-2. verify signals  — live metric existence + PromQL validation (BLOCKING)
-3. regenerate      — Bicep from design JSON (if stale)
-4. az bicep build  — compile full Bicep project
-5. what-if         — az deployment group what-if (advisory diff)
-6. deploy          — az deployment group create (atomic deployment)
-7. smoke           — entity health check with retry/backoff
-```
-
-Signal verification (step 2) catches failures that schema validation cannot: wrong metric names, non-existent namespaces, broken PromQL queries. It runs BEFORE Bicep generation and deployment, not after.
+`2026-01-01-preview` — wrapped by the extension. No skill-side pinning required. The skill works with any extension version that exposes the same command surface (v1.0.0b1 confirmed).
 
 ## Error handling
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `validate.sh` reports `BCP037` on a property | Field name wrong for the resource type | Check the template — Bicep tells you the permissible properties |
-| `validate.sh` reports `BCP036` (type) | Sent a string where the schema expects int (common with thresholds) | Use a number literal in the JSON: `"threshold": 100`, not `"100"` |
-| `validate.sh` reports `BCP035` (missing required) | Design body missing a required field — add it with a sensible default | Add the field to the design file |
-| `az deployment group create` returns 403 | Identity lacks permissions on the target RG | Verify RBAC: `Monitoring Reader` on monitored RGs, `Monitoring Data Reader` on AMW |
-| `AuthenticationSettingUserAssignedIdentityMissing` | Auth settings reference a UAMI not in the model's identity block | Update `main.bicep` identity block or use `identityMode=existing` with the correct UAMI ID |
-| Signal returns `Unknown` always | Wrong AMW resource ID, metric not emitted yet, RBAC not propagated, or event-based metric | Retry smoke after 5 min; check `azureMonitorWorkspaceResourceId`; for event-based metrics, switch to PromQL |
-| `what-if` shows false positives | Known Azure behavior — `what-if` sometimes reports changes that aren't actual changes | Compare with previous deploy; if confident, proceed with deployment |
-| `Provider not registered` | `Microsoft.CloudHealth` not registered | `bootstrap.sh` does this; manual: `az provider register -n Microsoft.CloudHealth` |
-| Smoke test `Unknown` after 10 min | RBAC propagation issue or signal configuration error | Verify role assignments; check signal definitions against live metrics; inspect entity GET response |
-| `az bicep build` fails on `main.bicep` | `loadJsonContent` path is wrong or JSON file missing | Verify all JSON files exist in `03-design/`; regenerate Bicep |
-
-## API version
-
-`2026-01-01-preview` — locked in `scripts/lib/arm.sh` and every `templates/*.bicep`. Bump in lockstep across both when Microsoft moves it forward.
+| `'health-models' is misspelled or not recognized` | Extension missing | `bash bootstrap.sh` (installs it) |
+| `Failed to parse '--managed-identity' argument: dict type value expected` | The CLI help example is wrong; `SystemAssigned` is a dict value | Pass `--managed-identity managed-identity-name=SystemAssigned` (auth JSON uses `managedIdentityName: "SystemAssigned"`) |
+| `(InvalidPayload) Refresh interval should be equal or less than time grain` | `refreshInterval > timeGrain` | Set `refreshInterval ≤ timeGrain` (e.g. both `PT5M`) |
+| `(MissingSignalDefinition) Entity references non-existing signal definition` | Reconcile ran out of order, or signal JSON missing | Reconcile order is fixed in `reconcile.sh`; check the signal file exists under `signals/` |
+| `(NonExistingChildEntity)` on relationship create | Entity JSON missing or `childEntityName` typo | Verify the entity filename matches `childEntityName` |
+| Signals stay `Unknown` after 10 min | RBAC propagation incomplete, or identity lacks role | Re-check role assignments on monitored RG / AMW / workspace; wait another 5 min |
+| `discover-auto.sh` times out with no entities | Resource Graph query returns 0 rows, or missing `id` column | Test the query: `az graph query -q "<query>"`; the result must include an `id` column |
+| `Microsoft.CloudHealth not registered` | Provider not registered | `bootstrap.sh` handles this; manual: `az provider register -n Microsoft.CloudHealth` |
 
 ## Out of scope
 
-- No DELETE operations. Resource removal requires manual portal action.
-- No ARM template deployments — Bicep only.
-- No sparse merge with live state — design files must contain complete properties.
-- No bulk MCP mode.
+- No DELETE operations. Removing a JSON file does NOT remove the Azure resource. Manual `az monitor health-models <kind> delete` is required.
+- No Bicep generation. If you need IaC integration, install the AVM/CARML `Microsoft.CloudHealth/healthModels` Bicep module separately.
+- No bulk MCP/orchestration modes.

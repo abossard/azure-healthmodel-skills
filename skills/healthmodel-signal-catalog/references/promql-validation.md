@@ -167,60 +167,78 @@ Once the query validates, create the signal definition file:
 
 ---
 
-## Step 5: Validate all PromQL signals in the design
+## Step 5: Validate all signals in the design (including PromQL)
 
-Use the automated validation script to test every `PrometheusMetricsQuery` signal against a live AMW:
+Use the unified validator to test every signal-definition against its live data source. It covers `AzureResourceMetric`, `PrometheusMetricsQuery`, and `LogAnalyticsQuery` in a single pass and marks broken / no-data signals automatically.
 
 ```bash
-bash .agents/skills/healthmodel-deploy/scripts/validate-promql.sh "$AMW"
-# or with a custom design directory:
-bash .agents/skills/healthmodel-deploy/scripts/validate-promql.sh "$AMW" .healthmodel/03-design
+AMW='/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Monitor/accounts/<amw>'
+WORKSPACE='/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.OperationalInsights/workspaces/<law>'
+
+bash .agents/skills/healthmodel-deploy/scripts/validate-signals.sh \
+  --amw "$AMW" --workspace "$WORKSPACE"
 ```
 
 The script:
-1. Finds all signal files with `signalKind: "PrometheusMetricsQuery"`
-2. Executes each `queryText` against the AMW via `az rest`
-3. Reports pass/fail/skip per signal
-4. Marks failing signals with `(broken)` in `displayName`
+1. Walks `.healthmodel/03-design/signals/*.json`.
+2. For each signal, dispatches to the matching validator:
+   - **PrometheusMetricsQuery**: `az rest GET <endpoint>/api/v1/query?query=…` against the AMW.
+   - **AzureResourceMetric**: `az monitor metrics list-definitions` + `az monitor metrics list`.
+   - **LogAnalyticsQuery**: `az monitor log-analytics query` against the workspace customerId.
+3. Reports per signal: `✓ ok` / `⊘ no-data` / `✘ broken: <reason>` / `· skipped`.
+4. Mutates `displayName` idempotently — adds or removes the marker on each run; markers never accumulate.
+5. Writes `report-<ts>.tsv` and per-signal raw responses to `.healthmodel/data/deploy/validate-signals/`.
 
-### What counts as a failure
+### What counts as a failure (PromQL)
 
-| Result | Treatment |
-|---|---|
-| `status: "success"`, any value (including `0`) | ✅ Pass — `or vector(0)` working correctly |
-| `status: "error"` (parse error, auth failure) | ❌ Fail — mark as `(broken)` |
-| `az rest` returns non-zero exit code | ❌ Fail — likely AMW unreachable or auth issue |
+| Result | Treatment | displayName |
+|---|---|---|
+| `status: "success"`, any value (including `0`) | ✓ Pass | (clean — any prior marker removed) |
+| `status: "success"`, empty `data.result` | ⊘ no data | `(no data)` |
+| HTTP 4xx / `status: "error"` (parse error, auth failure) | ✘ Fail | `(broken: promql-<reason>)` |
+| `az rest` returns non-zero exit code | ✘ Fail | `(broken: promql-<errorType-from-body>)` |
+| No `--amw` was passed | · Skipped | (unchanged) |
 
 ### What does NOT count as a failure
 
 - A result of `0` — that's correct behavior from `or vector(0)` when no pods are crashing, etc.
-- An empty result array when the query has `or vector(0)` — this shouldn't happen, but if it does, it's still a valid query.
+- An empty result for a query that intentionally omits `or vector(0)` and you accept the (`no data`) marker.
 
 ---
 
-## The "(broken)" marking convention
+## The "(broken)" and "(no data)" marking convention
 
-When a PromQL query cannot be validated (parse error, metric not found, auth failure), the signal is still valuable to keep in the design — it documents the intended monitoring. But it must be clearly marked:
+When a signal cannot be validated (parse error, metric not found, auth failure, query returns empty), the signal is still valuable to keep in the design — it documents the intended monitoring. The unified validator marks it clearly so the portal surfaces the state:
 
 ```json
 {
-  "displayName": "AKS Pod Restarts (broken)",
+  "displayName": "AKS Pod Restarts (broken: promql-bad_data)",
   "signalKind": "PrometheusMetricsQuery",
   "queryText": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"prod\"}[15m])) or vector(0)",
   ...
 }
 ```
 
-The `(broken)` suffix in `displayName`:
-- Is visible in the Azure portal health model view
-- Signals to operators that this metric needs investigation
-- Should be removed once the query is validated against a working AMW
-- `validate-promql.sh` adds it automatically on failure
+```json
+{
+  "displayName": "App Insights Availability % (no data)",
+  "signalKind": "AzureResourceMetric",
+  "metricName": "availabilityResults/availabilityPercentage",
+  ...
+}
+```
+
+The marker conventions:
+- `(broken: <reason>)` — query is invalid; signal will never produce data without a fix.
+- `(no data)` — query is valid but the underlying source emitted nothing in the lookback window; signal may start working once the source emits.
+- Markers go in `displayName` and are visible in the Azure portal health model view.
+- The validator strips and re-applies markers on every run — never accumulates `(broken) (broken: …)`.
 
 To fix a broken signal:
-1. Run the discovery queries (Step 1) to check what metrics are available
-2. Adjust the query to match available metrics
-3. Re-run `validate-promql.sh` — it removes `(broken)` on success
+1. Inspect the raw saved response under `.healthmodel/data/deploy/validate-signals/<signal>.promql.txt` (or `.metrics.err` / `.kql.json`).
+2. Run the discovery queries (Step 1) to check what metrics are available.
+3. Adjust the query to match available metrics.
+4. Re-run `validate-signals.sh` — it removes the marker on success.
 
 ---
 
@@ -261,5 +279,6 @@ prom_query "$ENDPOINT" 'sum(kube_pod_container_status_restarts_total) or vector(
 
 - [promql-cheatsheet.md](./promql-cheatsheet.md) — copy-pasteable Kubernetes PromQL patterns
 - [metrics.md](./metrics.md) — Recipe 5 (probe PromQL against AMW), Recipe 10 (local sanity check)
-- `healthmodel-deploy/scripts/validate-promql.sh` — automated validation script
+- `healthmodel-deploy/scripts/validate-signals.sh` — unified signal validator (ARM + PromQL + KQL)
+- `healthmodel-deploy/scripts/smoke.sh` — post-deploy validator using `entity get-signal-history`
 - `healthmodel-design/SKILL.md` Step 1b — AKS PromQL signal generation

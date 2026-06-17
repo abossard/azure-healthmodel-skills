@@ -1,12 +1,12 @@
 {
   "name": "azure-healthmodel-skills",
-  "description": "Azure Monitor Health Model agent skills — end-to-end workflow from resource discovery to deployment using only the standard az CLI. Six skills: discovery, architecture, design, deploy, orchestrator, and signal catalog.",
-  "version": "0.1.4",
+  "description": "Azure Monitor Health Model agent skills — end-to-end workflow from resource discovery to deployment using the az monitor health-models CLI extension. Six skills: discovery, architecture, design, deploy, orchestrator, and signal catalog.",
+  "version": "0.2.0",
   "author": {
     "name": "abossard"
   },
   "homepage": "https://github.com/abossard/azure-healthmodel-skills",
   "repository": "https://github.com/abossard/azure-healthmodel-skills",
   "license": "MIT",
-  "keywords": ["azure", "health-model", "monitoring", "agent-skills", "azure-monitor"]
+  "keywords": ["azure", "health-model", "monitoring", "agent-skills", "azure-monitor", "az-cli"]
 }

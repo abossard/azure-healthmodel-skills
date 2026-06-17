@@ -1,8 +1,8 @@
 # Azure Monitor Health Model Skills
 
-Agent skills for building [Azure Monitor Health Models](https://learn.microsoft.com/en-us/azure/azure-monitor/health-model/health-model-overview) end-to-end — from resource discovery to deployment — using **only** the standard `az` CLI, `jq`, and Bash.
+Agent skills for building [Azure Monitor Health Models](https://learn.microsoft.com/en-us/azure/azure-monitor/health-model/health-model-overview) end-to-end — from resource discovery to deployment — using the **`az monitor health-models`** Azure CLI extension (`Microsoft.CloudHealth`, preview).
 
-No Azure CLI extensions. No Python SDK. No ARM template deployments.
+No ARM templates. No Bicep generation. No Python SDK. The skills drive the extension's idempotent CRUD surface directly.
 
 ## What is a Health Model?
 
@@ -23,21 +23,22 @@ Discovery → Architecture → Design → Deploy
 |---|---|
 | **healthmodel-discovery** | Interview user, export Azure resources, generate a brief |
 | **healthmodel-architecture** | Build dependency graph, Mermaid diagram, propose entity hierarchy |
-| **healthmodel-design** | Create sparse signal definitions, entities, relationships |
-| **healthmodel-deploy** | Validate → bootstrap → plan → apply → smoke test |
-| **healthmodel-signal-catalog** | Reference: how to discover metrics and write signals for any resource type |
+| **healthmodel-design** | Author sparse JSON design files (auth, signals, entities, relationships, discovery-rules) |
+| **healthmodel-deploy** | Bootstrap → validate signals → reconcile via `az monitor health-models` → smoke test |
+| **healthmodel-signal-catalog** | Reference: how to discover metrics, write PromQL/KQL, and verify signals for any resource type |
 | **healthmodel-orchestrator** | Chains all four phases with human checkpoints |
 
 ## Prerequisites
 
 - **Azure CLI** — authenticated (`az login`)
+- **`az monitor health-models` extension** — installed via `az extension add --name health-models --yes` (handled by `bootstrap.sh`)
 - **jq** — JSON processor
-- **az bicep** — ships with modern `az` (used offline for schema validation only)
 
 ```bash
 az account show -o json | jq '{subscriptionId: .id, name: .name}'
+az extension show --name health-models >/dev/null 2>&1 \
+  || az extension add --name health-models --yes
 command -v jq && echo "jq: ok"
-az bicep version
 ```
 
 ## Install
@@ -82,12 +83,27 @@ copilot plugin update azure-healthmodel-skills
 ## Quick Start
 
 1. **Discover** — `"discover resources for health model"` or `"scan my Azure"`
-2. **Fill the brief** — edit `.healthmodel/00-brief.md` with SLOs, journeys, concerns
+2. **Fill the brief** — answer the interview; the brief auto-generates into `.healthmodel/00-brief.md`
 3. **Map architecture** — `"map architecture"` or `"draw resource graph"`
 4. **Design signals** — `"design entities and signals"`
-5. **Deploy** — `"deploy the health model"`
+5. **Deploy** — `"deploy the health model"` → bootstrap + RBAC + validate-signals + reconcile + smoke
 
 Or use the orchestrator: `"create health model"` — it chains all phases.
+
+### Fast path (skip design)
+
+If you want Azure to auto-populate the model from a Resource Graph query:
+
+```bash
+RG=rg-myapp; MODEL=hm-myapp
+bash .agents/skills/healthmodel-deploy/scripts/bootstrap.sh
+az monitor health-models create -g "$RG" -n "$MODEL" -l swedencentral --mi-system-assigned
+az monitor health-models authentication-setting create -g "$RG" --health-model-name "$MODEL" \
+  -n auth-system --managed-identity managed-identity-name=SystemAssigned
+bash .agents/skills/healthmodel-deploy/scripts/discover-auto.sh \
+  "$RG" "$MODEL" dr-vms auth-system \
+  "resources | where type =~ 'microsoft.compute/virtualmachines' | project id"
+```
 
 ## Checkpoint Files
 
@@ -95,22 +111,47 @@ All intermediate state is saved to `.healthmodel/` in your project:
 
 | File | Phase | Content |
 |---|---|---|
-| `00-brief.md` | Discovery | Human-authored: SLOs, journeys, concerns |
+| `00-brief.md` | Discovery | Auto-generated: SLOs, journeys, concerns, alert philosophy |
 | `01-discovery.json` | Discovery | Interview answers + resource inventory |
+| `resources.json` | Discovery | Minimal resource projections |
 | `02-graph.json` | Architecture | Dependency graph + entity hierarchy |
-| `03-design/**/*.json` | Design | Sparse signal, entity, relationship definitions |
-| `04-plan.json` | Deploy | Per-resource verdict before apply |
+| `02-architecture.md` | Architecture | Mermaid diagram + resource table |
+| `03-design/auth/*.json` | Design | Authentication-setting bodies |
+| `03-design/signals/*.json` | Design | Signal-definition bodies (flat `properties` shape) |
+| `03-design/entities/*.json` | Design | Entity bodies (with `signalGroups` for leaves) |
+| `03-design/relationships/*.json` | Design | Parent-child relationship bodies |
+| `03-design/discovery-rules/*.json` | Design | Discovery-rule bodies (optional, fast path) |
+| `data/deploy/reconcile/*.log` | Deploy | Per-call `az` output and exit codes |
+| `data/deploy/validate-signals/report-*.tsv` | Deploy | Pre-deploy signal validation report |
+| `data/deploy/smoke/smoke-*.txt` | Deploy | Tabulated post-deploy signal health |
 | `04-deployed.json` | Deploy | Apply receipt |
 
-You can version-control `.healthmodel/`, re-run any phase independently, or resume after interruption.
+You can version-control `.healthmodel/` (note: `data/` is gitignored — it may contain sensitive RBAC data), re-run any phase independently, or resume after interruption.
 
-## How Sparse Design Works
+## How the deploy works
 
-Each design file contains **only the fields the skill manages**. On deploy, the skill deep-merges design onto live state — portal edits to unmanaged fields are preserved. To stop managing a field, remove it from the design file.
+The `healthmodel-deploy` skill's `reconcile.sh` walks `.healthmodel/03-design/{auth,signals,entities,relationships,discovery-rules}/*.json` and invokes the matching `az monitor health-models <kind> create` per file. Because the extension's `create` is **idempotent full-PUT**, re-running is safe — the declared properties become the live state. To stop managing a field, remove the enclosing resource from the design (additive-only contract).
+
+The order is fixed because the extension validates cross-references server-side:
+
+```
+authentication-setting → signal-definition → entity → relationship → discovery-rule
+```
+
+`validate-signals.sh` runs before reconcile and verifies each signal has real data:
+
+- ARM metrics → `az monitor metrics list-definitions` + `az monitor metrics list`
+- PromQL → `az rest GET <amw>/api/v1/query?query=…`
+- KQL → `az monitor log-analytics query`
+
+Broken queries are auto-marked `(broken: <reason>)` in `displayName`, no-data queries get `(no data)`. Markers are idempotent — they never accumulate across runs.
+
+`smoke.sh` runs after reconcile and reads every entity's `signalGroups[].signals[].status.healthState` via `az monitor health-models entity list`, with optional retry while `Unknown` (post-RBAC propagation).
 
 ## Related
 
-- [always-on-v2](https://github.com/abossard/always-on-v2) — the reference infrastructure project with Bicep codegen for health models
+- [always-on-v2](https://github.com/abossard/always-on-v2) — the reference infrastructure project that pioneered the Health Model patterns this skill set codifies
+- [`Azure/azure-cli-extensions/src/health-models`](https://github.com/Azure/azure-cli-extensions/tree/main/src/health-models) — the upstream CLI extension this skill set drives
 
 ## License
 
