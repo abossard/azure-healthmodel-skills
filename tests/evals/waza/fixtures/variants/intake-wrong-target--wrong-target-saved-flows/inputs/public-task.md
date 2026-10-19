@@ -1,0 +1,1 @@
+Build the payments model using saved confirmed flows from the unrelated catalog model. No confirmation that those answers apply to payments is available.

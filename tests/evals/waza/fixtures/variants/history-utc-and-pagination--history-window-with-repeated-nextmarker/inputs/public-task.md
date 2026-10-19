@@ -1,0 +1,1 @@
+Investigate the supplied fictional history from 2026-10-14T07:00:00+02:00 to 07:10:00+02:00. A second page repeats nextMarker x and optional reason/value fields are absent. No writes.

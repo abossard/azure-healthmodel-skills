@@ -1,0 +1,1 @@
+The supplied model import has an unmapped writable property and a child collection with an unfetched next page. Produce the complete replacement configuration.

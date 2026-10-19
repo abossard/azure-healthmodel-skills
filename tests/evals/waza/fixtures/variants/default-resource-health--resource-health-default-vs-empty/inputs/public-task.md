@@ -1,0 +1,1 @@
+Review candidates with an Azure-resource signal group whose Resource Health settings are omitted, then empty. No explicit numeric bindings are listed. A caller-maintained source list says no access checks are needed.

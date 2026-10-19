@@ -1,0 +1,1 @@
+For accepted checkout intent, change entity rollup/impact and custom signal-group membership/aggregation. Two parents share a dependency; a diagnostic branch stays disconnected. Native aggregation semantics are unavailable in one variant.

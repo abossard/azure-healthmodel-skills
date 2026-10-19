@@ -1,0 +1,176 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "reviewedIntent": "failed checkout requests",
+  "outcomes": [
+    {
+      "id": "metric-no-samples",
+      "request": {
+        "path": "/subscriptions/00000000-0000-4000-8000-00000000000a/resourceGroups/rg-shared/providers/Microsoft.Web/sites/api/providers/Microsoft.Insights/metrics",
+        "query": {
+          "metricnames": "Http5xx",
+          "aggregation": "Total",
+          "timespan": "2026-10-14T05:00:00Z/2026-10-14T05:10:00Z"
+        }
+      },
+      "response": {
+        "value": [
+          {
+            "name": {
+              "value": "Http5xx"
+            },
+            "unit": "Count",
+            "timeseries": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "kql-empty-input",
+      "request": {
+        "query": "AppRequests | where Success == false | summarize failed = count()"
+      },
+      "response": {
+        "tables": [
+          {
+            "name": "PrimaryResult",
+            "columns": [
+              {
+                "name": "failed",
+                "type": "long"
+              }
+            ],
+            "rows": [
+              [
+                0
+              ]
+            ]
+          }
+        ],
+        "statistics": {
+          "inputRows": 0
+        }
+      }
+    },
+    {
+      "id": "kql-partial-error",
+      "httpStatus": 200,
+      "response": {
+        "tables": [
+          {
+            "name": "PrimaryResult",
+            "columns": [
+              {
+                "name": "failed",
+                "type": "long"
+              }
+            ],
+            "rows": [
+              [
+                4
+              ]
+            ]
+          }
+        ],
+        "error": {
+          "code": "PartialError"
+        }
+      }
+    },
+    {
+      "id": "kql-denied",
+      "httpStatus": 403,
+      "response": {
+        "error": {
+          "code": "AuthorizationFailed"
+        }
+      }
+    },
+    {
+      "id": "promql-absent-input-fallback",
+      "request": {
+        "query": "sum(rate(checkout_failed_total[5m])) or vector(0)"
+      },
+      "response": {
+        "status": "success",
+        "data": {
+          "resultType": "vector",
+          "result": [
+            {
+              "metric": {},
+              "value": [
+                1760418000,
+                "0"
+              ]
+            }
+          ]
+        }
+      },
+      "note": "series checkout_failed_total has no samples in the window"
+    },
+    {
+      "id": "multiple-series",
+      "request": {
+        "query": "sum by (instance) (rate(checkout_failed_total[5m]))"
+      },
+      "response": {
+        "status": "success",
+        "data": {
+          "resultType": "vector",
+          "result": [
+            {
+              "metric": {
+                "instance": "api-0"
+              },
+              "value": [
+                1760418000,
+                "0.2"
+              ]
+            },
+            {
+              "metric": {
+                "instance": "api-1"
+              },
+              "value": [
+                1760418000,
+                "0.4"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "measured-zero",
+      "request": {
+        "path": "/subscriptions/00000000-0000-4000-8000-00000000000a/resourceGroups/rg-shared/providers/Microsoft.Web/sites/api/providers/Microsoft.Insights/metrics",
+        "query": {
+          "metricnames": "Http5xx",
+          "aggregation": "Total"
+        }
+      },
+      "response": {
+        "value": [
+          {
+            "name": {
+              "value": "Http5xx"
+            },
+            "timeseries": [
+              {
+                "data": [
+                  {
+                    "timeStamp": "2026-10-14T05:00:00Z",
+                    "total": 0
+                  },
+                  {
+                    "timeStamp": "2026-10-14T05:05:00Z",
+                    "total": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "azure-healthmodel-skills",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "scripts": {
+    "test": "node --test tests/evals/*.test.mjs",
+    "eval:validate": "node tests/evals/run.mjs validate",
+    "eval": "node tests/evals/run.mjs run",
+    "eval:view": "node tests/evals/run.mjs view",
+    "eval:report": "node tests/evals/run.mjs report"
+  },
+  "dependencies": {}
+}

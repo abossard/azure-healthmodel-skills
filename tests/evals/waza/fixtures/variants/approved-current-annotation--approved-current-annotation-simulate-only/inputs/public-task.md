@@ -1,0 +1,1 @@
+Review a separately approved current-event entity annotation for an exact fictional target and body. Caller permission/command evidence is supplied. Simulate the decision only; tools cannot write.

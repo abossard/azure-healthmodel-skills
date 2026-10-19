@@ -1,0 +1,45 @@
+id: c9-observe-scope-and-alert-leads--scope-a-b-with-duplicate-names-and-alert-lead
+name: "c9-observe-scope-and-alert-leads :: scope-a-b-with-duplicate-names-and-alert-lead"
+description: "Variant task for c9-observe-scope-and-alert-leads (scope-a-b-with-duplicate-names-and-alert-lead)."
+enabled: false
+context_dir: ../fixtures/variants/c9-observe-scope-and-alert-leads--scope-a-b-with-duplicate-names-and-alert-lead
+inputs:
+  prompt: |
+    Compare missing scope with approved subscription A/rg-shared and B/rg-shared. Supplied pages contain duplicate resource names, an alert referencing C/rg-other and a denied continuation. No telemetry queries are requested.
+  follow_up_prompts: []
+  files:
+    - path: "inputs/public-task.md"
+    - path: "inputs/inventory-pages.json"
+    - path: "inputs/alert.json"
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-observe
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/c9-observe-scope-and-alert-leads.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Missing scope asks only scope without reads/writes. Approved pairs return qualified facts, usable pages and denied coverage gaps.
+        2. Leave C unqueried, retain alert provenance and infer no workload importance, desired membership or health.
+  - name: artifact-constraints
+    type: file
+    config:
+      must_not_exist:
+        - "**/*.bicep"
+        - "outputs/**/*.bicep"
+tags:
+  - source:legacy52
+  - source-id:c9-observe-scope-and-alert-leads
+  - variant-id:scope-a-b-with-duplicate-names-and-alert-lead
+  - skill:healthmodel-observe
+  - blocked:safety-admission-unproven
+  - blocked:unsupported-forbidden-operation-toolconstraint-mapping

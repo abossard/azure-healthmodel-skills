@@ -1,0 +1,5 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "requestedDestination": "consumer-unverified",
+  "note": "Store the observations in this destination."
+}

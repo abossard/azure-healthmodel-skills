@@ -1,0 +1,1 @@
+Use a fictional existing model with stable names, topology, a definition plus effective inline override, saved layout and an Unknown observation. One child collection has an unfetched page. Compare a same-target saved brief the user approves updating with a wrong-target brief awaiting a reuse/update choice.

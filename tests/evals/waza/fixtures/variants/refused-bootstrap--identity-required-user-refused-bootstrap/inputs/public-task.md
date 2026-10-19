@@ -1,0 +1,1 @@
+Confirmed model design needs a SystemAssigned identity. The user refuses root-only creation. No grants or final deployment are approved.

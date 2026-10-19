@@ -1,0 +1,606 @@
+{
+  "generator": "replicate-worker-corpus-correction-v2",
+  "wazaVersionTarget": "0.38.10",
+  "totals": {
+    "sourceIdCount": 57,
+    "legacyCaseCount": 52,
+    "workflowCaseCount": 5,
+    "legacyExpectationCount": 104,
+    "legacyVariantCount": 72,
+    "legacyTurnCount": 81,
+    "nativeTaskCount": 77,
+    "blockedTaskCount": 77
+  },
+  "sourceToVariantTasks": [
+    {
+      "sourceId": "intake-missing-user-flow",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "intake-missing-user-flow--missing-user-flow"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/intake-missing-user-flow.md"
+    },
+    {
+      "sourceId": "intake-missing-system-flow",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "intake-missing-system-flow--missing-system-flow"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/intake-missing-system-flow.md"
+    },
+    {
+      "sourceId": "intake-missing-ranked-concerns",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "intake-missing-ranked-concerns--missing-ranked-concerns"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/intake-missing-ranked-concerns.md"
+    },
+    {
+      "sourceId": "intake-confirmed",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "intake-confirmed--confirmed-offline-draft"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/intake-confirmed.md"
+    },
+    {
+      "sourceId": "intake-wrong-target",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "intake-wrong-target--wrong-target-saved-flows"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/intake-wrong-target.md"
+    },
+    {
+      "sourceId": "intake-operator-flow",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "intake-operator-flow--operator-only-no-public-user"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/intake-operator-flow.md"
+    },
+    {
+      "sourceId": "one-entity-expansion",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "one-entity-expansion--proposal-only-new-payment-branch"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/one-entity-expansion.md"
+    },
+    {
+      "sourceId": "tuning-introduces-objective",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "tuning-introduces-objective--reject-unreviewed-objective-swap"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/tuning-introduces-objective.md"
+    },
+    {
+      "sourceId": "changed-root-rollup",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "changed-root-rollup--diagnostic-branch-to-root"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/changed-root-rollup.md"
+    },
+    {
+      "sourceId": "consumer-threshold-tuning",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "consumer-threshold-tuning--latency-threshold-800-to-900"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/consumer-threshold-tuning.md"
+    },
+    {
+      "sourceId": "learn-without-tools",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "learn-without-tools--tools-unavailable-explanation-only"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/learn-without-tools.md"
+    },
+    {
+      "sourceId": "missing-bicep",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "missing-bicep--bicep-unavailable-offline-review"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/missing-bicep.md"
+    },
+    {
+      "sourceId": "writable-import-preservation",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "writable-import-preservation--import-complete-change-tags-owner-only"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/writable-import-preservation.md"
+    },
+    {
+      "sourceId": "incomplete-import",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "incomplete-import--detect-unmapped-and-unfetched-page"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/incomplete-import.md"
+    },
+    {
+      "sourceId": "refuse-direct-configuration-write",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "refuse-direct-configuration-write--reject-direct-patch-route"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/refuse-direct-configuration-write.md"
+    },
+    {
+      "sourceId": "refused-bootstrap",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "refused-bootstrap--identity-required-user-refused-bootstrap"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/refused-bootstrap.md"
+    },
+    {
+      "sourceId": "changed-reviewed-artifacts",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "changed-reviewed-artifacts--approval-invalidated-by-parameter-change"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/changed-reviewed-artifacts.md"
+    },
+    {
+      "sourceId": "approved-current-annotation",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "approved-current-annotation--approved-current-annotation-simulate-only"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/approved-current-annotation.md"
+    },
+    {
+      "sourceId": "ambiguous-annotation-response",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "ambiguous-annotation-response--lost-response-ambiguous-recent-annotations"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/ambiguous-annotation-response.md"
+    },
+    {
+      "sourceId": "failed-principal-readback",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "failed-principal-readback--post-bootstrap-readback-failed"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/failed-principal-readback.md"
+    },
+    {
+      "sourceId": "pending-model-access",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "pending-model-access--grant-propagating-alt-uai-unverified"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/pending-model-access.md"
+    },
+    {
+      "sourceId": "absent-input-zero-result",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "absent-input-zero-result--zero-result-with-empty-rows-and-identity-denied"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/absent-input-zero-result.md"
+    },
+    {
+      "sourceId": "measured-zero",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "measured-zero--zero-error-count-reviewed-window"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/measured-zero.md"
+    },
+    {
+      "sourceId": "partial-or-malformed-source",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "partial-or-malformed-source--partialerror-and-missing-result-table"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/partial-or-malformed-source.md"
+    },
+    {
+      "sourceId": "default-resource-health",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "default-resource-health--resource-health-default-vs-empty"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/default-resource-health.md"
+    },
+    {
+      "sourceId": "discovery-only-gaps",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "discovery-only-gaps--discovery-only-unresolved-access"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/discovery-only-gaps.md"
+    },
+    {
+      "sourceId": "history-utc-and-pagination",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "history-utc-and-pagination--history-window-with-repeated-nextmarker"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/history-utc-and-pagination.md"
+    },
+    {
+      "sourceId": "history-repeat-and-carry-in",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "history-repeat-and-carry-in--second-window-carry-in-only"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/history-repeat-and-carry-in.md"
+    },
+    {
+      "sourceId": "stable-flow-backend-replacement",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "stable-flow-backend-replacement--replace-backend-preserve-stable-entity"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/stable-flow-backend-replacement.md"
+    },
+    {
+      "sourceId": "signal-history-identity",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "signal-history-identity--instance-update-vs-recreate-vs-label-change"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/signal-history-identity.md"
+    },
+    {
+      "sourceId": "implicit-root-and-shared-dependency",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "implicit-root-and-shared-dependency--shared-dependency-with-disconnected-diagnostic"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/implicit-root-and-shared-dependency.md"
+    },
+    {
+      "sourceId": "layout-only-change",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "layout-only-change--move-one-node-preserve-rest"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/layout-only-change.md"
+    },
+    {
+      "sourceId": "native-preview-not-deployment",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "native-preview-not-deployment--preview-and-notfound-not-lifecycle-proof"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/native-preview-not-deployment.md"
+    },
+    {
+      "sourceId": "absence-versus-read-failure",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "absence-versus-read-failure--distinguish-notfound-auth-malformed-incomplete"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/absence-versus-read-failure.md"
+    },
+    {
+      "sourceId": "cleanup-ownership-and-history",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "cleanup-ownership-and-history--prepare-cleanup-no-execution"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/cleanup-ownership-and-history.md"
+    },
+    {
+      "sourceId": "healthy-headline-unknown-numeric",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "healthy-headline-unknown-numeric--healthy-entities-unknown-numeric-no-source-query"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/healthy-headline-unknown-numeric.md"
+    },
+    {
+      "sourceId": "provisioning-succeeded-evaluation-failed",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "provisioning-succeeded-evaluation-failed--provisioning-ok-latest-eval-auth-error"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/provisioning-succeeded-evaluation-failed.md"
+    },
+    {
+      "sourceId": "c4-h1",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "c4-h1--missing-scope-then-ambiguous-rg"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/c4-h1.md"
+    },
+    {
+      "sourceId": "c4-h2",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "c4-h2--ordered-refusal-scope-correction-acceptance"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/c4-h2.md"
+    },
+    {
+      "sourceId": "c4-h3",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 2,
+      "variantTaskIds": [
+        "c4-h3--same-target-update",
+        "c4-h3--wrong-target-awaiting-choice"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/c4-h3.md"
+    },
+    {
+      "sourceId": "c4-h4",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 3,
+      "variantTaskIds": [
+        "c4-h4--missing-tools-offline-context",
+        "c4-h4--authorizationfailed-next-page",
+        "c4-h4--no-writable-files-repeat-h2"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/c4-h4.md"
+    },
+    {
+      "sourceId": "c4-h5",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 2,
+      "variantTaskIds": [
+        "c4-h5--consumer-threshold-edit",
+        "c4-h5--new-payment-dependency-called-small"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/c4-h5.md"
+    },
+    {
+      "sourceId": "genuine-unhealthy-evaluation",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "genuine-unhealthy-evaluation--matching-source-and-evaluation-unhealthy"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/genuine-unhealthy-evaluation.md"
+    },
+    {
+      "sourceId": "c5-p1",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "c5-p1--observe-save-then-fresh-signals-session"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/c5-p1.md"
+    },
+    {
+      "sourceId": "c5-p2",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 6,
+      "variantTaskIds": [
+        "c5-p2--mismatch-cloud-tenant",
+        "c5-p2--mismatch-duplicate-rg-resource-name",
+        "c5-p2--mismatch-source-workspace",
+        "c5-p2--mismatch-query-filter-dimensions-aggregation",
+        "c5-p2--mismatch-window-currentness",
+        "c5-p2--mismatch-operation-cached-approval"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/c5-p2.md"
+    },
+    {
+      "sourceId": "c5-p3",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 3,
+      "variantTaskIds": [
+        "c5-p3--successful-captures-and-denied-continuations",
+        "c5-p3--deny-capture-write",
+        "c5-p3--deny-evidence-note-write"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/c5-p3.md"
+    },
+    {
+      "sourceId": "c5-p4",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 7,
+      "variantTaskIds": [
+        "c5-p4--protected-outside-git-consumer",
+        "c5-p4--unsafe-consumer-pauses",
+        "c5-p4--unverified-consumer-pauses",
+        "c5-p4--capture-name-collision",
+        "c5-p4--missing-or-ambiguous-scope",
+        "c5-p4--scope-only-refused-review",
+        "c5-p4--wrong-target-brief"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/c5-p4.md"
+    },
+    {
+      "sourceId": "c9-observe-scope-and-alert-leads",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "c9-observe-scope-and-alert-leads--scope-a-b-with-duplicate-names-and-alert-lead"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/c9-observe-scope-and-alert-leads.md"
+    },
+    {
+      "sourceId": "c9-query-source-outcomes",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "c9-query-source-outcomes--metric-kql-promql-outcome-matrix"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/c9-query-source-outcomes.md"
+    },
+    {
+      "sourceId": "c9-signal-fragment-and-stable-instance",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "c9-signal-fragment-and-stable-instance--shared-definition-reorder-and-tune-one-binding"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/c9-signal-fragment-and-stable-instance.md"
+    },
+    {
+      "sourceId": "c9-bounded-removal",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 3,
+      "variantTaskIds": [
+        "c9-bounded-removal--remove-manual-entity",
+        "c9-bounded-removal--discovery-owned-entity",
+        "c9-bounded-removal--unmapped-writable-field"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/c9-bounded-removal.md"
+    },
+    {
+      "sourceId": "c9-rollup-impact-custom-groups",
+      "sourceKind": "legacy52",
+      "expectedCount": 2,
+      "variantTaskCount": 2,
+      "variantTaskIds": [
+        "c9-rollup-impact-custom-groups--native-aggregation-semantics-supplied",
+        "c9-rollup-impact-custom-groups--native-aggregation-semantics-unavailable"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/c9-rollup-impact-custom-groups.md"
+    },
+    {
+      "sourceId": "always-on-01",
+      "sourceKind": "always-on-five",
+      "expectedCount": 10,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "always-on-01--private-workflow"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/always-on-01.md"
+    },
+    {
+      "sourceId": "always-on-02",
+      "sourceKind": "always-on-five",
+      "expectedCount": 10,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "always-on-02--private-workflow"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/always-on-02.md"
+    },
+    {
+      "sourceId": "always-on-03",
+      "sourceKind": "always-on-five",
+      "expectedCount": 11,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "always-on-03--private-workflow"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/always-on-03.md"
+    },
+    {
+      "sourceId": "always-on-04",
+      "sourceKind": "always-on-five",
+      "expectedCount": 11,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "always-on-04--private-workflow"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/always-on-04.md"
+    },
+    {
+      "sourceId": "always-on-05",
+      "sourceKind": "always-on-five",
+      "expectedCount": 10,
+      "variantTaskCount": 1,
+      "variantTaskIds": [
+        "always-on-05--private-workflow"
+      ],
+      "rubricPath": "tests/evals/waza/rubrics/always-on-05.md"
+    }
+  ]
+}

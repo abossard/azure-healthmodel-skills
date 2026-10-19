@@ -1,0 +1,1 @@
+Fictional readback confirms successful provisioning, intended children and bindings. The latest numeric evaluation reports an authorization error and has no sample. A caller source query succeeds.

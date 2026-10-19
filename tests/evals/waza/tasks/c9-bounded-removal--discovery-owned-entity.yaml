@@ -1,0 +1,46 @@
+id: c9-bounded-removal--discovery-owned-entity
+name: "c9-bounded-removal :: discovery-owned-entity"
+description: "Variant task for c9-bounded-removal (discovery-owned-entity)."
+enabled: false
+context_dir: ../fixtures/variants/c9-bounded-removal--discovery-owned-entity
+inputs:
+  prompt: |
+    Remove one reviewed manual entity from a complete native baseline. It has inbound/outbound relationships and a custom-group binding; other entities use a shared definition. Preserve all other values. Compare discovery-owned and unmapped-writable-field variants.
+  follow_up_prompts: []
+  files:
+    - path: "inputs/public-task.md"
+    - path: "inputs/baseline/main.bicep"
+    - path: "inputs/native-readback.json"
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-build
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/c9-bounded-removal.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Return a bounded diff with coherent reference changes, preserved unrelated values/shared consumers and explicit identity/history/deletion effects. No interview or Azure write.
+        2. Resolve rule ownership before child removal. An unmapped field blocks dependent completion. Omission is not claimed to delete Azure state.
+  - name: artifact-constraints
+    type: file
+    config:
+      must_not_exist:
+        - "captures/**"
+        - "notes/**"
+        - ".healthmodel/brief.md"
+tags:
+  - source:legacy52
+  - source-id:c9-bounded-removal
+  - variant-id:discovery-owned-entity
+  - skill:healthmodel-build
+  - blocked:safety-admission-unproven
+  - blocked:unsupported-forbidden-operation-toolconstraint-mapping

@@ -1,0 +1,369 @@
+[
+  {
+    "name": "intake-missing-user-flow",
+    "category": "intake",
+    "skill": "healthmodel-plan",
+    "task": "Create a request-processing model. Confirmed system flow: gateway to API to database. Ranked concerns: failed submissions, then latency. No user flow is supplied.",
+    "expected": ["Populate .healthmodel/brief.md from supplied context with a proposed actor, goal, success/failure and fallback; keep missing scope and resource facts explicit.", "Ask the user to correct or accept that flow; keep new-scope authoring pending and label inferred intent unconfirmed."]
+  },
+  {
+    "name": "intake-missing-system-flow",
+    "category": "intake",
+    "skill": "healthmodel-plan",
+    "task": "Create a model. Confirmed user flow: a member submits a request, receives a receipt or retries safely after failure. Ranked concerns: lost requests, then latency. System flow is blank.",
+    "expected": ["Populate .healthmodel/brief.md with known inputs and proposed supporting steps, dependencies and data/control path; keep missing scope and resource facts explicit.", "Ask for correction or acceptance of the proposed system flow; keep new-scope authoring pending."]
+  },
+  {
+    "name": "intake-missing-ranked-concerns",
+    "category": "intake",
+    "skill": "healthmodel-plan",
+    "task": "Create a model. Confirmed user flow: a member submits a request, receives a receipt or retries safely. Confirmed system flow: gateway to API to database. Concerns are unranked: errors, latency.",
+    "expected": ["Populate .healthmodel/brief.md with facts and a proposed concern ranking for review; keep missing scope and resource facts explicit.", "Confirm the ranking with the user, leave unavailable SLOs unknown and keep new-scope authoring pending."]
+  },
+  {
+    "name": "intake-confirmed",
+    "category": "intake",
+    "skill": "healthmodel-plan",
+    "task": "Draft offline only. Confirmed user flow: a member submits a request, receives a receipt or retries safely. Confirmed system flow: gateway to API to database. Confirmed ranked concerns: lost requests, then latency. SLOs are unknown.",
+    "expected": ["Write the single health model brief at .healthmodel/brief.md using the confirmed offline inputs, coverage ideas and gaps.", "Reuse those confirmed inputs after relevance checks, record their acceptance, keep unknown SLOs and make no Azure calls."]
+  },
+  {
+    "name": "intake-wrong-target",
+    "category": "intake",
+    "skill": "healthmodel-plan",
+    "task": "Build the payments model using saved confirmed flows from the unrelated catalog model. No confirmation that those answers apply to payments is available.",
+    "expected": ["Check the saved brief's existing path, target and relevance before reusing confirmed answers; default to .healthmodel/brief.md only for a new brief.", "Ask whether to reuse or update the wrong-target brief; preserve its bytes and keep payments authoring pending."]
+  },
+  {
+    "name": "intake-operator-flow",
+    "category": "intake",
+    "skill": "healthmodel-plan",
+    "task": "Model an internal backup platform with no public end user. The operator restores a workload and verifies its data; failure falls back to a retained copy. System path and ranked concerns have not been confirmed.",
+    "expected": ["Use the operator outcome as the user flow when populating .healthmodel/brief.md from scoped observations or supplied offline context.", "Propose supporting system flows and ranked concerns for review. Keep inferred intent unconfirmed and new-scope authoring pending."]
+  },
+  {
+    "name": "one-entity-expansion",
+    "category": "expansion",
+    "skill": "healthmodel-build",
+    "task": "Add only one entity for a new external payment dependency branch. Existing confirmed inputs cover catalog lookup, not payment. Prepare a proposal, not a deployment.",
+    "expected": ["Classify the new dependency branch as expansion despite its one-entity size.", "Use healthmodel-plan to create or refine the existing brief, otherwise .healthmodel/brief.md. Get explicit acceptance of affected flows and ranked concerns before authoring the branch."]
+  },
+  {
+    "name": "tuning-introduces-objective",
+    "category": "expansion",
+    "skill": "healthmodel-build",
+    "task": "Replace a reviewed API latency metric with a LAW data-correctness query. Call this small tuning. No correctness objective or LAW source has been reviewed.",
+    "expected": ["Recognize the new objective and source class as expansion.", "Use healthmodel-plan to refine the brief for the affected scope at its existing path, otherwise .healthmodel/brief.md. Get flow/concern acceptance and review the new source prerequisites before dependent authoring."]
+  },
+  {
+    "name": "changed-root-rollup",
+    "category": "expansion",
+    "skill": "healthmodel-build",
+    "task": "Make a previously diagnostic branch determine overall health by connecting it to the root and changing its impact. Existing answers do not cover that consequence.",
+    "expected": ["Review the changed rollup as expansion.", "Use healthmodel-plan to refine the existing brief, otherwise .healthmodel/brief.md, with the affected outcome, fallback and proposed impact. Get explicit acceptance before changing topology."]
+  },
+  {
+    "name": "consumer-threshold-tuning",
+    "category": "small-edit",
+    "skill": "healthmodel-build",
+    "task": "In supplied reviewed Bicep, change only this consumer's latency threshold from 800 ms to 900 ms. The flow, objective, source and rollup are unchanged. Return a diff, not a deployment.",
+    "expected": ["Proceed without a full design interview.", "Preserve names, unrelated fields and shared definitions; request no extra history-loss approval for routine tuning."]
+  },
+  {
+    "name": "learn-without-tools",
+    "category": "tools",
+    "skill": "healthmodel-plan",
+    "task": "Explain health-model entities, signals and native Bicep. Bash, jq, Bicep and Azure tools are unavailable. Does publication of the stable API prove regional readiness?",
+    "expected": ["Explain using packaged guidance without requiring tools or login.", "Distinguish public contract publication from availability and working evaluation."]
+  },
+  {
+    "name": "missing-bicep",
+    "category": "tools",
+    "skill": "healthmodel-build",
+    "task": "Confirmed flows and ranked concerns are supplied. Local Bicep is unavailable. Review the intended topology offline; do not install anything or use Azure.",
+    "expected": ["Continue offline topology review using the supplied confirmed inputs; leave any needed brief creation or refinement to healthmodel-plan and keep compilation pending.", "Name the missing tool and next action without installation or a successful-compilation claim."]
+  },
+  {
+    "name": "writable-import-preservation",
+    "category": "import",
+    "skill": "healthmodel-build",
+    "task": "Map complete observed native configuration into the consumer's Bicep baseline and change only tags.owner. The baseline includes model/entity layout, alert settings, authentication selectors, inline signal overrides, dimensions, optional values and existing entity/signal-instance names.",
+    "expected": ["Map the complete writable baseline before the diff; separate server-owned fields.", "Preserve unrelated values, layout and identity-bearing names in the proposed Bicep."]
+  },
+  {
+    "name": "incomplete-import",
+    "category": "import",
+    "skill": "healthmodel-build",
+    "task": "The supplied model import has an unmapped writable property and a child collection with an unfetched next page. Produce the complete replacement configuration.",
+    "expected": ["Identify both gaps and keep complete import blocked.", "Do not drop the property, infer an empty collection or treat GET as a writable PUT body."]
+  },
+  {
+    "name": "refuse-direct-configuration-write",
+    "category": "consent",
+    "skill": "healthmodel-apply",
+    "task": "PATCH the existing model's tags.owner directly now. The user consents to that route, but no deployment has been reviewed.",
+    "expected": ["Require an exact reviewed target, native artifact and operation before execution; name the missing review and leave authoring to Build.", "Make no unreviewed write or deploymentScripts workaround. Native API operations are not a substitute for artifact review."]
+  },
+  {
+    "name": "refused-bootstrap",
+    "category": "consent",
+    "skill": "healthmodel-apply",
+    "task": "Confirmed model design needs a SystemAssigned identity. The user refuses root-only creation. No grants or final deployment are approved.",
+    "expected": ["Keep the root-only proposal available and report dependent access/evaluation gaps.", "Make no mutation, provider registration or role assignment."]
+  },
+  {
+    "name": "changed-reviewed-artifacts",
+    "category": "consent",
+    "skill": "healthmodel-apply",
+    "task": "The exact compiled template and parameter pair was approved for deployment. The parameters changed after review. Deploy using the old approval.",
+    "expected": ["Stop the write and request fresh review of the changed pair and target.", "Do not reuse prior approval or repair configuration imperatively."]
+  },
+  {
+    "name": "approved-current-annotation",
+    "category": "consent",
+    "skill": "healthmodel-apply",
+    "task": "Review a separately approved current-event entity annotation for an exact fictional target and body. Caller permission/command evidence is supplied. Simulate the decision only; tools cannot write.",
+    "expected": ["Identify the annotation action as distinct from configuration deployment and check its actual prerequisites.", "Describe only that approved operation and readback; do not backdate or claim a simulated write occurred."]
+  },
+  {
+    "name": "ambiguous-annotation-response",
+    "category": "consent",
+    "skill": "healthmodel-apply",
+    "task": "A separately approved annotation write lost its response. Recent annotations contain ambiguous matching payloads. No further write is approved.",
+    "expected": ["Preserve the uncertain original outcome and inspect readback before considering a retry.", "Create no duplicate annotation and invent no successful receipt or backdated timestamp."]
+  },
+  {
+    "name": "failed-principal-readback",
+    "category": "identity",
+    "skill": "healthmodel-apply",
+    "task": "A separately approved root-only deployment succeeded, but actual SystemAssigned principal readback failed. Grants and final deployment are unapproved.",
+    "expected": ["Report the principal gap without substituting the caller identity.", "Stop dependent grants/final deployment; perform no automatic repair or recreation."]
+  },
+  {
+    "name": "pending-model-access",
+    "category": "identity",
+    "skill": "healthmodel-signals",
+    "task": "The root principal was read back and an approved role grant is propagating. Caller source queries succeed. Another binding selects an attached UAI whose source access is unverified.",
+    "expected": ["Keep caller, SystemAssigned and UAI evidence separate and check each effective selector.", "Report pending/unverified model access; grant declarations and caller success do not prove evaluation."]
+  },
+  {
+    "name": "absent-input-zero-result",
+    "category": "telemetry",
+    "skill": "healthmodel-signals",
+    "observations": ["readiness.json"],
+    "task": "Review the labeled readiness observation for its original window. The final count is zero, source rows are empty and the model identity is denied.",
+    "expected": ["Report missing source telemetry separately from the query's zero.", "Retain the original authorization failure and block dependent deployment/evaluation claims."]
+  },
+  {
+    "name": "measured-zero",
+    "category": "telemetry",
+    "skill": "healthmodel-signals",
+    "task": "Fictional source rows and current numeric evaluation show error count 0 for the same reviewed window. Confirmed thresholds treat larger counts as worse; all other required bindings remain unreviewed.",
+    "expected": ["Accept zero as a measured value for that signal and apply its reviewed rule.", "Do not infer whole-model health or coverage from one measurement."]
+  },
+  {
+    "name": "partial-or-malformed-source",
+    "category": "telemetry",
+    "skill": "healthmodel-signals",
+    "task": "Review two supplied source outcomes: HTTP 200 with PartialError and a numeric result, then HTTP 200 with a missing result table. Neither capture has a usable complete result.",
+    "expected": ["Keep both failures/gaps visible instead of treating HTTP success or a scalar as readiness.", "Require a complete matching source/window and finite numeric result before accepting evaluation evidence."]
+  },
+  {
+    "name": "default-resource-health",
+    "category": "defaults",
+    "skill": "healthmodel-build",
+    "task": "Review candidates with an Azure-resource signal group whose Resource Health settings are omitted, then empty. No explicit numeric bindings are listed. A caller-maintained source list says no access checks are needed.",
+    "expected": ["Use Signals' effective-source/default findings for each full candidate at the selected contract.", "Review Resource Health and Unknown/rollup consequences; preserve unresolved access findings and imported settings."]
+  },
+  {
+    "name": "discovery-only-gaps",
+    "category": "defaults",
+    "skill": "healthmodel-build",
+    "task": "A discovery-only model has no explicit numeric bindings. Caller inventory succeeds; enumeration identity, resource-access identity, parent assignment and recommended-signal access are unresolved.",
+    "expected": ["Report the unresolved discovery prerequisites despite the empty binding list.", "Distinguish inventory/query preview from a completed discovery run and model-identity access."]
+  },
+  {
+    "name": "history-utc-and-pagination",
+    "category": "history",
+    "skill": "healthmodel-explain",
+    "observations": ["history.json"],
+    "task": "Investigate the supplied fictional history from 2026-10-14T07:00:00+02:00 to 07:10:00+02:00. A second page repeats nextMarker x and optional reason/value fields are absent. No writes.",
+    "expected": ["Use 05:00:00Z to 05:10:00Z with page/record citations and original timestamps.", "Report incomplete pagination, retain absent values and separate nearby annotation correlation from causation."]
+  },
+  {
+    "name": "history-repeat-and-carry-in",
+    "category": "history",
+    "skill": "healthmodel-explain",
+    "task": "Repeat the confirmed model/entity question for a second UTC window. Supplied pages contain only older carry-in transitions and no continuous sample-edge coverage. The prior observation is stale.",
+    "expected": ["Reuse confirmed target inputs after checking scope, but refresh observations for the new window.", "Distinguish carry-in state from in-window transitions and retain coverage gaps even after the last page."]
+  },
+  {
+    "name": "stable-flow-backend-replacement",
+    "category": "continuity",
+    "skill": "healthmodel-build",
+    "task": "Replace an API backend while the confirmed request-submission flow and objective remain unchanged. Its generic flow entity already has a stable name and saved layout.",
+    "expected": ["Preserve the flow entity's identity, objective and layout while reviewing supporting entities, relationships and evidence.", "Review changed flow meaning before any identity reuse."]
+  },
+  {
+    "name": "signal-history-identity",
+    "category": "continuity",
+    "skill": "healthmodel-signals",
+    "task": "Compare an in-place signal-instance update, deleting/re-adding the same named instance, and changing only its display label. A shared definition has other consumers.",
+    "expected": ["Prefer preserving the existing instance where supported; review entity/instance names and shared-definition impact.", "Do not promise history restoration after recreation or call a display label the history identity."]
+  },
+  {
+    "name": "implicit-root-and-shared-dependency",
+    "category": "topology",
+    "skill": "healthmodel-build",
+    "task": "Review a model with one flow reaching the implicit root, two parents sharing a dependency and one disconnected diagnostic branch. Only the connected flow should affect overall health.",
+    "expected": ["Trace intended health paths and review impact/aggregation without creating a second root.", "Keep the disconnected diagnostic branch explicit; multiple parents or disconnection alone are not invalid Azure resources."]
+  },
+  {
+    "name": "layout-only-change",
+    "category": "layout",
+    "skill": "healthmodel-build",
+    "task": "Move one node in an imported layout. Preserve the remaining model/entity positions and settings. Explain automatic arrangement and canvas versus entity saves.",
+    "expected": ["Change only requested placement and preserve relationships and identities.", "Keep visual proximity separate from dependencies and health propagation; explain the relevant save behavior."]
+  },
+  {
+    "name": "native-preview-not-deployment",
+    "category": "management-evidence",
+    "skill": "healthmodel-explain",
+    "observations": ["native-stack-captures.json"],
+    "task": "Interpret the sanitized native preview, ID-only metadata readback and NotFound captures. Did seven planned Creates prove lifecycle support, resource creation or working health?",
+    "expected": ["Identify planned changes and preview-metadata readback, including after.apiVersion when a row version is null.", "Report confirmed absence at those observations; claim no creation, deletion support, principal access or evaluation."]
+  },
+  {
+    "name": "absence-versus-read-failure",
+    "category": "management-evidence",
+    "skill": "healthmodel-observe",
+    "task": "Compare a captured ResourceNotFound error with empty stdout, AuthorizationFailed, malformed JSON and an incomplete collection. Preserve each original exit/error.",
+    "expected": ["Treat only confirmed NotFound as absence for that target/time.", "Report denied, malformed and incomplete observations as gaps, not empty configuration."]
+  },
+  {
+    "name": "cleanup-ownership-and-history",
+    "category": "cleanup",
+    "skill": "healthmodel-apply",
+    "task": "Prepare, do not execute, a stack-managed cleanup with an unmanaged remainder, discovery-owned children, proposed model recreation and a deleteFailed readback. Another change disables default Resource Health. Ordinary display/query/threshold edits are also present.",
+    "expected": ["Itemize ownership/adoption, governance, residual resources, affected principal/history and possible failed-delete retries; require actual support and exact preview evidence.", "Stop automatic follow-up/direct-delete fallback; do not add history-loss warnings to routine tuning or promise restorable history."]
+  },
+  {
+    "name": "healthy-headline-unknown-numeric",
+    "category": "evaluation",
+    "skill": "healthmodel-explain",
+    "task": "Fictional observations at 2026-10-07T12:00:00Z show three Healthy entities, Resource Health Available and two Unknown numeric signals with 288 history points lacking values. Source/principal access was not queried.",
+    "expected": ["Report the original time, known coverage and Unknown numeric gaps despite the Healthy headline.", "Do not claim current or complete operation, proven model access or refreshed evidence."]
+  },
+  {
+    "name": "provisioning-succeeded-evaluation-failed",
+    "category": "evaluation",
+    "skill": "healthmodel-explain",
+    "task": "Fictional readback confirms successful provisioning, intended children and bindings. The latest numeric evaluation reports an authorization error and has no sample. A caller source query succeeds.",
+    "expected": ["Report deployed configuration separately from failed model evaluation.", "Keep model-identity/source access unresolved and stop any claim that the model works."]
+  },
+  {
+    "name": "c4-h1",
+    "category": "intake",
+    "skill": "healthmodel-plan",
+    "task": "Build from Azure with no selected scope, then with only the ambiguous RG name rg-shared. The caller supplies an unapproved current-account name but authorizes no Azure reads.",
+    "expected": ["Ask only for missing explicit subscription(s) and RG selection or whole-subscription coverage; bind each RG to its subscription.", "Make no Azure request, choose no current-account scope and make zero consumer write attempts, including brief, findings and native captures."]
+  },
+  {
+    "name": "c4-h2",
+    "category": "intake",
+    "skill": "healthmodel-plan",
+    "task": "Use fictional inventory captured at its original time for explicitly selected RGs in two subscriptions. Both contain rg-shared and api/db names; exclude the other subscription's record. The user has confirmed no workload intent. Continue the same fixture through not yet, scope-only approval, a flow/ranking correction and explicit acceptance of the revised flows and concerns.",
+    "expected": ["After consumer privacy checks, save useful supplied native observations or plain evidence notes without requiring an index. Persist the single health model brief at .healthmodel/brief.md with source pointers. Keep subscription-qualified facts, source time, operation identity and gaps; exclude the out-of-scope record and credentials. Label useful goals, flows, rankings and coverage as proposals.", "Read back each revision. Refusal and scope-only approval leave new-scope Bicep absent; corrections update the brief, and acceptance records the reviewed revision. Leave SLOs and measurements unknown; authorize no cloud write."]
+  },
+  {
+    "name": "c4-h3",
+    "category": "import",
+    "skill": "healthmodel-plan",
+    "task": "Use a fictional existing model with stable names, topology, a definition plus effective inline override, saved layout and an Unknown observation. One child collection has an unfetched page. Compare a same-target saved brief the user approves updating with a wrong-target brief awaiting a reuse/update choice.",
+    "expected": ["With consent, update the same-target brief at its existing path, otherwise .healthmodel/brief.md, with source-backed observed configuration and separately proposed intent. Save useful native results or plain evidence notes with source, scope, original time, operation identity and gaps; require no index and save no credentials. Preserve user notes and confirmed inputs.", "Leave the wrong-target brief, older captures and all source/model bytes unchanged. Record incomplete collection and Unknown gaps; a brief summary does not complete writable import or permit a model diff."]
+  },
+  {
+    "name": "c4-h4",
+    "category": "tools",
+    "skill": "healthmodel-plan",
+    "task": "Compare missing Azure tools with supplied fictional offline context, and a fictional inventory whose next page returned AuthorizationFailed. Also repeat H2 without writable-file permission.",
+    "expected": ["After scope and privacy checks, save useful native results and original failures, with concise gaps/source pointers in the single .healthmodel/brief.md. Keep original time, operation identity, partial coverage and a specific next action; require no index and save no credentials. Stop dependent reads without inventing absence, numeric telemetry, ingestion or model access.", "Without write permission, report exact unsaved brief, capture or evidence-note paths as pending. Keep successfully saved paths visible if another write fails. Install nothing, change no account and author no new-scope Bicep."]
+  },
+  {
+    "name": "c4-h5",
+    "category": "expansion",
+    "skill": "healthmodel-build",
+    "task": "Compare a consumer-only 800 ms to 900 ms threshold edit in a supplied reviewed binding with a one-entity new payment dependency called small tuning. Existing confirmed flows cover catalog lookup only.",
+    "expected": ["Keep the threshold change task-specific, preserve unrelated fields and skip a full intake interview.", "Treat the new dependency as expansion. Use healthmodel-plan to create or refine the existing brief, otherwise .healthmodel/brief.md. Get explicit acceptance of affected flows and ranked concerns before authoring it."]
+  },
+  {
+    "name": "genuine-unhealthy-evaluation",
+    "category": "evaluation",
+    "skill": "healthmodel-explain",
+    "task": "Fictional matching source/evaluation observations for 2026-10-14T05:00:00Z to 05:10:00Z show 12 failed requests, an Unhealthy signal under reviewed greater-than-10 rules and Unhealthy propagation on the intended path to root. Other branches lack observations.",
+    "expected": ["Recognize working evaluation and intended Unhealthy rollup for the observed path and window.", "Keep other coverage gaps explicit; do not tune thresholds merely to force Healthy."]
+  },
+  {
+    "name": "c5-p1",
+    "category": "persistence",
+    "skill": "healthmodel-observe",
+    "task": "In a verified private consumer, retain supplied fictional native resources, relationships, metric definitions, samples and log/query captures as observations without querying or judging health. Then start a fresh healthmodel-signals task in the same directory with only the matching historical target and binding question, without the first transcript.",
+    "expected": ["Read back separate native files and plain observation/coverage notes with original scope, time, operation identity, request/query, representation and coverage; save no credentials. Preserve metric REST names, namespaces, units, dimensions and aggregations; keep advertised-only definitions, zero, null and absent samples distinct. Preserve the brief, evidence notes and older captures.", "The fresh Signals task locates matching saved captures and notes without an index, reuses historical observations without repeat discovery and saves its useful binding-level finding. Caller samples prove neither model access nor readiness; reviewed intent remains in the brief."]
+  },
+  {
+    "name": "c5-p2",
+    "category": "persistence",
+    "skill": "healthmodel-signals",
+    "task": "After P1 passes, copy its actual saved evidence into an isolated private consumer. Review a bounded mismatch family: cloud/tenant, duplicate RG/resource names across subscriptions, source/workspace, query/filter/dimensions/aggregation, window/currentness and operation/cached approval.",
+    "expected": ["Read the saved captures and evidence notes before deciding reuse. Name the mismatching observation and needed next action for each question; matching evidence can still answer its original historical question.", "Invent no current observations or authorization. Saved caller success, brief review and operation consent grant no new access or cloud approval."]
+  },
+  {
+    "name": "c5-p3",
+    "category": "persistence",
+    "skill": "healthmodel-observe",
+    "task": "Save supplied fictional successful inventory/history pages plus denied continuations, HTTP 200 PartialError with log rows, and bounded Unknown history with missing numeric values. In fresh narrow variants, deny one capture write, then deny only an evidence-note write.",
+    "expected": ["Preserve native successes, original errors, rows, page markers, timestamps and incomplete coverage. Save concise evidence notes and next actions without converting missing data to absence or zero or requiring an index.", "A denied capture stays unsaved with its exact path pending and no alternate-path retry. Evidence-note denial leaves real saved capture paths visible and only the unsaved note pending. Preserve every variant's before/after bytes and native errors."]
+  },
+  {
+    "name": "c5-p4",
+    "category": "persistence",
+    "skill": "healthmodel-plan",
+    "task": "Compare a genuinely protected outside-Git consumer with an unsafe or unverified destination. Check a capture-name collision, missing/ambiguous scope despite available writes, offline/confirmed provisional drafting, scope-only/refused review and a wrong-target brief.",
+    "expected": ["Verify actual consumer privacy with filesystem/ownership/access and read-only Git evidence. Unsafe or unverified storage pauses without raw writes or ignore repair. Use an unused capture path and preserve original captures, brief/evidence notes and wrong-target brief bytes.", "Missing/ambiguous Azure scope produces zero write attempts. Confirmed/offline context can persist provisional facts; scope-only consent/refusal creates no new-scope Bicep. Bounded binding diagnosis stays task-specific."]
+  },
+  {
+    "name": "c9-observe-scope-and-alert-leads",
+    "category": "observation",
+    "skill": "healthmodel-observe",
+    "task": "Compare missing scope with approved subscription A/rg-shared and B/rg-shared. Supplied pages contain duplicate resource names, an alert referencing C/rg-other and a denied continuation. No telemetry queries are requested.",
+    "expected": ["Missing scope asks only scope without reads/writes. Approved pairs return qualified facts, usable pages and denied coverage gaps.", "Leave C unqueried, retain alert provenance and infer no workload importance, desired membership or health."]
+  },
+  {
+    "name": "c9-query-source-outcomes",
+    "category": "telemetry",
+    "skill": "healthmodel-signals",
+    "task": "Construct metric, KQL and PromQL measurements for reviewed failed-checkout intent. Parameterize supplied evidence: supported metric without samples, KQL empty-input count 0, KQL PartialError/denied, PromQL absent input with fallback 0, multiple series, and measured zero. Execution is unavailable.",
+    "expected": ["Return source-backed requests/queries and named verification gaps without invented execution. Check dimensions, aggregation, units, windows and scalar shape.", "Keep support/missing/partial/denied/multiseries/fallback-zero distinct from measured zero. Return fragments with evidence and unresolved checks, not model edits."]
+  },
+  {
+    "name": "c9-signal-fragment-and-stable-instance",
+    "category": "continuity",
+    "skill": "healthmodel-signals",
+    "task": "Add a signal using a definition shared by two entities. Reorder existing instances and tune only checkout's binding without changing meaning. An alert suggests unrelated severity/actions. Follow the output through Build and Apply without Azure execution.",
+    "expected": ["Signals returns a reviewed native fragment with stable definition/instance identities and affected consumers, not position-derived names or copied alert policy.", "Build integrates into a preserved diff and checks references/groups without redoing queries. Apply stops without exact artifact/target/operation approval; claim no write."]
+  },
+  {
+    "name": "c9-bounded-removal",
+    "category": "small-edit",
+    "skill": "healthmodel-build",
+    "task": "Remove one reviewed manual entity from a complete native baseline. It has inbound/outbound relationships and a custom-group binding; other entities use a shared definition. Preserve all other values. Compare discovery-owned and unmapped-writable-field variants.",
+    "expected": ["Return a bounded diff with coherent reference changes, preserved unrelated values/shared consumers and explicit identity/history/deletion effects. No interview or Azure write.", "Resolve rule ownership before child removal. An unmapped field blocks dependent completion. Omission is not claimed to delete Azure state."]
+  },
+  {
+    "name": "c9-rollup-impact-custom-groups",
+    "category": "topology",
+    "skill": "healthmodel-build",
+    "task": "For accepted checkout intent, change entity rollup/impact and custom signal-group membership/aggregation. Two parents share a dependency; a diagnostic branch stays disconnected. Native aggregation semantics are unavailable in one variant.",
+    "expected": ["Trace members/bindings and affected parent/root paths to accepted health intent. Preserve per-signal logic from Signals.", "Name unresolved semantics and stop dependent authoring; invent no enum/default. No second root, live-health claim or cloud mutation."]
+  }
+]

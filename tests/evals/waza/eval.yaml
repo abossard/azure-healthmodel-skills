@@ -1,0 +1,20 @@
+name: azure-healthmodel-waza-corpus
+skill: healthmodel-build
+version: "1.0.0"
+description: "Native Waza corpus migrated from legacy Promptfoo sources."
+config:
+  trials_per_task: 1
+  timeout_seconds: 120
+  executor: copilot-sdk
+  model: gpt-5.3-codex
+  judge_model: claude-sonnet-5.5
+  max_attempts: 1
+  parallel: false
+  skill_directories:
+    - ../../../skills
+metrics:
+  - name: pass_rate
+    weight: 1
+    threshold: 1
+tasks:
+  - tasks/*.yaml

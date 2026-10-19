@@ -1,0 +1,1 @@
+Review the labeled readiness observation for its original window. The final count is zero, source rows are empty and the model identity is denied.

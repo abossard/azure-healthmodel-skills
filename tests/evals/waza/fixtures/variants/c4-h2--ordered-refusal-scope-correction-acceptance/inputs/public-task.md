@@ -1,0 +1,1 @@
+Use fictional inventory captured at its original time for explicitly selected RGs in two subscriptions. Both contain rg-shared and api/db names; exclude the other subscription's record. The user has confirmed no workload intent. Continue the same fixture through not yet, scope-only approval, a flow/ranking correction and explicit acceptance of the revised flows and concerns.

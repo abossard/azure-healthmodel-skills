@@ -1,116 +1,93 @@
 # Azure Monitor Health Model Skills
 
-Agent skills for building [Azure Monitor Health Models](https://learn.microsoft.com/en-us/azure/azure-monitor/health-model/health-model-overview) end-to-end — from resource discovery to deployment — using **only** the standard `az` CLI, `jq`, and Bash.
+Use your AI agent to build Azure Monitor health models, discuss, understand, and refine them.
 
-No Azure CLI extensions. No Python SDK. No ARM template deployments.
+## Features
 
-## What is a Health Model?
-
-An Azure Monitor Health Model gives you a structured, real-time view of your application's health by organizing resources into a tree of entities with signals (metrics, PromQL, KQL queries) that evaluate health state automatically.
-
-## Skills
-
-The workflow chains six skills with human checkpoints between phases:
-
-```
-Discovery → Architecture → Design → Deploy
-                                      ↑
-                            Signal Catalog (reference data)
-                            Orchestrator  (chains all phases)
-```
-
-| Skill | Purpose |
+| Skill | Use it to |
 |---|---|
-| **healthmodel-discovery** | Interview user, export Azure resources, generate a brief |
-| **healthmodel-architecture** | Build dependency graph, Mermaid diagram, propose entity hierarchy |
-| **healthmodel-design** | Create sparse signal definitions, entities, relationships |
-| **healthmodel-deploy** | Validate → bootstrap → plan → apply → smoke test |
-| **healthmodel-signal-catalog** | Reference: how to discover metrics and write signals for any resource type |
-| **healthmodel-orchestrator** | Chains all four phases with human checkpoints |
-
-## Prerequisites
-
-- **Azure CLI** — authenticated (`az login`)
-- **jq** — JSON processor
-- **az bicep** — ships with modern `az` (used offline for schema validation only)
-
-```bash
-az account show -o json | jq '{subscriptionId: .id, name: .name}'
-command -v jq && echo "jq: ok"
-az bicep version
-```
+| [healthmodel-plan](skills/healthmodel-plan/SKILL.md) | Understand health modeling and define user flows, system flows, priorities and health goals. |
+| [healthmodel-build](skills/healthmodel-build/SKILL.md) | Build a model from scratch or add, change and remove configuration, including rollup, impact and custom signal groups. |
+| [healthmodel-observe](skills/healthmodel-observe/SKILL.md) | Find involved Azure resources and relationships; inspect an existing model and its history. |
+| [healthmodel-signals](skills/healthmodel-signals/SKILL.md) | Build and verify metric, KQL and PromQL queries; configure signals and their names. |
+| [healthmodel-explain](skills/healthmodel-explain/SKILL.md) | Investigate unhealthy or Unknown states and explain health changes over time. |
+| [healthmodel-apply](skills/healthmodel-apply/SKILL.md) | Apply changes you have reviewed and approved, then check the resulting configuration. |
 
 ## Install
 
-### 1. Add the marketplace
+### GitHub Copilot CLI plugin
 
-```bash
+In GitHub Copilot CLI:
+
+```text
 copilot plugin marketplace add abossard/azure-healthmodel-skills
-```
-
-Or from inside a session:
-
-```
-/plugin marketplace add abossard/azure-healthmodel-skills
-```
-
-### 2. Install the plugin
-
-```bash
 copilot plugin install azure-healthmodel-skills@azure-healthmodel-skills
 ```
 
-Or from inside a session:
+To update:
 
-```
-/plugin install azure-healthmodel-skills@azure-healthmodel-skills
-```
-
-### Manual install
-
-```bash
-git clone https://github.com/abossard/azure-healthmodel-skills.git
-cp -R azure-healthmodel-skills/skills/healthmodel-* ~/.agents/skills/
-```
-
-## Update
-
-```bash
+```text
 copilot plugin update azure-healthmodel-skills
 ```
 
-## Quick Start
+### Skills CLI (npx)
 
-1. **Discover** — `"discover resources for health model"` or `"scan my Azure"`
-2. **Fill the brief** — edit `.healthmodel/00-brief.md` with SLOs, journeys, concerns
-3. **Map architecture** — `"map architecture"` or `"draw resource graph"`
-4. **Design signals** — `"design entities and signals"`
-5. **Deploy** — `"deploy the health model"`
+Install all skills with the [Skills CLI](https://skills.sh/) and choose your coding agents:
 
-Or use the orchestrator: `"create health model"` — it chains all phases.
+```bash
+npx skills add abossard/azure-healthmodel-skills --skill '*'
+```
 
-## Checkpoint Files
+To install a single skill:
 
-All intermediate state is saved to `.healthmodel/` in your project:
+```bash
+npx skills add abossard/azure-healthmodel-skills --skill healthmodel-observe
+```
 
-| File | Phase | Content |
-|---|---|---|
-| `00-brief.md` | Discovery | Human-authored: SLOs, journeys, concerns |
-| `01-discovery.json` | Discovery | Interview answers + resource inventory |
-| `02-graph.json` | Architecture | Dependency graph + entity hierarchy |
-| `03-design/**/*.json` | Design | Sparse signal, entity, relationship definitions |
-| `04-plan.json` | Deploy | Per-resource verdict before apply |
-| `04-deployed.json` | Deploy | Apply receipt |
+Installation is project-scoped by default. Add `--global` to make the skills available across projects.
 
-You can version-control `.healthmodel/`, re-run any phase independently, or resume after interruption.
+## Usage
 
-## How Sparse Design Works
+Describe your Azure Monitor health model task to your agent
 
-Each design file contains **only the fields the skill manages**. On deploy, the skill deep-merges design onto live state — portal edits to unmanaged fields are preserved. To stop managing a field, remove it from the design file.
+For example:
 
-## Related
+> Can you help me build a health model for my current project?
 
-- [always-on-v2](https://github.com/abossard/always-on-v2) — the reference infrastructure project with Bicep codegen for health models
+> Yesterday, the application was down, but I didn't see it in the health model, can you check what's missing?
+
+> Use healthmodel-signals to write and verify a KQL query for checkout failures.
+
+For a new model, create a health model brief covering user flows, system flows, resources, priorities and degraded/unhealthy meaning. Review and accept it before authoring configuration. Refine that same brief when intent changes; reuse accepted intent for routine edits.
+
+For Azure work, specify the subscription and resource groups, or the existing model's resource ID. Live queries and changes require Azure access; learning and planning do not. Review proposed changes and approve Azure operations when ready.
+
+## Native Waza skill evaluation
+
+This repository now uses native Waza task/rubric grading under `tests/evals/waza/`.
+
+Current scripts:
+
+```bash
+npm run eval:validate
+npm run eval -- --case intake-confirmed
+npm run eval:report -- --result .waza/results/latest/result.json
+npm run eval:view -- --results-dir .waza/results --port 31550 --waza-bin /absolute/path/to/waza-darwin-arm64
+```
+
+Notes:
+
+- `eval:validate` is offline and uses stock native `eval.validate` through `waza serve --tcp` JSON-RPC.
+- `eval` is deny-by-default and currently blocks before inference because no task is safety-admitted yet.
+- Current corpus contract is **57 source IDs** mapped to **77 native variant/workflow task rows**.
+- Blocked tasks from `tests/evals/waza/manifests/blocked.manifest.json` stay in the selected denominator for reporting.
+- `eval:report` computes source coverage success from native task **status** only. Scores are not treated as success.
+- Source IDs reconcile against `sourceToVariantTasks.variantTaskIds` from `tests/evals/waza/manifests/source-to-native.manifest.json`.
+- Missing, blocked, errored or unrun selected cases are non-success and produce nonzero exit.
+- Native raw result JSON is read-only input for `eval:report`. Reporting does not rewrite native outcomes.
+- `eval:view` uses stock `waza serve` with loopback defaults and an explicit `--results-dir` root.
+- This setup does not currently advertise executable native coverage. It preserves blocked/unproven readiness truthfully until safety admission exists.
+- Historical `.promptfoo/` evidence remains preserved and ignored by Git.
 
 ## License
 

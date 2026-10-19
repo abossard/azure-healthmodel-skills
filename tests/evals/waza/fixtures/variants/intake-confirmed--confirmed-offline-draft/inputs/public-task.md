@@ -1,0 +1,1 @@
+Draft offline only. Confirmed user flow: a member submits a request, receives a receipt or retries safely. Confirmed system flow: gateway to API to database. Confirmed ranked concerns: lost requests, then latency. SLOs are unknown.

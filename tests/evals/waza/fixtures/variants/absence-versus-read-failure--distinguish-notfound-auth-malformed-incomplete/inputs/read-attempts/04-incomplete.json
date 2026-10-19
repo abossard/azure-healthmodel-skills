@@ -1,0 +1,8 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "command": "az rest --method get --url /subscriptions/00000000-0000-4000-8000-00000000000a/resourceGroups/rg-shared/providers/Microsoft.CloudHealth/healthmodels/catalog-health-model/entities?api-version=2026-09-01-preview",
+  "exitCode": 0,
+  "stdout": "{\"value\":[{\"name\":\"gateway\"}],\"nextLink\":\"https://management.example.invalid/entities?$skiptoken=p2\"}",
+  "stderr": "",
+  "capturedAtUtc": "2026-10-14T05:20:00Z"
+}

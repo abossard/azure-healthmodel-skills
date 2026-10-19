@@ -1,0 +1,1 @@
+In a verified private consumer, retain supplied fictional native resources, relationships, metric definitions, samples and log/query captures as observations without querying or judging health. Then start a fresh healthmodel-signals task in the same directory with only the matching historical target and binding question, without the first transcript.

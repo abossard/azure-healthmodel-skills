@@ -1,0 +1,26 @@
+{
+  "fixture": true,
+  "provenance": "Fictional source/evaluation/access observations for manual scenario review. Original outcomes remain separate; this is not live model-identity proof.",
+  "target": "firewall",
+  "window": {
+    "startTime": "2026-10-14T05:00:00Z",
+    "endTime": "2026-10-14T05:10:00Z"
+  },
+  "source": {
+    "queryRole": "source",
+    "stdout": [],
+    "stderr": "",
+    "exit": 0
+  },
+  "evaluation": {
+    "queryRole": "evaluation",
+    "stdout": [{"DeniedExpectedFlows": 0}],
+    "stderr": "",
+    "exit": 0
+  },
+  "executionIdentityAccess": {
+    "stdout": null,
+    "stderr": "AuthorizationFailed: fixture model identity cannot query the workspace",
+    "exit": 7
+  }
+}

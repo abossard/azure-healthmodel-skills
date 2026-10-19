@@ -1,0 +1,1 @@
+Fictional matching source/evaluation observations for 2026-10-14T05:00:00Z to 05:10:00Z show 12 failed requests, an Unhealthy signal under reviewed greater-than-10 rules and Unhealthy propagation on the intended path to root. Other branches lack observations.

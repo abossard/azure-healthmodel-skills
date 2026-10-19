@@ -1,0 +1,80 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "id": "/subscriptions/00000000-0000-4000-8000-00000000000a/resourceGroups/rg-shared/providers/Microsoft.CloudHealth/healthmodels/catalog-health-model",
+  "name": "catalog-health-model",
+  "type": "Microsoft.CloudHealth/healthmodels",
+  "location": "westeurope",
+  "tags": {
+    "owner": "platform",
+    "tier": "standard"
+  },
+  "identity": {
+    "type": "SystemAssigned",
+    "principalId": "33333333-3333-4333-8333-333333333333"
+  },
+  "properties": {
+    "provisioningState": "Succeeded"
+  },
+  "entities": {
+    "value": [
+      {
+        "name": "gateway",
+        "type": "Microsoft.CloudHealth/healthmodels/entities",
+        "properties": {
+          "displayName": "gateway",
+          "impact": "Standard",
+          "canvasPosition": {
+            "x": 20,
+            "y": 40
+          },
+          "provisioningState": "Succeeded",
+          "healthState": "Healthy"
+        }
+      },
+      {
+        "name": "api",
+        "type": "Microsoft.CloudHealth/healthmodels/entities",
+        "properties": {
+          "displayName": "api",
+          "impact": "Standard",
+          "canvasPosition": {
+            "x": 180,
+            "y": 40
+          },
+          "signalGroups": {
+            "azureResource": {
+              "azureResourceId": "/subscriptions/00000000-0000-4000-8000-00000000000a/resourceGroups/rg-shared/providers/Microsoft.Web/sites/api",
+              "authenticationSetting": "model-identity"
+            }
+          },
+          "provisioningState": "Succeeded",
+          "healthState": "Unknown",
+          "alertSettings": {
+            "suppressionWindowMinutes": 15
+          }
+        }
+      },
+      {
+        "name": "db",
+        "type": "Microsoft.CloudHealth/healthmodels/entities",
+        "properties": {
+          "displayName": "db",
+          "impact": "Standard",
+          "canvasPosition": {
+            "x": 340,
+            "y": 40
+          },
+          "signalGroups": {
+            "azureResource": {
+              "azureResourceId": "/subscriptions/00000000-0000-4000-8000-00000000000a/resourceGroups/rg-shared/providers/Microsoft.Sql/servers/db",
+              "authenticationSetting": "model-identity"
+            }
+          },
+          "provisioningState": "Succeeded",
+          "healthState": "Healthy"
+        }
+      }
+    ],
+    "nextLink": "https://management.example.invalid/subscriptions/00000000-0000-4000-8000-00000000000a/resourceGroups/rg-shared/providers/Microsoft.CloudHealth/healthmodels/catalog-health-model/entities?api-version=2026-09-01-preview&$skiptoken=page2"
+  }
+}

@@ -1,0 +1,1 @@
+Review two supplied source outcomes: HTTP 200 with PartialError and a numeric result, then HTTP 200 with a missing result table. Neither capture has a usable complete result.

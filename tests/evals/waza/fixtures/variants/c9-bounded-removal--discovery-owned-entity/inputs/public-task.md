@@ -1,0 +1,1 @@
+Remove one reviewed manual entity from a complete native baseline. It has inbound/outbound relationships and a custom-group binding; other entities use a shared definition. Preserve all other values. Compare discovery-owned and unmapped-writable-field variants.

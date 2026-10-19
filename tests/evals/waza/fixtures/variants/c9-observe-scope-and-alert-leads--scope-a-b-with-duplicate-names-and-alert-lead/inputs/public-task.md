@@ -1,0 +1,1 @@
+Compare missing scope with approved subscription A/rg-shared and B/rg-shared. Supplied pages contain duplicate resource names, an alert referencing C/rg-other and a denied continuation. No telemetry queries are requested.

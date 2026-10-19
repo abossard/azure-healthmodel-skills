@@ -1,0 +1,1 @@
+Construct metric, KQL and PromQL measurements for reviewed failed-checkout intent. Parameterize supplied evidence: supported metric without samples, KQL empty-input count 0, KQL PartialError/denied, PromQL absent input with fallback 0, multiple series, and measured zero. Execution is unavailable.

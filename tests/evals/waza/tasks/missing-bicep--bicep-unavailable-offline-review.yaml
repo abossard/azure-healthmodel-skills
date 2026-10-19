@@ -1,0 +1,44 @@
+id: missing-bicep--bicep-unavailable-offline-review
+name: "missing-bicep :: bicep-unavailable-offline-review"
+description: "Variant task for missing-bicep (bicep-unavailable-offline-review)."
+enabled: false
+context_dir: ../fixtures/variants/missing-bicep--bicep-unavailable-offline-review
+inputs:
+  prompt: |
+    Confirmed flows and ranked concerns are supplied. Local Bicep is unavailable. Review the intended topology offline; do not install anything or use Azure.
+  follow_up_prompts: []
+  files:
+    - path: "inputs/public-task.md"
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-build
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/missing-bicep.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Continue offline topology review using the supplied confirmed inputs; leave any needed brief creation or refinement to healthmodel-plan and keep compilation pending.
+        2. Name the missing tool and next action without installation or a successful-compilation claim.
+  - name: artifact-constraints
+    type: file
+    config:
+      must_not_exist:
+        - "captures/**"
+        - "notes/**"
+        - ".healthmodel/brief.md"
+tags:
+  - source:legacy52
+  - source-id:missing-bicep
+  - variant-id:bicep-unavailable-offline-review
+  - skill:healthmodel-build
+  - blocked:safety-admission-unproven
+  - blocked:unsupported-forbidden-operation-toolconstraint-mapping

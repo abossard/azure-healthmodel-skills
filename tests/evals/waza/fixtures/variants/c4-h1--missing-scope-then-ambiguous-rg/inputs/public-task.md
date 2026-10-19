@@ -1,0 +1,1 @@
+Build from Azure with no selected scope, then with only the ambiguous RG name rg-shared. The caller supplies an unapproved current-account name but authorizes no Azure reads.

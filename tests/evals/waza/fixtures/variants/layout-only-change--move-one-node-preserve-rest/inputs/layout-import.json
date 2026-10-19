@@ -1,0 +1,28 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "model": "catalog-health-model",
+  "canvas": {
+    "nodes": [
+      {
+        "entity": "gateway",
+        "x": 20,
+        "y": 40
+      },
+      {
+        "entity": "api",
+        "x": 180,
+        "y": 40
+      },
+      {
+        "entity": "db",
+        "x": 340,
+        "y": 40
+      }
+    ],
+    "moveRequest": {
+      "entity": "db",
+      "x": 340,
+      "y": 120
+    }
+  }
+}

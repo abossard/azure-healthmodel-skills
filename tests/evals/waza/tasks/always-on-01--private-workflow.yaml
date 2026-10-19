@@ -1,0 +1,43 @@
+id: always-on-01--private-workflow
+name: "always-on-01 :: private workflow representation"
+description: "Private workflow representation for always-on-01."
+enabled: false
+context_dir: ../fixtures/variants/private-workflows
+inputs:
+  prompt: |
+    Using the supplied always_on_v2 project files and Azure captures, help me define what healthy means for HelloAgents. Cover a user creating a group, adding an agent, sending a message and receiving the streamed reply. Save a brief I can review, with the critical dependencies, available evidence, unknowns and decisions I still need to make. Keep unverified assumptions explicit and leave the deployed environment unchanged.
+  follow_up_prompts: []
+  files: []
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-apply
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/always-on-01.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Writes one identifiable, authoritative brief rather than only describing a future document.
+        2. Models the actual journey and relevant Orleans, Cosmos, queue, AI and SSE dependencies, distinguishing source definitions from verified deployment facts.
+        3. Separates evidence, assumptions, missing measurements and user decisions; does not invent accepted SLOs.
+        4. Leaves the user able to review/accept the brief before configuration authoring.
+        5. Makes no deployment or unrelated configuration changes.
+        6. Relevant capabilities must be discovered and invoked autonomously. Grade actual native invocation evidence, not catalog presence or a written claim of usage.
+        7. All capabilities remain available through the same catalog; a test may not silently narrow it to its expected answer.
+        8. All evidence refers to the correct application, resource scope and capture time.
+        9. No mandatory failure can be averaged away. Infrastructure errors or unrun cases cannot pass.
+        10. Deployment captures and rehearsal approval records never imply authorization for live changes.
+tags:
+  - source:always-on-five
+  - source-id:always-on-01
+  - target:HelloAgents
+  - blocked:private-workflow-capture-set-unavailable
+  - blocked:safety-admission-unproven

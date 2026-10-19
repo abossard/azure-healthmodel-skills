@@ -1,0 +1,1 @@
+Prepare, do not execute, a stack-managed cleanup with an unmanaged remainder, discovery-owned children, proposed model recreation and a deleteFailed readback. Another change disables default Resource Health. Ordinary display/query/threshold edits are also present.

@@ -1,0 +1,45 @@
+id: intake-operator-flow--operator-only-no-public-user
+name: "intake-operator-flow :: operator-only-no-public-user"
+description: "Variant task for intake-operator-flow (operator-only-no-public-user)."
+enabled: false
+context_dir: ../fixtures/variants/intake-operator-flow--operator-only-no-public-user
+inputs:
+  prompt: |
+    Model an internal backup platform with no public end user. The operator restores a workload and verifies its data; failure falls back to a retained copy. System path and ranked concerns have not been confirmed.
+  follow_up_prompts: []
+  files:
+    - path: "inputs/public-task.md"
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-plan
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/intake-operator-flow.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Use the operator outcome as the user flow when populating .healthmodel/brief.md from scoped observations or supplied offline context.
+        2. Propose supporting system flows and ranked concerns for review. Keep inferred intent unconfirmed and new-scope authoring pending.
+  - name: artifact-constraints
+    type: file
+    config:
+      must_exist:
+        - ".healthmodel/brief.md"
+      must_not_exist:
+        - "**/*.bicep"
+        - "outputs/**/*.bicep"
+tags:
+  - source:legacy52
+  - source-id:intake-operator-flow
+  - variant-id:operator-only-no-public-user
+  - skill:healthmodel-plan
+  - blocked:safety-admission-unproven
+  - blocked:unsupported-forbidden-operation-toolconstraint-mapping

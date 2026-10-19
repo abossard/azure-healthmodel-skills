@@ -1,0 +1,42 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "pages": [
+    {
+      "scope": "00000000-0000-4000-8000-00000000000a/rg-shared",
+      "response": {
+        "value": [
+          {
+            "id": "/subscriptions/00000000-0000-4000-8000-00000000000a/resourceGroups/rg-shared/providers/Microsoft.Web/sites/api",
+            "name": "api"
+          },
+          {
+            "id": "/subscriptions/00000000-0000-4000-8000-00000000000a/resourceGroups/rg-shared/providers/Microsoft.Sql/servers/db",
+            "name": "db"
+          }
+        ]
+      }
+    },
+    {
+      "scope": "00000000-0000-4000-8000-00000000000b/rg-shared",
+      "response": {
+        "value": [
+          {
+            "id": "/subscriptions/00000000-0000-4000-8000-00000000000b/resourceGroups/rg-shared/providers/Microsoft.Web/sites/api",
+            "name": "api"
+          }
+        ],
+        "nextLink": "https://management.example.invalid/inventory?page=2"
+      }
+    },
+    {
+      "scope": "00000000-0000-4000-8000-00000000000b/rg-shared",
+      "httpStatus": 403,
+      "response": {
+        "error": {
+          "code": "AuthorizationFailed",
+          "message": "Continuation page denied."
+        }
+      }
+    }
+  ]
+}

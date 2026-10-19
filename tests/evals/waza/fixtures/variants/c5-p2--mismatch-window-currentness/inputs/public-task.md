@@ -1,0 +1,1 @@
+After P1 passes, copy its actual saved evidence into an isolated private consumer. Review a bounded mismatch family: cloud/tenant, duplicate RG/resource names across subscriptions, source/workspace, query/filter/dimensions/aggregation, window/currentness and operation/cached approval.

@@ -1,0 +1,8 @@
+.healthmodel/data/
+**/*.arm.json
+**/*.arm.parameters.json
+.promptfoo/
+.waza/
+node_modules/
+logs/
+session-state/

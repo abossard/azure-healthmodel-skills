@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "azure-healthmodel-skills",
-  "description": "Azure Monitor Health Model agent skills — discovery, architecture, design, deploy, orchestrator, and signal catalog.",
+  "description": "Azure Monitor health models: observe, plan, signals, build, explain and apply.",
   "owner": {
     "name": "abossard"
   },
@@ -9,7 +9,7 @@
     {
       "name": "azure-healthmodel-skills",
       "source": "./",
-      "description": "Six-phase Azure Monitor Health Model workflow (discovery → architecture → design → deploy) with orchestrator and signal catalog. Uses only az CLI + jq — no extensions, no Python SDK."
+      "description": "Six independent health-model tasks with private conditional guidance and a native Bicep starter."
     }
   ]
 }

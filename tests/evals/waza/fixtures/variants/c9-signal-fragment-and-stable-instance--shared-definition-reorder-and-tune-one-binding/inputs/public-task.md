@@ -1,0 +1,1 @@
+Add a signal using a definition shared by two entities. Reorder existing instances and tune only checkout's binding without changing meaning. An alert suggests unrelated severity/actions. Follow the output through Build and Apply without Azure execution.

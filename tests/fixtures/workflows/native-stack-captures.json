@@ -1,0 +1,485 @@
+{
+  "provenance": "Sanitized retained initial preview, metadata GET and model absence CLI shapes. Local replay only, not mutation certification.",
+  "command": [
+    "/fixture/bin/az",
+    "stack-whatif",
+    "group",
+    "create",
+    "--subscription",
+    "11111111-1111-1111-1111-111111111111",
+    "--resource-group",
+    "fixture",
+    "--name",
+    "native-support-preview",
+    "--stack-id",
+    "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.Resources/deploymentStacks/support-fixture",
+    "--template-file",
+    "reviewed-template.json",
+    "--parameters",
+    "@reviewed-parameters.json",
+    "--action-on-unmanage",
+    "deleteResources",
+    "--deny-settings-mode",
+    "none",
+    "--retention-interval",
+    "PT3H",
+    "--no-pretty-print",
+    "--output",
+    "json",
+    "--resources-without-delete-support",
+    "fail"
+  ],
+  "preview": {
+    "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.Resources/deploymentStacksWhatIfResults/native-support-preview",
+    "name": "native-support-preview",
+    "type": "Microsoft.Resources/deploymentStacksWhatIfResults",
+    "location": null,
+    "properties": {
+      "provisioningState": "succeeded",
+      "deploymentStackResourceId": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.Resources/deploymentStacks/support-fixture",
+      "actionOnUnmanage": {
+        "managementGroups": "detach",
+        "resourceGroups": "detach",
+        "resources": "delete",
+        "resourcesWithoutDeleteSupport": "fail"
+      },
+      "diagnostics": [],
+      "changes": {
+        "denySettingsChange": {
+          "after": {
+            "applyToChildScopes": false,
+            "excludedActions": [],
+            "excludedPrincipals": [],
+            "mode": "None"
+          },
+          "before": null,
+          "delta": [
+            {
+              "after": "None",
+              "before": null,
+              "changeType": "create",
+              "children": null,
+              "path": "Mode"
+            },
+            {
+              "after": "False",
+              "before": null,
+              "changeType": "create",
+              "children": null,
+              "path": "ApplyToChildScopes"
+            }
+          ]
+        },
+        "deploymentScopeChange": {
+          "after": null,
+          "before": null
+        },
+        "resourceChanges": [
+          {
+            "apiVersion": null,
+            "changeCertainty": "definite",
+            "changeType": "create",
+            "denyStatusChange": {
+              "after": "none",
+              "before": "none"
+            },
+            "extension": null,
+            "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture",
+            "identifiers": null,
+            "managementStatusChange": {
+              "after": "managed",
+              "before": "notManaged"
+            },
+            "resourceConfigurationChanges": {
+              "after": {
+                "apiVersion": "2026-11-01",
+                "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture",
+                "identity": {
+                  "type": "SystemAssigned"
+                },
+                "location": "swedencentral",
+                "name": "support-fixture",
+                "resourceGroup": "fixture",
+                "type": "Microsoft.CloudHealth/healthmodels"
+              },
+              "before": null,
+              "delta": []
+            },
+            "resourceGroup": "fixture",
+            "symbolicName": null,
+            "type": "Microsoft.CloudHealth/healthmodels",
+            "unsupportedReason": null
+          },
+          {
+            "apiVersion": null,
+            "changeCertainty": "definite",
+            "changeType": "create",
+            "denyStatusChange": {
+              "after": "none",
+              "before": "none"
+            },
+            "extension": null,
+            "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture/authenticationsettings/unused-reader",
+            "identifiers": null,
+            "managementStatusChange": {
+              "after": "managed",
+              "before": "notManaged"
+            },
+            "resourceConfigurationChanges": {
+              "after": {
+                "apiVersion": "2026-11-01",
+                "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture/authenticationsettings/unused-reader",
+                "name": "unused-reader",
+                "properties": {
+                  "authenticationKind": "ManagedIdentity",
+                  "managedIdentityName": "SystemAssigned"
+                },
+                "resourceGroup": "fixture",
+                "type": "Microsoft.CloudHealth/healthmodels/authenticationsettings"
+              },
+              "before": null,
+              "delta": []
+            },
+            "resourceGroup": "fixture",
+            "symbolicName": null,
+            "type": "Microsoft.CloudHealth/healthmodels/authenticationsettings",
+            "unsupportedReason": null
+          },
+          {
+            "apiVersion": null,
+            "changeCertainty": "definite",
+            "changeType": "create",
+            "denyStatusChange": {
+              "after": "none",
+              "before": "none"
+            },
+            "extension": null,
+            "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture/entities/group-alpha",
+            "identifiers": null,
+            "managementStatusChange": {
+              "after": "managed",
+              "before": "notManaged"
+            },
+            "resourceConfigurationChanges": {
+              "after": {
+                "apiVersion": "2026-11-01",
+                "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture/entities/group-alpha",
+                "name": "group-alpha",
+                "properties": {
+                  "displayName": "Grouping only"
+                },
+                "resourceGroup": "fixture",
+                "type": "Microsoft.CloudHealth/healthmodels/entities"
+              },
+              "before": null,
+              "delta": []
+            },
+            "resourceGroup": "fixture",
+            "symbolicName": null,
+            "type": "Microsoft.CloudHealth/healthmodels/entities",
+            "unsupportedReason": null
+          },
+          {
+            "apiVersion": null,
+            "changeCertainty": "definite",
+            "changeType": "create",
+            "denyStatusChange": {
+              "after": "none",
+              "before": "none"
+            },
+            "extension": null,
+            "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture/entities/group-bravo",
+            "identifiers": null,
+            "managementStatusChange": {
+              "after": "managed",
+              "before": "notManaged"
+            },
+            "resourceConfigurationChanges": {
+              "after": {
+                "apiVersion": "2026-11-01",
+                "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture/entities/group-bravo",
+                "name": "group-bravo",
+                "properties": {
+                  "impact": "Standard"
+                },
+                "resourceGroup": "fixture",
+                "type": "Microsoft.CloudHealth/healthmodels/entities"
+              },
+              "before": null,
+              "delta": []
+            },
+            "resourceGroup": "fixture",
+            "symbolicName": null,
+            "type": "Microsoft.CloudHealth/healthmodels/entities",
+            "unsupportedReason": null
+          },
+          {
+            "apiVersion": null,
+            "changeCertainty": "definite",
+            "changeType": "create",
+            "denyStatusChange": {
+              "after": "none",
+              "before": "none"
+            },
+            "extension": null,
+            "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture/relationships/alpha-bravo",
+            "identifiers": null,
+            "managementStatusChange": {
+              "after": "managed",
+              "before": "notManaged"
+            },
+            "resourceConfigurationChanges": {
+              "after": {
+                "apiVersion": "2026-11-01",
+                "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture/relationships/alpha-bravo",
+                "name": "alpha-bravo",
+                "properties": {
+                  "childEntityName": "group-bravo",
+                  "parentEntityName": "group-alpha"
+                },
+                "resourceGroup": "fixture",
+                "type": "Microsoft.CloudHealth/healthmodels/relationships"
+              },
+              "before": null,
+              "delta": []
+            },
+            "resourceGroup": "fixture",
+            "symbolicName": null,
+            "type": "Microsoft.CloudHealth/healthmodels/relationships",
+            "unsupportedReason": null
+          },
+          {
+            "apiVersion": null,
+            "changeCertainty": "definite",
+            "changeType": "create",
+            "denyStatusChange": {
+              "after": "none",
+              "before": "none"
+            },
+            "extension": null,
+            "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture/relationships/root-alpha",
+            "identifiers": null,
+            "managementStatusChange": {
+              "after": "managed",
+              "before": "notManaged"
+            },
+            "resourceConfigurationChanges": {
+              "after": {
+                "apiVersion": "2026-11-01",
+                "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture/relationships/root-alpha",
+                "name": "root-alpha",
+                "properties": {
+                  "childEntityName": "group-alpha",
+                  "parentEntityName": "support-fixture"
+                },
+                "resourceGroup": "fixture",
+                "type": "Microsoft.CloudHealth/healthmodels/relationships"
+              },
+              "before": null,
+              "delta": []
+            },
+            "resourceGroup": "fixture",
+            "symbolicName": null,
+            "type": "Microsoft.CloudHealth/healthmodels/relationships",
+            "unsupportedReason": null
+          },
+          {
+            "apiVersion": null,
+            "changeCertainty": "definite",
+            "changeType": "create",
+            "denyStatusChange": {
+              "after": "none",
+              "before": "none"
+            },
+            "extension": null,
+            "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture/signaldefinitions/unused-objective",
+            "identifiers": null,
+            "managementStatusChange": {
+              "after": "managed",
+              "before": "notManaged"
+            },
+            "resourceConfigurationChanges": {
+              "after": {
+                "apiVersion": "2026-11-01",
+                "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture/signaldefinitions/unused-objective",
+                "name": "unused-objective",
+                "properties": {
+                  "aggregationType": "Average",
+                  "evaluationRules": {
+                    "unhealthyRule": {
+                      "operator": "LessThan",
+                      "threshold": 1
+                    }
+                  },
+                  "metricName": "Requests",
+                  "metricNamespace": "Microsoft.Web/sites",
+                  "signalKind": "AzureResourceMetric",
+                  "timeGrain": "PT5M"
+                },
+                "resourceGroup": "fixture",
+                "type": "Microsoft.CloudHealth/healthmodels/signaldefinitions"
+              },
+              "before": null,
+              "delta": []
+            },
+            "resourceGroup": "fixture",
+            "symbolicName": null,
+            "type": "Microsoft.CloudHealth/healthmodels/signaldefinitions",
+            "unsupportedReason": null
+          }
+        ]
+      }
+    }
+  },
+  "idOnlyReadback": {
+    "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.Resources/deploymentStacksWhatIfResults/native-support-preview",
+    "name": "native-support-preview",
+    "type": "Microsoft.Resources/deploymentStacksWhatIfResults",
+    "properties": {
+      "provisioningState": "succeeded",
+      "deploymentStackResourceId": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.Resources/deploymentStacks/support-fixture",
+      "actionOnUnmanage": {
+        "managementGroups": "detach",
+        "resourceGroups": "detach",
+        "resources": "delete",
+        "resourcesWithoutDeleteSupport": "fail"
+      },
+      "diagnostics": [],
+      "changes": {
+        "denySettingsChange": {
+          "after": {
+            "applyToChildScopes": false,
+            "excludedActions": [],
+            "excludedPrincipals": [],
+            "mode": "None"
+          },
+          "delta": [
+            {
+              "after": "None",
+              "changeType": "create",
+              "path": "Mode"
+            },
+            {
+              "after": "False",
+              "changeType": "create",
+              "path": "ApplyToChildScopes"
+            }
+          ]
+        },
+        "deploymentScopeChange": {},
+        "resourceChanges": [
+          {
+            "changeCertainty": "definite",
+            "changeType": "create",
+            "denyStatusChange": {
+              "after": "none",
+              "before": "none"
+            },
+            "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture",
+            "managementStatusChange": {
+              "after": "managed",
+              "before": "notManaged"
+            },
+            "type": "Microsoft.CloudHealth/healthmodels"
+          },
+          {
+            "changeCertainty": "definite",
+            "changeType": "create",
+            "denyStatusChange": {
+              "after": "none",
+              "before": "none"
+            },
+            "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture/authenticationsettings/unused-reader",
+            "managementStatusChange": {
+              "after": "managed",
+              "before": "notManaged"
+            },
+            "type": "Microsoft.CloudHealth/healthmodels/authenticationsettings"
+          },
+          {
+            "changeCertainty": "definite",
+            "changeType": "create",
+            "denyStatusChange": {
+              "after": "none",
+              "before": "none"
+            },
+            "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture/entities/group-alpha",
+            "managementStatusChange": {
+              "after": "managed",
+              "before": "notManaged"
+            },
+            "type": "Microsoft.CloudHealth/healthmodels/entities"
+          },
+          {
+            "changeCertainty": "definite",
+            "changeType": "create",
+            "denyStatusChange": {
+              "after": "none",
+              "before": "none"
+            },
+            "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture/entities/group-bravo",
+            "managementStatusChange": {
+              "after": "managed",
+              "before": "notManaged"
+            },
+            "type": "Microsoft.CloudHealth/healthmodels/entities"
+          },
+          {
+            "changeCertainty": "definite",
+            "changeType": "create",
+            "denyStatusChange": {
+              "after": "none",
+              "before": "none"
+            },
+            "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture/relationships/alpha-bravo",
+            "managementStatusChange": {
+              "after": "managed",
+              "before": "notManaged"
+            },
+            "type": "Microsoft.CloudHealth/healthmodels/relationships"
+          },
+          {
+            "changeCertainty": "definite",
+            "changeType": "create",
+            "denyStatusChange": {
+              "after": "none",
+              "before": "none"
+            },
+            "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture/relationships/root-alpha",
+            "managementStatusChange": {
+              "after": "managed",
+              "before": "notManaged"
+            },
+            "type": "Microsoft.CloudHealth/healthmodels/relationships"
+          },
+          {
+            "changeCertainty": "definite",
+            "changeType": "create",
+            "denyStatusChange": {
+              "after": "none",
+              "before": "none"
+            },
+            "id": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/fixture/providers/Microsoft.CloudHealth/healthmodels/support-fixture/signaldefinitions/unused-objective",
+            "managementStatusChange": {
+              "after": "managed",
+              "before": "notManaged"
+            },
+            "type": "Microsoft.CloudHealth/healthmodels/signaldefinitions"
+          }
+        ]
+      }
+    }
+  },
+  "absence": {
+    "initial-model-absence": {
+      "exitCode": 1,
+      "stdout": "",
+      "stderr": "ERROR: Not Found({\"error\":{\"code\":\"ResourceNotFound\",\"message\":\"Fictional resource is absent.\"}})\n"
+    },
+    "stopped-model-readback": {
+      "exitCode": 1,
+      "stdout": "",
+      "stderr": "ERROR: Not Found({\"error\":{\"code\":\"ResourceNotFound\",\"message\":\"Fictional resource is absent.\"}})\n"
+    }
+  }
+}

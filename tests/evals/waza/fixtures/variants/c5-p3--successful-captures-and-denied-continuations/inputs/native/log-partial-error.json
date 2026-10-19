@@ -1,0 +1,38 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "operation": "log-analytics.query",
+  "capturedAtUtc": "2026-10-15T09:10:00Z",
+  "workspace": "law-west",
+  "httpStatus": 200,
+  "response": {
+    "tables": [
+      {
+        "name": "PrimaryResult",
+        "columns": [
+          {
+            "name": "timestamp",
+            "type": "datetime"
+          },
+          {
+            "name": "n",
+            "type": "long"
+          }
+        ],
+        "rows": [
+          [
+            "2026-10-15T09:00:00Z",
+            3
+          ],
+          [
+            "2026-10-15T09:05:00Z",
+            2
+          ]
+        ]
+      }
+    ],
+    "error": {
+      "code": "PartialError",
+      "message": "Some shards are unavailable."
+    }
+  }
+}

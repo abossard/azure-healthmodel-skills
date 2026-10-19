@@ -1,0 +1,46 @@
+id: writable-import-preservation--import-complete-change-tags-owner-only
+name: "writable-import-preservation :: import-complete-change-tags-owner-only"
+description: "Variant task for writable-import-preservation (import-complete-change-tags-owner-only)."
+enabled: false
+context_dir: ../fixtures/variants/writable-import-preservation--import-complete-change-tags-owner-only
+inputs:
+  prompt: |
+    Map complete observed native configuration into the consumer's Bicep baseline and change only tags.owner. The baseline includes model/entity layout, alert settings, authentication selectors, inline signal overrides, dimensions, optional values and existing entity/signal-instance names.
+  follow_up_prompts: []
+  files:
+    - path: "inputs/public-task.md"
+    - path: "inputs/baseline/main.bicep"
+    - path: "inputs/native-readback.json"
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-build
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/writable-import-preservation.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Map the complete writable baseline before the diff; separate server-owned fields.
+        2. Preserve unrelated values, layout and identity-bearing names in the proposed Bicep.
+  - name: artifact-constraints
+    type: file
+    config:
+      must_not_exist:
+        - "captures/**"
+        - "notes/**"
+        - ".healthmodel/brief.md"
+tags:
+  - source:legacy52
+  - source-id:writable-import-preservation
+  - variant-id:import-complete-change-tags-owner-only
+  - skill:healthmodel-build
+  - blocked:safety-admission-unproven
+  - blocked:unsupported-forbidden-operation-toolconstraint-mapping

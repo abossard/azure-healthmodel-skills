@@ -1,0 +1,21 @@
+{
+  "wazaVersionTarget": "0.38.10",
+  "runContract": {
+    "command": "waza run tests/evals/waza/eval.yaml --no-cache --output <result-json>",
+    "reporter": "junit:<path>",
+    "selection": "report selection is source IDs; execution task IDs come from sourceToVariantTasks.variantTaskIds"
+  },
+  "statusContract": {
+    "success": "all enabled selected tasks pass all graders",
+    "blocked": "enabled:false tasks excluded from native run, carried by blocked manifest",
+    "reconciliationInputs": [
+      "selected source IDs",
+      "native result task IDs",
+      "tests/evals/waza/manifests/blocked.manifest.json"
+    ]
+  },
+  "countContract": {
+    "sourceIdCount": 57,
+    "nativeTaskCount": 77
+  }
+}

@@ -1,0 +1,1 @@
+A discovery-only model has no explicit numeric bindings. Caller inventory succeeds; enumeration identity, resource-access identity, parent assignment and recommended-signal access are unresolved.

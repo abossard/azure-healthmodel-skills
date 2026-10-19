@@ -1,0 +1,37 @@
+{
+  "fixture": true,
+  "provenance": "Fictional history observations for manual scenario review. Original timestamps and absent optional fields are intentional; this is not an Azure execution capture.",
+  "entityName": "firewall",
+  "historyPages": [
+    {
+      "entityName": "firewall",
+      "history": [{
+        "previousState": "Healthy",
+        "newState": "Unknown",
+        "occurredAt": "2026-10-14T05:04:00Z"
+      }],
+      "nextMarker": "x"
+    },
+    {
+      "entityName": "firewall",
+      "history": [],
+      "nextMarker": "x"
+    }
+  ],
+  "signalPage": {
+    "entityName": "firewall",
+    "signalName": "expected-flow-denies",
+    "history": [{
+      "occurredAt": "2026-10-14T05:03:30Z",
+      "healthState": "Unknown"
+    }]
+  },
+  "annotationPage": {
+    "entityName": "firewall",
+    "annotations": [{
+      "annotationDetails": {"event": "fixture deployment"},
+      "createdAt": "2026-10-14T05:04:10Z",
+      "annotationId": "fixture-annotation"
+    }]
+  }
+}

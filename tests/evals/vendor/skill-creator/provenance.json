@@ -1,0 +1,21 @@
+{
+  "license": "Apache-2.0",
+  "capture": {
+    "captured_at": "2026-10-17",
+    "method": "byte-for-byte local source copy"
+  },
+  "source": {
+    "agent": "skill-creator",
+    "prompt": "agents/grader.md",
+    "license_file": "LICENSE.txt"
+  },
+  "hashes": {
+    "grader_md_sha256": "57134da0c1a4eea33fbd74a1c9c44aa814f07d6bc64de303edb586f941e5d21a",
+    "license_txt_sha256": "bc6b3af2f331cbc7fb0da1344efb2cbe5877a31498b4d70dbc7000f3405a1362"
+  },
+  "notes": [
+    "Prompt and license are vendored unchanged.",
+    "No upstream revision identifier was supplied at capture time.",
+    "Transport adaptation is documented separately in tests/evals/prompts/grader-transport.txt."
+  ]
+}

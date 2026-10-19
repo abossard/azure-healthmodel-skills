@@ -1,0 +1,47 @@
+id: learn-without-tools--tools-unavailable-explanation-only
+name: "learn-without-tools :: tools-unavailable-explanation-only"
+description: "Variant task for learn-without-tools (tools-unavailable-explanation-only)."
+enabled: false
+context_dir: ../fixtures/variants/learn-without-tools--tools-unavailable-explanation-only
+inputs:
+  prompt: |
+    Explain health-model entities, signals and native Bicep. Bash, jq, Bicep and Azure tools are unavailable. Does publication of the stable API prove regional readiness?
+  follow_up_prompts: []
+  files:
+    - path: "inputs/public-task.md"
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-plan
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/learn-without-tools.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Explain using packaged guidance without requiring tools or login.
+        2. Distinguish public contract publication from availability and working evaluation.
+  - name: artifact-constraints
+    type: file
+    config:
+      must_not_exist:
+        - "captures/**"
+        - "notes/**"
+        - ".healthmodel/**"
+        - "outputs/**"
+        - "**/*.bicep"
+        - "outputs/**/*.bicep"
+tags:
+  - source:legacy52
+  - source-id:learn-without-tools
+  - variant-id:tools-unavailable-explanation-only
+  - skill:healthmodel-plan
+  - blocked:safety-admission-unproven
+  - blocked:unsupported-forbidden-operation-toolconstraint-mapping

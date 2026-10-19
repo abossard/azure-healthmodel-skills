@@ -1,0 +1,30 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "model": "catalog-health-model",
+  "stackManaged": [
+    {
+      "name": "gateway"
+    },
+    {
+      "name": "api"
+    }
+  ],
+  "unmanagedRemainder": [
+    {
+      "name": "manual-note-entity"
+    }
+  ],
+  "discoveryOwnedChildren": [
+    {
+      "name": "disc-queue-1",
+      "discoveryRuleName": "auto-discover-queues"
+    }
+  ],
+  "lastDeleteReadback": {
+    "operation": "delete",
+    "name": "api-latency-def",
+    "properties": {
+      "provisioningState": "deleteFailed"
+    }
+  }
+}

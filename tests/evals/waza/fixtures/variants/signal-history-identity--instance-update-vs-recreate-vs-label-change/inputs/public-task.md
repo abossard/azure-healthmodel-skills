@@ -1,0 +1,1 @@
+Compare an in-place signal-instance update, deleting/re-adding the same named instance, and changing only its display label. A shared definition has other consumers.

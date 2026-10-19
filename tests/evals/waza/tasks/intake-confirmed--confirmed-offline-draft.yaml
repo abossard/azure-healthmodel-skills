@@ -1,0 +1,45 @@
+id: intake-confirmed--confirmed-offline-draft
+name: "intake-confirmed :: confirmed-offline-draft"
+description: "Variant task for intake-confirmed (confirmed-offline-draft)."
+enabled: false
+context_dir: ../fixtures/variants/intake-confirmed--confirmed-offline-draft
+inputs:
+  prompt: |
+    Draft offline only. Confirmed user flow: a member submits a request, receives a receipt or retries safely. Confirmed system flow: gateway to API to database. Confirmed ranked concerns: lost requests, then latency. SLOs are unknown.
+  follow_up_prompts: []
+  files:
+    - path: "inputs/public-task.md"
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-plan
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/intake-confirmed.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Write the single health model brief at .healthmodel/brief.md using the confirmed offline inputs, coverage ideas and gaps.
+        2. Reuse those confirmed inputs after relevance checks, record their acceptance, keep unknown SLOs and make no Azure calls.
+  - name: artifact-constraints
+    type: file
+    config:
+      must_exist:
+        - ".healthmodel/brief.md"
+      must_not_exist:
+        - "**/*.bicep"
+        - "outputs/**/*.bicep"
+tags:
+  - source:legacy52
+  - source-id:intake-confirmed
+  - variant-id:confirmed-offline-draft
+  - skill:healthmodel-plan
+  - blocked:safety-admission-unproven
+  - blocked:unsupported-forbidden-operation-toolconstraint-mapping

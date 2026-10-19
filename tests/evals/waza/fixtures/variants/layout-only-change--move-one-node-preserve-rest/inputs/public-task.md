@@ -1,0 +1,1 @@
+Move one node in an imported layout. Preserve the remaining model/entity positions and settings. Explain automatic arrangement and canvas versus entity saves.

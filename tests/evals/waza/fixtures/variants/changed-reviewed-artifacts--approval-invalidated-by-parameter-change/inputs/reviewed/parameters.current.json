@@ -1,0 +1,11 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "parameters": {
+    "owner": {
+      "value": "payments"
+    },
+    "location": {
+      "value": "westeurope"
+    }
+  }
+}

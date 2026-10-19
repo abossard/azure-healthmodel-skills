@@ -1,0 +1,1 @@
+Create a model. Confirmed user flow: a member submits a request, receives a receipt or retries safely after failure. Ranked concerns: lost requests, then latency. System flow is blank.

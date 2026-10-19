@@ -1,0 +1,24 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "owner": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.CloudHealth/healthmodels",
+      "apiVersion": "2026-09-01-preview",
+      "name": "catalog-health-model",
+      "location": "[parameters('location')]",
+      "tags": {
+        "owner": "[parameters('owner')]"
+      }
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+Create a request-processing model. Confirmed system flow: gateway to API to database. Ranked concerns: failed submissions, then latency. No user flow is supplied.

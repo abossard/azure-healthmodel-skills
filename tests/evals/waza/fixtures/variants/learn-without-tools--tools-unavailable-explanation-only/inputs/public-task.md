@@ -1,0 +1,1 @@
+Explain health-model entities, signals and native Bicep. Bash, jq, Bicep and Azure tools are unavailable. Does publication of the stable API prove regional readiness?

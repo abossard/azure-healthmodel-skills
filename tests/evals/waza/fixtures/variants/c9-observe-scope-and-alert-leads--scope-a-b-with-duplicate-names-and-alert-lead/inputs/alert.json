@@ -1,0 +1,10 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "name": "api-5xx",
+  "properties": {
+    "scopes": [
+      "/subscriptions/00000000-0000-4000-8000-00000000000c/resourceGroups/rg-other/providers/Microsoft.Web/sites/api-other"
+    ],
+    "severity": 2
+  }
+}

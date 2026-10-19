@@ -1,0 +1,48 @@
+id: partial-or-malformed-source--partialerror-and-missing-result-table
+name: "partial-or-malformed-source :: partialerror-and-missing-result-table"
+description: "Variant task for partial-or-malformed-source (partialerror-and-missing-result-table)."
+enabled: false
+context_dir: ../fixtures/variants/partial-or-malformed-source--partialerror-and-missing-result-table
+inputs:
+  prompt: |
+    Review two supplied source outcomes: HTTP 200 with PartialError and a numeric result, then HTTP 200 with a missing result table. Neither capture has a usable complete result.
+  follow_up_prompts: []
+  files:
+    - path: "inputs/public-task.md"
+    - path: "inputs/source-outcomes.json"
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-signals
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/partial-or-malformed-source.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Keep both failures/gaps visible instead of treating HTTP success or a scalar as readiness.
+        2. Require a complete matching source/window and finite numeric result before accepting evaluation evidence.
+  - name: artifact-constraints
+    type: file
+    config:
+      must_not_exist:
+        - "captures/**"
+        - "notes/**"
+        - ".healthmodel/**"
+        - "outputs/**"
+        - "**/*.bicep"
+        - "outputs/**/*.bicep"
+tags:
+  - source:legacy52
+  - source-id:partial-or-malformed-source
+  - variant-id:partialerror-and-missing-result-table
+  - skill:healthmodel-signals
+  - blocked:safety-admission-unproven
+  - blocked:unsupported-forbidden-operation-toolconstraint-mapping

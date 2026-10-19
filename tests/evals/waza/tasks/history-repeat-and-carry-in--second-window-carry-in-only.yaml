@@ -1,0 +1,49 @@
+id: history-repeat-and-carry-in--second-window-carry-in-only
+name: "history-repeat-and-carry-in :: second-window-carry-in-only"
+description: "Variant task for history-repeat-and-carry-in (second-window-carry-in-only)."
+enabled: false
+context_dir: ../fixtures/variants/history-repeat-and-carry-in--second-window-carry-in-only
+inputs:
+  prompt: |
+    Repeat the confirmed model/entity question for a second UTC window. Supplied pages contain only older carry-in transitions and no continuous sample-edge coverage. The prior observation is stale.
+  follow_up_prompts: []
+  files:
+    - path: "inputs/public-task.md"
+    - path: "inputs/history-window-2.json"
+    - path: "inputs/prior-observation.json"
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-explain
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/history-repeat-and-carry-in.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Reuse confirmed target inputs after checking scope, but refresh observations for the new window.
+        2. Distinguish carry-in state from in-window transitions and retain coverage gaps even after the last page.
+  - name: artifact-constraints
+    type: file
+    config:
+      must_not_exist:
+        - "captures/**"
+        - "notes/**"
+        - ".healthmodel/**"
+        - "outputs/**"
+        - "**/*.bicep"
+        - "outputs/**/*.bicep"
+tags:
+  - source:legacy52
+  - source-id:history-repeat-and-carry-in
+  - variant-id:second-window-carry-in-only
+  - skill:healthmodel-explain
+  - blocked:safety-admission-unproven
+  - blocked:unsupported-forbidden-operation-toolconstraint-mapping

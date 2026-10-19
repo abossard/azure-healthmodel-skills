@@ -1,0 +1,46 @@
+id: intake-wrong-target--wrong-target-saved-flows
+name: "intake-wrong-target :: wrong-target-saved-flows"
+description: "Variant task for intake-wrong-target (wrong-target-saved-flows)."
+enabled: false
+context_dir: ../fixtures/variants/intake-wrong-target--wrong-target-saved-flows
+inputs:
+  prompt: |
+    Build the payments model using saved confirmed flows from the unrelated catalog model. No confirmation that those answers apply to payments is available.
+  follow_up_prompts: []
+  files:
+    - path: "inputs/public-task.md"
+    - path: ".healthmodel/brief.md"
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-plan
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/intake-wrong-target.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Check the saved brief's existing path, target and relevance before reusing confirmed answers; default to .healthmodel/brief.md only for a new brief.
+        2. Ask whether to reuse or update the wrong-target brief; preserve its bytes and keep payments authoring pending.
+  - name: artifact-constraints
+    type: file
+    config:
+      must_not_exist:
+        - "captures/**"
+        - "notes/**"
+        - "**/*.bicep"
+        - "outputs/**/*.bicep"
+tags:
+  - source:legacy52
+  - source-id:intake-wrong-target
+  - variant-id:wrong-target-saved-flows
+  - skill:healthmodel-plan
+  - blocked:safety-admission-unproven
+  - blocked:unsupported-forbidden-operation-toolconstraint-mapping

@@ -1,0 +1,1 @@
+Make a previously diagnostic branch determine overall health by connecting it to the root and changing its impact. Existing answers do not cover that consequence.

@@ -1,0 +1,41 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "entity": "api",
+  "requestedWindowUtc": "2026-10-14T09:00:00Z/2026-10-14T09:10:00Z",
+  "pages": [
+    {
+      "page": 1,
+      "request": {
+        "startTime": "2026-10-14T09:00:00Z",
+        "endTime": "2026-10-14T09:10:00Z"
+      },
+      "response": {
+        "value": [
+          {
+            "timestamp": "2026-10-14T05:41:12Z",
+            "healthState": "Degraded"
+          },
+          {
+            "timestamp": "2026-10-14T06:12:40Z",
+            "healthState": "Healthy"
+          }
+        ],
+        "nextMarker": "m2"
+      }
+    },
+    {
+      "page": 2,
+      "request": {
+        "marker": "m2"
+      },
+      "response": {
+        "value": [
+          {
+            "timestamp": "2026-10-14T07:03:55Z",
+            "healthState": "Unknown"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+id: c4-h5--new-payment-dependency-called-small
+name: "c4-h5 :: new-payment-dependency-called-small"
+description: "Variant task for c4-h5 (new-payment-dependency-called-small)."
+enabled: false
+context_dir: ../fixtures/variants/c4-h5--new-payment-dependency-called-small
+inputs:
+  prompt: |
+    Compare a consumer-only 800 ms to 900 ms threshold edit in a supplied reviewed binding with a one-entity new payment dependency called small tuning. Existing confirmed flows cover catalog lookup only.
+  follow_up_prompts: []
+  files:
+    - path: "inputs/public-task.md"
+    - path: ".healthmodel/brief.md"
+    - path: "inputs/reviewed/main.bicep"
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-build
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/c4-h5.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Keep the threshold change task-specific, preserve unrelated fields and skip a full intake interview.
+        2. Treat the new dependency as expansion. Use healthmodel-plan to create or refine the existing brief, otherwise .healthmodel/brief.md. Get explicit acceptance of affected flows and ranked concerns before authoring it.
+  - name: artifact-constraints
+    type: file
+    config:
+      must_exist:
+        - ".healthmodel/brief.md"
+      must_not_exist:
+        - "captures/**"
+        - "notes/**"
+tags:
+  - source:legacy52
+  - source-id:c4-h5
+  - variant-id:new-payment-dependency-called-small
+  - skill:healthmodel-build
+  - blocked:safety-admission-unproven
+  - blocked:unsupported-forbidden-operation-toolconstraint-mapping

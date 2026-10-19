@@ -1,0 +1,1 @@
+Map complete observed native configuration into the consumer's Bicep baseline and change only tags.owner. The baseline includes model/entity layout, alert settings, authentication selectors, inline signal overrides, dimensions, optional values and existing entity/signal-instance names.

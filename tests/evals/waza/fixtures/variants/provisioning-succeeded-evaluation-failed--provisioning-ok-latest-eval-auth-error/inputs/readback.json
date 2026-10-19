@@ -1,0 +1,28 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "model": "catalog-health-model",
+  "properties": {
+    "provisioningState": "Succeeded"
+  },
+  "children": [
+    "gateway",
+    "api",
+    "db"
+  ],
+  "bindings": [
+    {
+      "entity": "api",
+      "azureResourceId": "/subscriptions/00000000-0000-4000-8000-00000000000a/resourceGroups/rg-shared/providers/Microsoft.Web/sites/api",
+      "authenticationSetting": "model-identity"
+    }
+  ],
+  "latestEvaluation": {
+    "entity": "api",
+    "signal": "latency",
+    "timestamp": "2026-10-14T05:10:00Z",
+    "error": {
+      "code": "AuthorizationFailed",
+      "message": "Model identity cannot read the source."
+    }
+  }
+}

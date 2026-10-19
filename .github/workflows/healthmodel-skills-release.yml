@@ -6,6 +6,8 @@ on:
     paths:
       - 'skills/healthmodel-*/**'
       - '.claude-plugin/**'
+      - 'README.md'
+      - '.github/workflows/healthmodel-skills-release.yml'
   workflow_dispatch:
 
 concurrency:
@@ -38,11 +40,14 @@ jobs:
 
       - name: Package skills archive
         run: |
-          cd skills
-          tar -czf "../healthmodel-skills-${{ steps.version.outputs.version }}.tar.gz" \
-            VERSION \
-            healthmodel-*/
-          cd ..
+          mkdir -p package
+          cp -R skills/healthmodel-* package/
+          cp LICENSE skills/VERSION package/
+          tar -czf "healthmodel-skills-${{ steps.version.outputs.version }}.tar.gz" \
+            -C package \
+            VERSION LICENSE \
+            healthmodel-observe healthmodel-plan healthmodel-signals \
+            healthmodel-build healthmodel-explain healthmodel-apply
           ls -lh "healthmodel-skills-${{ steps.version.outputs.version }}.tar.gz"
 
       - name: Create or update GitHub Release
@@ -60,31 +65,67 @@ jobs:
 
             ```bash
             claude plugin marketplace add ${{ github.repository }}
-            claude plugin install healthmodel@healthmodel
+            claude plugin install azure-healthmodel-skills@azure-healthmodel-skills
             ```
 
             or with `copilot`:
 
             ```bash
             copilot plugin marketplace add ${{ github.repository }}
-            copilot plugin install healthmodel@healthmodel
+            copilot plugin install azure-healthmodel-skills@azure-healthmodel-skills
             ```
 
             ### Update / Uninstall
 
             ```bash
-            claude plugin update healthmodel    # or: copilot plugin update healthmodel
-            claude plugin uninstall healthmodel  # or: copilot plugin uninstall healthmodel
+            claude plugin update azure-healthmodel-skills    # or: copilot plugin update azure-healthmodel-skills
+            claude plugin uninstall azure-healthmodel-skills  # or: copilot plugin uninstall azure-healthmodel-skills
             ```
 
             ### Manual install (tar.gz)
 
             ```bash
-            mkdir -p ~/.agents/skills
-            curl -fsSL -o /tmp/healthmodel-skills.tar.gz \
+            curl -fsSL -o healthmodel-skills.tar.gz \
               "https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.version }}/healthmodel-skills-${{ steps.version.outputs.version }}.tar.gz"
-            tar -xzf /tmp/healthmodel-skills.tar.gz -C ~/.agents/skills/
-            rm /tmp/healthmodel-skills.tar.gz
+            mkdir -p ~/.agents/skills
+            tar -xzf healthmodel-skills.tar.gz -C ~/.agents/skills/
+            rm healthmodel-skills.tar.gz
             ```
+
+            Six tasks provide plain guidance and a native Bicep starter:
+            healthmodel-observe, healthmodel-plan, healthmodel-signals,
+            healthmodel-build, healthmodel-explain and healthmodel-apply.
+            They return facts, reviewed intent, signal evidence/fragments,
+            configuration diffs, diagnoses and approved operation outcomes.
+            Each skill owns its conditional references. Use the tasks
+            independently or combine them when needed.
+            Learning/offline planning needs no Azure login, Bash or compiler.
+            Cloud reads need suitable tools and access.
+            Writes need review and operation-specific approval.
+
+            For manual upgrades, back up local customizations and replace this
+            plugin's skill directories instead of extracting over old copies.
+            Inspect and remove retired healthmodel-introduce, healthmodel-improve,
+            healthmodel-investigate, healthmodel-discover, healthmodel-import and
+            healthmodel-review-signals directories. Also inspect older healthmodel-discovery,
+            healthmodel-architecture, healthmodel-design, healthmodel-deploy,
+            healthmodel-integrate, healthmodel-orchestrator and healthmodel-signal-catalog
+            directories. Extraction alone leaves old files installed.
+            Earlier healthmodel-build copies may contain retired helpers,
+            framework files or bundled examples.
+
+            Plan maintains the single health model brief with user/system flows,
+            resources, priorities and health meaning. Accept it before new-scope
+            authoring. Bounded edits and diagnosis need no full intake.
+            Keep the user's supported configuration format.
+            This release retires the Bash wrappers, typed framework and numbered
+            JSON pipeline. Native compilation checks syntax; untyped properties
+            still need checks against the selected API contract.
+
+            Build's references/contract.md covers API selection and authoritative
+            source lookup before authoring fields.
+            Keep BCP081 diagnostics: provider property-schema validation is missing
+            for those declarations. Compilation, preview and provisioning do not
+            prove model-identity access, live evaluation or intended rollup.
           files: healthmodel-skills-${{ steps.version.outputs.version }}.tar.gz
           fail_on_unmatched_files: true

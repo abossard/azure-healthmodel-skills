@@ -1,0 +1,1 @@
+Confirmed flows and ranked concerns are supplied. Local Bicep is unavailable. Review the intended topology offline; do not install anything or use Azure.

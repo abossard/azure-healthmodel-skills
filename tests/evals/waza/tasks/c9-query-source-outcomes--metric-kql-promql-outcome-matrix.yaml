@@ -1,0 +1,48 @@
+id: c9-query-source-outcomes--metric-kql-promql-outcome-matrix
+name: "c9-query-source-outcomes :: metric-kql-promql-outcome-matrix"
+description: "Variant task for c9-query-source-outcomes (metric-kql-promql-outcome-matrix)."
+enabled: false
+context_dir: ../fixtures/variants/c9-query-source-outcomes--metric-kql-promql-outcome-matrix
+inputs:
+  prompt: |
+    Construct metric, KQL and PromQL measurements for reviewed failed-checkout intent. Parameterize supplied evidence: supported metric without samples, KQL empty-input count 0, KQL PartialError/denied, PromQL absent input with fallback 0, multiple series, and measured zero. Execution is unavailable.
+  follow_up_prompts: []
+  files:
+    - path: "inputs/public-task.md"
+    - path: "inputs/source-outcomes.json"
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-signals
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/c9-query-source-outcomes.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Return source-backed requests/queries and named verification gaps without invented execution. Check dimensions, aggregation, units, windows and scalar shape.
+        2. Keep support/missing/partial/denied/multiseries/fallback-zero distinct from measured zero. Return fragments with evidence and unresolved checks, not model edits.
+  - name: artifact-constraints
+    type: file
+    config:
+      must_not_exist:
+        - "captures/**"
+        - "notes/**"
+        - ".healthmodel/**"
+        - "outputs/**"
+        - "**/*.bicep"
+        - "outputs/**/*.bicep"
+tags:
+  - source:legacy52
+  - source-id:c9-query-source-outcomes
+  - variant-id:metric-kql-promql-outcome-matrix
+  - skill:healthmodel-signals
+  - blocked:safety-admission-unproven
+  - blocked:unsupported-forbidden-operation-toolconstraint-mapping

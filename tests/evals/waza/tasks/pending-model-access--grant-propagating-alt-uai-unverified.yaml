@@ -1,0 +1,47 @@
+id: pending-model-access--grant-propagating-alt-uai-unverified
+name: "pending-model-access :: grant-propagating-alt-uai-unverified"
+description: "Variant task for pending-model-access (grant-propagating-alt-uai-unverified)."
+enabled: false
+context_dir: ../fixtures/variants/pending-model-access--grant-propagating-alt-uai-unverified
+inputs:
+  prompt: |
+    The root principal was read back and an approved role grant is propagating. Caller source queries succeed. Another binding selects an attached UAI whose source access is unverified.
+  follow_up_prompts: []
+  files:
+    - path: "inputs/public-task.md"
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-signals
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/pending-model-access.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Keep caller, SystemAssigned and UAI evidence separate and check each effective selector.
+        2. Report pending/unverified model access; grant declarations and caller success do not prove evaluation.
+  - name: artifact-constraints
+    type: file
+    config:
+      must_not_exist:
+        - "captures/**"
+        - "notes/**"
+        - ".healthmodel/**"
+        - "outputs/**"
+        - "**/*.bicep"
+        - "outputs/**/*.bicep"
+tags:
+  - source:legacy52
+  - source-id:pending-model-access
+  - variant-id:grant-propagating-alt-uai-unverified
+  - skill:healthmodel-signals
+  - blocked:safety-admission-unproven
+  - blocked:unsupported-forbidden-operation-toolconstraint-mapping

@@ -1,0 +1,48 @@
+id: cleanup-ownership-and-history--prepare-cleanup-no-execution
+name: "cleanup-ownership-and-history :: prepare-cleanup-no-execution"
+description: "Variant task for cleanup-ownership-and-history (prepare-cleanup-no-execution)."
+enabled: false
+context_dir: ../fixtures/variants/cleanup-ownership-and-history--prepare-cleanup-no-execution
+inputs:
+  prompt: |
+    Prepare, do not execute, a stack-managed cleanup with an unmanaged remainder, discovery-owned children, proposed model recreation and a deleteFailed readback. Another change disables default Resource Health. Ordinary display/query/threshold edits are also present.
+  follow_up_prompts: []
+  files:
+    - path: "inputs/public-task.md"
+    - path: "inputs/cleanup-state.json"
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-apply
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/cleanup-ownership-and-history.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Itemize ownership/adoption, governance, residual resources, affected principal/history and possible failed-delete retries; require actual support and exact preview evidence.
+        2. Stop automatic follow-up/direct-delete fallback; do not add history-loss warnings to routine tuning or promise restorable history.
+  - name: artifact-constraints
+    type: file
+    config:
+      must_not_exist:
+        - "captures/**"
+        - "notes/**"
+        - ".healthmodel/**"
+        - "outputs/**"
+        - "**/*.bicep"
+        - "outputs/**/*.bicep"
+tags:
+  - source:legacy52
+  - source-id:cleanup-ownership-and-history
+  - variant-id:prepare-cleanup-no-execution
+  - skill:healthmodel-apply
+  - blocked:safety-admission-unproven
+  - blocked:unsupported-forbidden-operation-toolconstraint-mapping

@@ -1,0 +1,19 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "approval": {
+    "operation": "annotation-write",
+    "approvedBy": "fictional-operator",
+    "approvedAtUtc": "2026-10-14T05:30:00Z",
+    "targetEntityId": "/subscriptions/00000000-0000-4000-8000-00000000000a/resourceGroups/rg-shared/providers/Microsoft.CloudHealth/healthmodels/catalog-health-model/entities/api",
+    "body": "Deployment of api build 1842 started.",
+    "eventTimeUtc": "2026-10-14T05:25:00Z"
+  },
+  "callerEvidence": {
+    "permissionReadback": {
+      "principal": "fictional-operator",
+      "role": "Health Model Contributor",
+      "scope": "/subscriptions/00000000-0000-4000-8000-00000000000a/resourceGroups/rg-shared/providers/Microsoft.CloudHealth/healthmodels/catalog-health-model"
+    },
+    "command": "az rest --method put --url /subscriptions/00000000-0000-4000-8000-00000000000a/resourceGroups/rg-shared/providers/Microsoft.CloudHealth/healthmodels/catalog-health-model/entities/api/annotations/1842?api-version=2026-09-01-preview"
+  }
+}

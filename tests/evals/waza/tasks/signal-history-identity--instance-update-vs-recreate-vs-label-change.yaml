@@ -1,0 +1,47 @@
+id: signal-history-identity--instance-update-vs-recreate-vs-label-change
+name: "signal-history-identity :: instance-update-vs-recreate-vs-label-change"
+description: "Variant task for signal-history-identity (instance-update-vs-recreate-vs-label-change)."
+enabled: false
+context_dir: ../fixtures/variants/signal-history-identity--instance-update-vs-recreate-vs-label-change
+inputs:
+  prompt: |
+    Compare an in-place signal-instance update, deleting/re-adding the same named instance, and changing only its display label. A shared definition has other consumers.
+  follow_up_prompts: []
+  files:
+    - path: "inputs/public-task.md"
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-signals
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/signal-history-identity.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Prefer preserving the existing instance where supported; review entity/instance names and shared-definition impact.
+        2. Do not promise history restoration after recreation or call a display label the history identity.
+  - name: artifact-constraints
+    type: file
+    config:
+      must_not_exist:
+        - "captures/**"
+        - "notes/**"
+        - ".healthmodel/**"
+        - "outputs/**"
+        - "**/*.bicep"
+        - "outputs/**/*.bicep"
+tags:
+  - source:legacy52
+  - source-id:signal-history-identity
+  - variant-id:instance-update-vs-recreate-vs-label-change
+  - skill:healthmodel-signals
+  - blocked:safety-admission-unproven
+  - blocked:unsupported-forbidden-operation-toolconstraint-mapping

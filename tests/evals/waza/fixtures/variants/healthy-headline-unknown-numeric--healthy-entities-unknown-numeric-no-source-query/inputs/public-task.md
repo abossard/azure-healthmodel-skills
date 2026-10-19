@@ -1,0 +1,1 @@
+Fictional observations at 2026-10-07T12:00:00Z show three Healthy entities, Resource Health Available and two Unknown numeric signals with 288 history points lacking values. Source/principal access was not queried.

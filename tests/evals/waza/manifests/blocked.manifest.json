@@ -1,0 +1,949 @@
+{
+  "generatedAt": "2026-10-19T12:21:13.226Z",
+  "blockedTasks": [
+    {
+      "taskId": "absence-versus-read-failure--distinguish-notfound-auth-malformed-incomplete",
+      "sourceId": "absence-versus-read-failure",
+      "variantId": "distinguish-notfound-auth-malformed-incomplete",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "absent-input-zero-result--zero-result-with-empty-rows-and-identity-denied",
+      "sourceId": "absent-input-zero-result",
+      "variantId": "zero-result-with-empty-rows-and-identity-denied",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "always-on-01--private-workflow",
+      "sourceId": "always-on-01",
+      "variantId": "private-workflow",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:private-workflow-capture-set-unavailable"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "always-on-02--private-workflow",
+      "sourceId": "always-on-02",
+      "variantId": "private-workflow",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:private-workflow-capture-set-unavailable"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "always-on-03--private-workflow",
+      "sourceId": "always-on-03",
+      "variantId": "private-workflow",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:private-workflow-capture-set-unavailable"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "always-on-04--private-workflow",
+      "sourceId": "always-on-04",
+      "variantId": "private-workflow",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:private-workflow-capture-set-unavailable"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "always-on-05--private-workflow",
+      "sourceId": "always-on-05",
+      "variantId": "private-workflow",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:private-workflow-capture-set-unavailable"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "ambiguous-annotation-response--lost-response-ambiguous-recent-annotations",
+      "sourceId": "ambiguous-annotation-response",
+      "variantId": "lost-response-ambiguous-recent-annotations",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "approved-current-annotation--approved-current-annotation-simulate-only",
+      "sourceId": "approved-current-annotation",
+      "variantId": "approved-current-annotation-simulate-only",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c4-h1--missing-scope-then-ambiguous-rg",
+      "sourceId": "c4-h1",
+      "variantId": "missing-scope-then-ambiguous-rg",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c4-h2--ordered-refusal-scope-correction-acceptance",
+      "sourceId": "c4-h2",
+      "variantId": "ordered-refusal-scope-correction-acceptance",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c4-h3--same-target-update",
+      "sourceId": "c4-h3",
+      "variantId": "same-target-update",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c4-h3--wrong-target-awaiting-choice",
+      "sourceId": "c4-h3",
+      "variantId": "wrong-target-awaiting-choice",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c4-h4--authorizationfailed-next-page",
+      "sourceId": "c4-h4",
+      "variantId": "authorizationfailed-next-page",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c4-h4--missing-tools-offline-context",
+      "sourceId": "c4-h4",
+      "variantId": "missing-tools-offline-context",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c4-h4--no-writable-files-repeat-h2",
+      "sourceId": "c4-h4",
+      "variantId": "no-writable-files-repeat-h2",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+        "blocked:unsupported-denied-attempt-evidence-contract"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c4-h5--consumer-threshold-edit",
+      "sourceId": "c4-h5",
+      "variantId": "consumer-threshold-edit",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c4-h5--new-payment-dependency-called-small",
+      "sourceId": "c4-h5",
+      "variantId": "new-payment-dependency-called-small",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c5-p1--observe-save-then-fresh-signals-session",
+      "sourceId": "c5-p1",
+      "variantId": "observe-save-then-fresh-signals-session",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+        "blocked:cross-case-dependency-requires-prior-artifact-state"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c5-p2--mismatch-cloud-tenant",
+      "sourceId": "c5-p2",
+      "variantId": "mismatch-cloud-tenant",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+        "blocked:cross-case-dependency-requires-prior-artifact-state"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c5-p2--mismatch-duplicate-rg-resource-name",
+      "sourceId": "c5-p2",
+      "variantId": "mismatch-duplicate-rg-resource-name",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+        "blocked:cross-case-dependency-requires-prior-artifact-state"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c5-p2--mismatch-operation-cached-approval",
+      "sourceId": "c5-p2",
+      "variantId": "mismatch-operation-cached-approval",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+        "blocked:cross-case-dependency-requires-prior-artifact-state"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c5-p2--mismatch-query-filter-dimensions-aggregation",
+      "sourceId": "c5-p2",
+      "variantId": "mismatch-query-filter-dimensions-aggregation",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+        "blocked:cross-case-dependency-requires-prior-artifact-state"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c5-p2--mismatch-source-workspace",
+      "sourceId": "c5-p2",
+      "variantId": "mismatch-source-workspace",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+        "blocked:cross-case-dependency-requires-prior-artifact-state"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c5-p2--mismatch-window-currentness",
+      "sourceId": "c5-p2",
+      "variantId": "mismatch-window-currentness",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+        "blocked:cross-case-dependency-requires-prior-artifact-state"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c5-p3--deny-capture-write",
+      "sourceId": "c5-p3",
+      "variantId": "deny-capture-write",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+        "blocked:unsupported-denied-attempt-evidence-contract",
+        "blocked:cross-case-dependency-requires-prior-artifact-state"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c5-p3--deny-evidence-note-write",
+      "sourceId": "c5-p3",
+      "variantId": "deny-evidence-note-write",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+        "blocked:unsupported-denied-attempt-evidence-contract",
+        "blocked:cross-case-dependency-requires-prior-artifact-state"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c5-p3--successful-captures-and-denied-continuations",
+      "sourceId": "c5-p3",
+      "variantId": "successful-captures-and-denied-continuations",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+        "blocked:cross-case-dependency-requires-prior-artifact-state"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c5-p4--capture-name-collision",
+      "sourceId": "c5-p4",
+      "variantId": "capture-name-collision",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+        "blocked:cross-case-dependency-requires-prior-artifact-state"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c5-p4--missing-or-ambiguous-scope",
+      "sourceId": "c5-p4",
+      "variantId": "missing-or-ambiguous-scope",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+        "blocked:cross-case-dependency-requires-prior-artifact-state"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c5-p4--protected-outside-git-consumer",
+      "sourceId": "c5-p4",
+      "variantId": "protected-outside-git-consumer",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+        "blocked:cross-case-dependency-requires-prior-artifact-state"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c5-p4--scope-only-refused-review",
+      "sourceId": "c5-p4",
+      "variantId": "scope-only-refused-review",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+        "blocked:cross-case-dependency-requires-prior-artifact-state"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c5-p4--unsafe-consumer-pauses",
+      "sourceId": "c5-p4",
+      "variantId": "unsafe-consumer-pauses",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+        "blocked:cross-case-dependency-requires-prior-artifact-state"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c5-p4--unverified-consumer-pauses",
+      "sourceId": "c5-p4",
+      "variantId": "unverified-consumer-pauses",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+        "blocked:cross-case-dependency-requires-prior-artifact-state"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c5-p4--wrong-target-brief",
+      "sourceId": "c5-p4",
+      "variantId": "wrong-target-brief",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+        "blocked:cross-case-dependency-requires-prior-artifact-state"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c9-bounded-removal--discovery-owned-entity",
+      "sourceId": "c9-bounded-removal",
+      "variantId": "discovery-owned-entity",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c9-bounded-removal--remove-manual-entity",
+      "sourceId": "c9-bounded-removal",
+      "variantId": "remove-manual-entity",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c9-bounded-removal--unmapped-writable-field",
+      "sourceId": "c9-bounded-removal",
+      "variantId": "unmapped-writable-field",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c9-observe-scope-and-alert-leads--scope-a-b-with-duplicate-names-and-alert-lead",
+      "sourceId": "c9-observe-scope-and-alert-leads",
+      "variantId": "scope-a-b-with-duplicate-names-and-alert-lead",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c9-query-source-outcomes--metric-kql-promql-outcome-matrix",
+      "sourceId": "c9-query-source-outcomes",
+      "variantId": "metric-kql-promql-outcome-matrix",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c9-rollup-impact-custom-groups--native-aggregation-semantics-supplied",
+      "sourceId": "c9-rollup-impact-custom-groups",
+      "variantId": "native-aggregation-semantics-supplied",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c9-rollup-impact-custom-groups--native-aggregation-semantics-unavailable",
+      "sourceId": "c9-rollup-impact-custom-groups",
+      "variantId": "native-aggregation-semantics-unavailable",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "c9-signal-fragment-and-stable-instance--shared-definition-reorder-and-tune-one-binding",
+      "sourceId": "c9-signal-fragment-and-stable-instance",
+      "variantId": "shared-definition-reorder-and-tune-one-binding",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "changed-reviewed-artifacts--approval-invalidated-by-parameter-change",
+      "sourceId": "changed-reviewed-artifacts",
+      "variantId": "approval-invalidated-by-parameter-change",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "changed-root-rollup--diagnostic-branch-to-root",
+      "sourceId": "changed-root-rollup",
+      "variantId": "diagnostic-branch-to-root",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "cleanup-ownership-and-history--prepare-cleanup-no-execution",
+      "sourceId": "cleanup-ownership-and-history",
+      "variantId": "prepare-cleanup-no-execution",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "consumer-threshold-tuning--latency-threshold-800-to-900",
+      "sourceId": "consumer-threshold-tuning",
+      "variantId": "latency-threshold-800-to-900",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "default-resource-health--resource-health-default-vs-empty",
+      "sourceId": "default-resource-health",
+      "variantId": "resource-health-default-vs-empty",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "discovery-only-gaps--discovery-only-unresolved-access",
+      "sourceId": "discovery-only-gaps",
+      "variantId": "discovery-only-unresolved-access",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "failed-principal-readback--post-bootstrap-readback-failed",
+      "sourceId": "failed-principal-readback",
+      "variantId": "post-bootstrap-readback-failed",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "genuine-unhealthy-evaluation--matching-source-and-evaluation-unhealthy",
+      "sourceId": "genuine-unhealthy-evaluation",
+      "variantId": "matching-source-and-evaluation-unhealthy",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "healthy-headline-unknown-numeric--healthy-entities-unknown-numeric-no-source-query",
+      "sourceId": "healthy-headline-unknown-numeric",
+      "variantId": "healthy-entities-unknown-numeric-no-source-query",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "history-repeat-and-carry-in--second-window-carry-in-only",
+      "sourceId": "history-repeat-and-carry-in",
+      "variantId": "second-window-carry-in-only",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "history-utc-and-pagination--history-window-with-repeated-nextmarker",
+      "sourceId": "history-utc-and-pagination",
+      "variantId": "history-window-with-repeated-nextmarker",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "implicit-root-and-shared-dependency--shared-dependency-with-disconnected-diagnostic",
+      "sourceId": "implicit-root-and-shared-dependency",
+      "variantId": "shared-dependency-with-disconnected-diagnostic",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "incomplete-import--detect-unmapped-and-unfetched-page",
+      "sourceId": "incomplete-import",
+      "variantId": "detect-unmapped-and-unfetched-page",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "intake-confirmed--confirmed-offline-draft",
+      "sourceId": "intake-confirmed",
+      "variantId": "confirmed-offline-draft",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "intake-missing-ranked-concerns--missing-ranked-concerns",
+      "sourceId": "intake-missing-ranked-concerns",
+      "variantId": "missing-ranked-concerns",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "intake-missing-system-flow--missing-system-flow",
+      "sourceId": "intake-missing-system-flow",
+      "variantId": "missing-system-flow",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "intake-missing-user-flow--missing-user-flow",
+      "sourceId": "intake-missing-user-flow",
+      "variantId": "missing-user-flow",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "intake-operator-flow--operator-only-no-public-user",
+      "sourceId": "intake-operator-flow",
+      "variantId": "operator-only-no-public-user",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "intake-wrong-target--wrong-target-saved-flows",
+      "sourceId": "intake-wrong-target",
+      "variantId": "wrong-target-saved-flows",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "layout-only-change--move-one-node-preserve-rest",
+      "sourceId": "layout-only-change",
+      "variantId": "move-one-node-preserve-rest",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "learn-without-tools--tools-unavailable-explanation-only",
+      "sourceId": "learn-without-tools",
+      "variantId": "tools-unavailable-explanation-only",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "measured-zero--zero-error-count-reviewed-window",
+      "sourceId": "measured-zero",
+      "variantId": "zero-error-count-reviewed-window",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "missing-bicep--bicep-unavailable-offline-review",
+      "sourceId": "missing-bicep",
+      "variantId": "bicep-unavailable-offline-review",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "native-preview-not-deployment--preview-and-notfound-not-lifecycle-proof",
+      "sourceId": "native-preview-not-deployment",
+      "variantId": "preview-and-notfound-not-lifecycle-proof",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "one-entity-expansion--proposal-only-new-payment-branch",
+      "sourceId": "one-entity-expansion",
+      "variantId": "proposal-only-new-payment-branch",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "partial-or-malformed-source--partialerror-and-missing-result-table",
+      "sourceId": "partial-or-malformed-source",
+      "variantId": "partialerror-and-missing-result-table",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "pending-model-access--grant-propagating-alt-uai-unverified",
+      "sourceId": "pending-model-access",
+      "variantId": "grant-propagating-alt-uai-unverified",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "provisioning-succeeded-evaluation-failed--provisioning-ok-latest-eval-auth-error",
+      "sourceId": "provisioning-succeeded-evaluation-failed",
+      "variantId": "provisioning-ok-latest-eval-auth-error",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "refuse-direct-configuration-write--reject-direct-patch-route",
+      "sourceId": "refuse-direct-configuration-write",
+      "variantId": "reject-direct-patch-route",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "refused-bootstrap--identity-required-user-refused-bootstrap",
+      "sourceId": "refused-bootstrap",
+      "variantId": "identity-required-user-refused-bootstrap",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "signal-history-identity--instance-update-vs-recreate-vs-label-change",
+      "sourceId": "signal-history-identity",
+      "variantId": "instance-update-vs-recreate-vs-label-change",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "stable-flow-backend-replacement--replace-backend-preserve-stable-entity",
+      "sourceId": "stable-flow-backend-replacement",
+      "variantId": "replace-backend-preserve-stable-entity",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "tuning-introduces-objective--reject-unreviewed-objective-swap",
+      "sourceId": "tuning-introduces-objective",
+      "variantId": "reject-unreviewed-objective-swap",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    },
+    {
+      "taskId": "writable-import-preservation--import-complete-change-tags-owner-only",
+      "sourceId": "writable-import-preservation",
+      "variantId": "import-complete-change-tags-owner-only",
+      "state": "blocked",
+      "readiness": "unsupported",
+      "readinessReasons": [
+        "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+      ],
+      "safetyAdmission": "unproven",
+      "safetyReason": "blocked:safety-admission-unproven"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+Save supplied fictional successful inventory/history pages plus denied continuations, HTTP 200 PartialError with log rows, and bounded Unknown history with missing numeric values. In fresh narrow variants, deny one capture write, then deny only an evidence-note write.

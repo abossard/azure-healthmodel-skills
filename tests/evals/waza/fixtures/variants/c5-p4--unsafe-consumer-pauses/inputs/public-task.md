@@ -1,0 +1,1 @@
+Compare a genuinely protected outside-Git consumer with an unsafe or unverified destination. Check a capture-name collision, missing/ambiguous scope despite available writes, offline/confirmed provisional drafting, scope-only/refused review and a wrong-target brief.

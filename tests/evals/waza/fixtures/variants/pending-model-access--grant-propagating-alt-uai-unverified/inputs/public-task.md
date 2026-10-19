@@ -1,0 +1,1 @@
+The root principal was read back and an approved role grant is propagating. Caller source queries succeed. Another binding selects an attached UAI whose source access is unverified.

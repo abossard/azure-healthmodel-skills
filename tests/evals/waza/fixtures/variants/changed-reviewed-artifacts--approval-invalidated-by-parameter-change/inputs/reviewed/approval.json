@@ -1,0 +1,14 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "target": "/subscriptions/00000000-0000-4000-8000-00000000000a/resourceGroups/rg-shared/providers/Microsoft.CloudHealth/healthmodels/catalog-health-model",
+  "operation": "deployment.create",
+  "approvedTemplate": {
+    "path": "inputs/reviewed/template.json",
+    "sha256": "59e81558c49299575ef46bcb16d837c5e21897d9b6634aa7e70c962dd5997259"
+  },
+  "approvedParameters": {
+    "path": "inputs/reviewed/parameters.reviewed.json",
+    "sha256": "e0718ca1cf49082ca71ab21c284f43505739d7cc001c10301a3ce06da4fd0833"
+  },
+  "approvedAtUtc": "2026-10-14T06:00:00Z"
+}

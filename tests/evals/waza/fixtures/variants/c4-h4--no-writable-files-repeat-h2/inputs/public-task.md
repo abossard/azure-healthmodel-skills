@@ -1,0 +1,1 @@
+Compare missing Azure tools with supplied fictional offline context, and a fictional inventory whose next page returned AuthorizationFailed. Also repeat H2 without writable-file permission.

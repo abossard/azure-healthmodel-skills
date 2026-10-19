@@ -1,0 +1,1 @@
+A separately approved root-only deployment succeeded, but actual SystemAssigned principal readback failed. Grants and final deployment are unapproved.

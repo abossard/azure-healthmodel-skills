@@ -1,0 +1,53 @@
+id: c5-p1--observe-save-then-fresh-signals-session
+name: "c5-p1 :: observe-save-then-fresh-signals-session"
+description: "Variant task for c5-p1 (observe-save-then-fresh-signals-session)."
+enabled: false
+context_dir: ../fixtures/variants/c5-p1--observe-save-then-fresh-signals-session
+inputs:
+  prompt: |
+    In a verified private consumer, retain supplied fictional native resources, relationships, metric definitions, samples and log/query captures as observations without querying or judging health. Supplied files: inputs/native/resources.json, inputs/native/relationships.json, inputs/native/metric-definitions.json, inputs/native/metric-samples.json, inputs/native/log-query.json. Files under inputs/ are read-only. Retained observations may be written under captures/ (and notes under notes/).
+  follow_up_prompts:
+    - |
+      Which retained observation matches the historical target /subscriptions/00000000-0000-4000-8000-00000000000a/resourceGroups/rg-shared/providers/Microsoft.Web/sites/api (metric Http5xx, Total, 5-minute interval, Instance api-0) for the window 2026-10-15T09:00:00Z/2026-10-15T09:10:00Z, and what binding does it support?
+  files:
+    - path: "inputs/public-task.md"
+    - path: "inputs/native/resources.json"
+    - path: "inputs/native/relationships.json"
+    - path: "inputs/native/metric-definitions.json"
+    - path: "inputs/native/metric-samples.json"
+    - path: "inputs/native/log-query.json"
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-observe
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/c5-p1.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Read back separate native files and plain observation/coverage notes with original scope, time, operation identity, request/query, representation and coverage; save no credentials. Preserve metric REST names, namespaces, units, dimensions and aggregations; keep advertised-only definitions, zero, null and absent samples distinct. Preserve the brief, evidence notes and older captures.
+        2. The fresh Signals task locates matching saved captures and notes without an index, reuses historical observations without repeat discovery and saves its useful binding-level finding. Caller samples prove neither model access nor readiness; reviewed intent remains in the brief.
+  - name: artifact-constraints
+    type: file
+    config:
+      must_exist:
+        - "captures/**"
+      must_not_exist:
+        - "**/*.bicep"
+        - "outputs/**/*.bicep"
+tags:
+  - source:legacy52
+  - source-id:c5-p1
+  - variant-id:observe-save-then-fresh-signals-session
+  - skill:healthmodel-observe
+  - blocked:safety-admission-unproven
+  - blocked:unsupported-forbidden-operation-toolconstraint-mapping
+  - blocked:cross-case-dependency-requires-prior-artifact-state

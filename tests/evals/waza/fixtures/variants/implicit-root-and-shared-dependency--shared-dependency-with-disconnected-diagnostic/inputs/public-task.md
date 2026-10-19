@@ -1,0 +1,1 @@
+Review a model with one flow reaching the implicit root, two parents sharing a dependency and one disconnected diagnostic branch. Only the connected flow should affect overall health.

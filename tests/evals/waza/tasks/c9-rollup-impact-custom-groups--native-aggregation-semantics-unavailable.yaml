@@ -1,0 +1,45 @@
+id: c9-rollup-impact-custom-groups--native-aggregation-semantics-unavailable
+name: "c9-rollup-impact-custom-groups :: native-aggregation-semantics-unavailable"
+description: "Variant task for c9-rollup-impact-custom-groups (native-aggregation-semantics-unavailable)."
+enabled: false
+context_dir: ../fixtures/variants/c9-rollup-impact-custom-groups--native-aggregation-semantics-unavailable
+inputs:
+  prompt: |
+    For accepted checkout intent, change entity rollup/impact and custom signal-group membership/aggregation. Two parents share a dependency; a diagnostic branch stays disconnected. Native aggregation semantics are unavailable in one variant.
+  follow_up_prompts: []
+  files:
+    - path: "inputs/public-task.md"
+    - path: "inputs/model/main.bicep"
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-build
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/c9-rollup-impact-custom-groups.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Trace members/bindings and affected parent/root paths to accepted health intent. Preserve per-signal logic from Signals.
+        2. Name unresolved semantics and stop dependent authoring; invent no enum/default. No second root, live-health claim or cloud mutation.
+  - name: artifact-constraints
+    type: file
+    config:
+      must_not_exist:
+        - "captures/**"
+        - "notes/**"
+        - ".healthmodel/brief.md"
+tags:
+  - source:legacy52
+  - source-id:c9-rollup-impact-custom-groups
+  - variant-id:native-aggregation-semantics-unavailable
+  - skill:healthmodel-build
+  - blocked:safety-admission-unproven
+  - blocked:unsupported-forbidden-operation-toolconstraint-mapping

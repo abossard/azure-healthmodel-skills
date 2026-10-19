@@ -1,0 +1,7 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "cloud": "AzureChinaCloud",
+  "tenantId": "22222222-2222-4222-8222-222222222222",
+  "subscriptionId": "00000000-0000-4000-8000-00000000000a",
+  "question": "Reuse the saved Http5xx samples for the checkout binding."
+}

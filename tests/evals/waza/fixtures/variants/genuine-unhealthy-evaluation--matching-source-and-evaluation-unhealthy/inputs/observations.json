@@ -1,0 +1,50 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "window": "2026-10-14T05:00:00Z/2026-10-14T05:10:00Z",
+  "source": {
+    "operation": "log-analytics.query",
+    "query": "requests | where success == false | summarize failed = count()",
+    "response": {
+      "tables": [
+        {
+          "name": "PrimaryResult",
+          "columns": [
+            {
+              "name": "failed",
+              "type": "long"
+            }
+          ],
+          "rows": [
+            [
+              12
+            ]
+          ]
+        }
+      ]
+    }
+  },
+  "evaluation": {
+    "entity": "api",
+    "signal": "failed-requests",
+    "value": 12,
+    "healthState": "Unhealthy",
+    "rule": {
+      "operator": "GreaterThan",
+      "threshold": 10
+    }
+  },
+  "propagation": [
+    {
+      "entity": "api",
+      "healthState": "Unhealthy"
+    },
+    {
+      "entity": "checkout-flow",
+      "healthState": "Unhealthy"
+    },
+    {
+      "entity": "catalog-health-model",
+      "healthState": "Unhealthy"
+    }
+  ]
+}

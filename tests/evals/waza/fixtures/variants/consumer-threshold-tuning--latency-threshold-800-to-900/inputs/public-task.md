@@ -1,0 +1,1 @@
+In supplied reviewed Bicep, change only this consumer's latency threshold from 800 ms to 900 ms. The flow, objective, source and rollup are unchanged. Return a diff, not a deployment.

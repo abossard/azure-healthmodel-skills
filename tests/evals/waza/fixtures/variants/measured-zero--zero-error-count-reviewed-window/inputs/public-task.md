@@ -1,0 +1,1 @@
+Fictional source rows and current numeric evaluation show error count 0 for the same reviewed window. Confirmed thresholds treat larger counts as worse; all other required bindings remain unreviewed.

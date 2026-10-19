@@ -1,0 +1,3315 @@
+{
+  "source": {
+    "legacyCaseCount": 52,
+    "legacyExpectationCount": 104,
+    "variantCount": 72,
+    "turnCount": 81,
+    "workflowCaseCount": 5
+  },
+  "sourceVariantContract": {
+    "intake-missing-user-flow": {
+      "sourceId": "intake-missing-user-flow",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "intake-missing-user-flow--missing-user-flow"
+      ],
+      "variants": [
+        {
+          "taskId": "intake-missing-user-flow--missing-user-flow",
+          "variantId": "missing-user-flow",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "2d888c45e97e4b569eb9d25e68bc1dffa37a08af010e7d289e5eca33dfe921de",
+              "bytes": 162,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "intake-missing-system-flow": {
+      "sourceId": "intake-missing-system-flow",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "intake-missing-system-flow--missing-system-flow"
+      ],
+      "variants": [
+        {
+          "taskId": "intake-missing-system-flow--missing-system-flow",
+          "variantId": "missing-system-flow",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "3df00b28679c06016ff05127ce6ca3ef0da016ef969e0ea875eeba30d785f065",
+              "bytes": 184,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "intake-missing-ranked-concerns": {
+      "sourceId": "intake-missing-ranked-concerns",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "intake-missing-ranked-concerns--missing-ranked-concerns"
+      ],
+      "variants": [
+        {
+          "taskId": "intake-missing-ranked-concerns--missing-ranked-concerns",
+          "variantId": "missing-ranked-concerns",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "059ee0905dce62f040a9071adbdda5a7be38271dd08de8085425cb71b9a84966",
+              "bytes": 193,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "intake-confirmed": {
+      "sourceId": "intake-confirmed",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "intake-confirmed--confirmed-offline-draft"
+      ],
+      "variants": [
+        {
+          "taskId": "intake-confirmed--confirmed-offline-draft",
+          "variantId": "confirmed-offline-draft",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "6f3246d651abf12b726952bba7f578e82011d414a71351ea6bcb1723e443a596",
+              "bytes": 231,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "intake-wrong-target": {
+      "sourceId": "intake-wrong-target",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "intake-wrong-target--wrong-target-saved-flows"
+      ],
+      "variants": [
+        {
+          "taskId": "intake-wrong-target--wrong-target-saved-flows",
+          "variantId": "wrong-target-saved-flows",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "9c37070bebb93893d544c4216f9bdcf06aee75d07e3a7e62f179fb0781dfb980",
+              "bytes": 153,
+              "source": "source-task"
+            },
+            {
+              "path": ".healthmodel/brief.md",
+              "sha256": "f070f669a363493c6651d1abc1d7ed4e45e245ff8e94194023003e28bb4caa57",
+              "bytes": 178,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "intake-operator-flow": {
+      "sourceId": "intake-operator-flow",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "intake-operator-flow--operator-only-no-public-user"
+      ],
+      "variants": [
+        {
+          "taskId": "intake-operator-flow--operator-only-no-public-user",
+          "variantId": "operator-only-no-public-user",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "2588e568b14c184b7aa7967fd36444d140b3a4ac87bf40c40cb39660e0025a9d",
+              "bytes": 210,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "one-entity-expansion": {
+      "sourceId": "one-entity-expansion",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "one-entity-expansion--proposal-only-new-payment-branch"
+      ],
+      "variants": [
+        {
+          "taskId": "one-entity-expansion--proposal-only-new-payment-branch",
+          "variantId": "proposal-only-new-payment-branch",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "8d70aa30f8d80f1713fe48ceb1271fc09a96a531b77251fb1e757c1cbb141060",
+              "bytes": 164,
+              "source": "source-task"
+            },
+            {
+              "path": ".healthmodel/brief.md",
+              "sha256": "fe429b8fe75b88bebd478af650aedf29789c7053ccf582bef96448029c067c61",
+              "bytes": 120,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "tuning-introduces-objective": {
+      "sourceId": "tuning-introduces-objective",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "tuning-introduces-objective--reject-unreviewed-objective-swap"
+      ],
+      "variants": [
+        {
+          "taskId": "tuning-introduces-objective--reject-unreviewed-objective-swap",
+          "variantId": "reject-unreviewed-objective-swap",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "80c18c903de11dbff3219765b89f8521a7505c6531902224a730c045236e7d9b",
+              "bytes": 154,
+              "source": "source-task"
+            },
+            {
+              "path": ".healthmodel/brief.md",
+              "sha256": "4071806030ffbf92d2b184b58de9de0794ca99a6bcbcc1a52f2429600e12f70b",
+              "bytes": 184,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "changed-root-rollup": {
+      "sourceId": "changed-root-rollup",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "changed-root-rollup--diagnostic-branch-to-root"
+      ],
+      "variants": [
+        {
+          "taskId": "changed-root-rollup--diagnostic-branch-to-root",
+          "variantId": "diagnostic-branch-to-root",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "81edc1243d55ee3c7c1f5feca2fdc3cdabdcfdf342859022038193ab4e40ee7d",
+              "bytes": 162,
+              "source": "source-task"
+            },
+            {
+              "path": ".healthmodel/brief.md",
+              "sha256": "d3e9aeea7ccc60596a46b92b02465903153ff907fa4f66a0a4bfd54f8c66529e",
+              "bytes": 192,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "consumer-threshold-tuning": {
+      "sourceId": "consumer-threshold-tuning",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "consumer-threshold-tuning--latency-threshold-800-to-900"
+      ],
+      "variants": [
+        {
+          "taskId": "consumer-threshold-tuning--latency-threshold-800-to-900",
+          "variantId": "latency-threshold-800-to-900",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "8c0c4f2cc7cda0e6c903ebe231ce386ddbb2b7631ead00f794a85cce9514c2f8",
+              "bytes": 183,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/reviewed/main.bicep",
+              "sha256": "65042f9c3a597b2cdaa00e4da5ab2c3c54a4ac63a09385da348eff7d118118bf",
+              "bytes": 2492,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "learn-without-tools": {
+      "sourceId": "learn-without-tools",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "learn-without-tools--tools-unavailable-explanation-only"
+      ],
+      "variants": [
+        {
+          "taskId": "learn-without-tools--tools-unavailable-explanation-only",
+          "variantId": "tools-unavailable-explanation-only",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "7a176f2492f179e7bdd8fb374470717e5eda27fee3d8a1d0731d0476d2b1502d",
+              "bytes": 166,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "missing-bicep": {
+      "sourceId": "missing-bicep",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "missing-bicep--bicep-unavailable-offline-review"
+      ],
+      "variants": [
+        {
+          "taskId": "missing-bicep--bicep-unavailable-offline-review",
+          "variantId": "bicep-unavailable-offline-review",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "7beb472ee1efb881eedfd3010e3be985ebbbd2bc60b6d3fb1d78e26260aea707",
+              "bytes": 153,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "writable-import-preservation": {
+      "sourceId": "writable-import-preservation",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "writable-import-preservation--import-complete-change-tags-owner-only"
+      ],
+      "variants": [
+        {
+          "taskId": "writable-import-preservation--import-complete-change-tags-owner-only",
+          "variantId": "import-complete-change-tags-owner-only",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "8011d74c073921694f9d175bd46faa86df0e7e861d1fa376e39e65a4baf5b7a2",
+              "bytes": 286,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/baseline/main.bicep",
+              "sha256": "65042f9c3a597b2cdaa00e4da5ab2c3c54a4ac63a09385da348eff7d118118bf",
+              "bytes": 2492,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/native-readback.json",
+              "sha256": "560505673ca7b68ac0f3da0ca29b92b5d7a4632c03ed37a5941acbcdac631065",
+              "bytes": 2292,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "incomplete-import": {
+      "sourceId": "incomplete-import",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "incomplete-import--detect-unmapped-and-unfetched-page"
+      ],
+      "variants": [
+        {
+          "taskId": "incomplete-import--detect-unmapped-and-unfetched-page",
+          "variantId": "detect-unmapped-and-unfetched-page",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "a2568d98fcd4d41cc13c127c022444239aa89899596e8f81a4e57cdb95cd9b95",
+              "bytes": 159,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/native-readback.json",
+              "sha256": "5e8411a43981c94fc537937ed4a17b07ebe724dedbc491b168e1fe9d865aab50",
+              "bytes": 2630,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/baseline/main.bicep",
+              "sha256": "65042f9c3a597b2cdaa00e4da5ab2c3c54a4ac63a09385da348eff7d118118bf",
+              "bytes": 2492,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "refuse-direct-configuration-write": {
+      "sourceId": "refuse-direct-configuration-write",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "refuse-direct-configuration-write--reject-direct-patch-route"
+      ],
+      "variants": [
+        {
+          "taskId": "refuse-direct-configuration-write--reject-direct-patch-route",
+          "variantId": "reject-direct-patch-route",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "b5ef03a3c885b51e3726a779dbaf56430587969cd1cb44ad9cb71ab5aea08228",
+              "bytes": 121,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "refused-bootstrap": {
+      "sourceId": "refused-bootstrap",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "refused-bootstrap--identity-required-user-refused-bootstrap"
+      ],
+      "variants": [
+        {
+          "taskId": "refused-bootstrap--identity-required-user-refused-bootstrap",
+          "variantId": "identity-required-user-refused-bootstrap",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "d47e18c090ade793af9d225dee028f8320ace543bb3f8c2b7233d8b1e898d455",
+              "bytes": 136,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "changed-reviewed-artifacts": {
+      "sourceId": "changed-reviewed-artifacts",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "changed-reviewed-artifacts--approval-invalidated-by-parameter-change"
+      ],
+      "variants": [
+        {
+          "taskId": "changed-reviewed-artifacts--approval-invalidated-by-parameter-change",
+          "variantId": "approval-invalidated-by-parameter-change",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "8065572ed863786ee5e82275fc2e639e5e6cfbc3af2f1ae7c45ebfc2be70ee5b",
+              "bytes": 143,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/reviewed/template.json",
+              "sha256": "59e81558c49299575ef46bcb16d837c5e21897d9b6634aa7e70c962dd5997259",
+              "bytes": 593,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/reviewed/parameters.reviewed.json",
+              "sha256": "e0718ca1cf49082ca71ab21c284f43505739d7cc001c10301a3ce06da4fd0833",
+              "bytes": 197,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/reviewed/parameters.current.json",
+              "sha256": "b605ba528c9cdb3f133b2391cf154a27e831d192bea542a85883e4f4fa6f3467",
+              "bytes": 197,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/reviewed/approval.json",
+              "sha256": "afe03221c29fc40514b6ce8766be7cd6b0bee530aa2c18c9f58ebbeacc2e3381",
+              "bytes": 634,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "approved-current-annotation": {
+      "sourceId": "approved-current-annotation",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "approved-current-annotation--approved-current-annotation-simulate-only"
+      ],
+      "variants": [
+        {
+          "taskId": "approved-current-annotation--approved-current-annotation-simulate-only",
+          "variantId": "approved-current-annotation-simulate-only",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "bcd29ab577a216d3db2ebd200acd707e0cff09160c3fe66308a38ceb69be0653",
+              "bytes": 196,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/annotation-review.json",
+              "sha256": "8d298f6582a488110a8d6ddef77411229759dd2d95c618cf03bcf215d0760ea4",
+              "bytes": 1047,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "ambiguous-annotation-response": {
+      "sourceId": "ambiguous-annotation-response",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "ambiguous-annotation-response--lost-response-ambiguous-recent-annotations"
+      ],
+      "variants": [
+        {
+          "taskId": "ambiguous-annotation-response--lost-response-ambiguous-recent-annotations",
+          "variantId": "lost-response-ambiguous-recent-annotations",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "a995da51d9a637719538264294fcb42d8dc3e0dc20631a4ee2b0e7b47f41429b",
+              "bytes": 143,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/recent-annotations.json",
+              "sha256": "5dcb9bef0c55f745c2fbe2c4828524b222d8e33145f8a13b9813a5ce609b90dd",
+              "bytes": 901,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "failed-principal-readback": {
+      "sourceId": "failed-principal-readback",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "failed-principal-readback--post-bootstrap-readback-failed"
+      ],
+      "variants": [
+        {
+          "taskId": "failed-principal-readback--post-bootstrap-readback-failed",
+          "variantId": "post-bootstrap-readback-failed",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "336846012ae93a165f8e4c43fae55ced813de3d3fc8acadf12a23cf865f59497",
+              "bytes": 150,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "pending-model-access": {
+      "sourceId": "pending-model-access",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "pending-model-access--grant-propagating-alt-uai-unverified"
+      ],
+      "variants": [
+        {
+          "taskId": "pending-model-access--grant-propagating-alt-uai-unverified",
+          "variantId": "grant-propagating-alt-uai-unverified",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "d4b8e54184cb984f08f27da9e01c08160b7c8eda1d376e8b93a573bc8555e41a",
+              "bytes": 181,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "absent-input-zero-result": {
+      "sourceId": "absent-input-zero-result",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "absent-input-zero-result--zero-result-with-empty-rows-and-identity-denied"
+      ],
+      "variants": [
+        {
+          "taskId": "absent-input-zero-result--zero-result-with-empty-rows-and-identity-denied",
+          "variantId": "zero-result-with-empty-rows-and-identity-denied",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "7fd279e00961dfdef3464300a332aff6a6116eb879e528b79f5cc93f272ffb4f",
+              "bytes": 146,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "measured-zero": {
+      "sourceId": "measured-zero",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "measured-zero--zero-error-count-reviewed-window"
+      ],
+      "variants": [
+        {
+          "taskId": "measured-zero--zero-error-count-reviewed-window",
+          "variantId": "zero-error-count-reviewed-window",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "4e1095e1d42241be6fc918ec86c56efdcdeb889c5f7364c84246ff0abadbbabc",
+              "bytes": 199,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/source-and-evaluation.json",
+              "sha256": "3b0d0aa5de0391cc013efc7ae48f6a38010a7592961ab21070796ff22f1822a5",
+              "bytes": 774,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "partial-or-malformed-source": {
+      "sourceId": "partial-or-malformed-source",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "partial-or-malformed-source--partialerror-and-missing-result-table"
+      ],
+      "variants": [
+        {
+          "taskId": "partial-or-malformed-source--partialerror-and-missing-result-table",
+          "variantId": "partialerror-and-missing-result-table",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "5d7e97d0b192ac25ddce7dd236fd2b834a9ca50c92f6b6c8caa8c99c575225cc",
+              "bytes": 174,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/source-outcomes.json",
+              "sha256": "86ee61dd1976adcc53f289488725d8d011a89ba9a9becbd2aedeaf6f5f030726",
+              "bytes": 706,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "default-resource-health": {
+      "sourceId": "default-resource-health",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "default-resource-health--resource-health-default-vs-empty"
+      ],
+      "variants": [
+        {
+          "taskId": "default-resource-health--resource-health-default-vs-empty",
+          "variantId": "resource-health-default-vs-empty",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "28ffcb8385c0f283d70525360934312ae9f5a34e7fcd88e18d15e4f5cf57b581",
+              "bytes": 216,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/candidate-omitted.bicep",
+              "sha256": "026a60a976896350f632b1b51da19292552899fa090c4fb87b93ccd011be5380",
+              "bytes": 438,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/candidate-empty.bicep",
+              "sha256": "1969a92029b41e1a10610ef640cfd41d6a5ddd846e3f881319a9d5fca27bb248",
+              "bytes": 465,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/caller-source-list.md",
+              "sha256": "282ba46cacbaa63c39b21fe397050d690a3d6ab641e565e9a94b472f695c9e09",
+              "bytes": 140,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "discovery-only-gaps": {
+      "sourceId": "discovery-only-gaps",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "discovery-only-gaps--discovery-only-unresolved-access"
+      ],
+      "variants": [
+        {
+          "taskId": "discovery-only-gaps--discovery-only-unresolved-access",
+          "variantId": "discovery-only-unresolved-access",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "a7faa9e4902eaaa796a0361d1efdeacacc6f45c5098a31ab8e8093c12be18fd0",
+              "bytes": 195,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "history-utc-and-pagination": {
+      "sourceId": "history-utc-and-pagination",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "history-utc-and-pagination--history-window-with-repeated-nextmarker"
+      ],
+      "variants": [
+        {
+          "taskId": "history-utc-and-pagination--history-window-with-repeated-nextmarker",
+          "variantId": "history-window-with-repeated-nextmarker",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "b1d90c684d09489acb92c37f7c3f7895392f2bfbf40b9eafb746e7bb5543f58a",
+              "bytes": 183,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "history-repeat-and-carry-in": {
+      "sourceId": "history-repeat-and-carry-in",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "history-repeat-and-carry-in--second-window-carry-in-only"
+      ],
+      "variants": [
+        {
+          "taskId": "history-repeat-and-carry-in--second-window-carry-in-only",
+          "variantId": "second-window-carry-in-only",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "bd8ae73127f6719c522624053855e46c50c20b65691b59acc2565b73eae2cd88",
+              "bytes": 194,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/history-window-2.json",
+              "sha256": "c8f0e3cc234f8a79bcff938b601a879908fd6df16ea990b5e3d4f932df5eb46c",
+              "bytes": 879,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/prior-observation.json",
+              "sha256": "12dacb9176a77db9bb186fe2fbe20d6ce9e4c4e0edc6094d31faf74b6aa514fd",
+              "bytes": 221,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "stable-flow-backend-replacement": {
+      "sourceId": "stable-flow-backend-replacement",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "stable-flow-backend-replacement--replace-backend-preserve-stable-entity"
+      ],
+      "variants": [
+        {
+          "taskId": "stable-flow-backend-replacement--replace-backend-preserve-stable-entity",
+          "variantId": "replace-backend-preserve-stable-entity",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "24051b3592d40bc2daa4e995161b374a47f0342cedf22e4fcc0f1070715ae6b2",
+              "bytes": 166,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/model-readback.json",
+              "sha256": "560505673ca7b68ac0f3da0ca29b92b5d7a4632c03ed37a5941acbcdac631065",
+              "bytes": 2292,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/baseline/main.bicep",
+              "sha256": "65042f9c3a597b2cdaa00e4da5ab2c3c54a4ac63a09385da348eff7d118118bf",
+              "bytes": 2492,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "signal-history-identity": {
+      "sourceId": "signal-history-identity",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "signal-history-identity--instance-update-vs-recreate-vs-label-change"
+      ],
+      "variants": [
+        {
+          "taskId": "signal-history-identity--instance-update-vs-recreate-vs-label-change",
+          "variantId": "instance-update-vs-recreate-vs-label-change",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "aed80da43f1c3cc2f5df1b741617541d75e4e4dd46a094447ecaed6023e328a9",
+              "bytes": 165,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "implicit-root-and-shared-dependency": {
+      "sourceId": "implicit-root-and-shared-dependency",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "implicit-root-and-shared-dependency--shared-dependency-with-disconnected-diagnostic"
+      ],
+      "variants": [
+        {
+          "taskId": "implicit-root-and-shared-dependency--shared-dependency-with-disconnected-diagnostic",
+          "variantId": "shared-dependency-with-disconnected-diagnostic",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "0bc1306bb1d9e70f454d6a414251d21521eea48d6a68d9fd8f982cf3d2b58586",
+              "bytes": 183,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/model-graph.json",
+              "sha256": "ca0af8c4f50329f3233f31ddcd96ad7bd0b1c6e9b06cac097c6966e73d853b7e",
+              "bytes": 734,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "layout-only-change": {
+      "sourceId": "layout-only-change",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "layout-only-change--move-one-node-preserve-rest"
+      ],
+      "variants": [
+        {
+          "taskId": "layout-only-change--move-one-node-preserve-rest",
+          "variantId": "move-one-node-preserve-rest",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "c3020dbc548c0e03b11696995ae50908ad2028162289eb0121050dd225ce18cb",
+              "bytes": 158,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/layout-import.json",
+              "sha256": "13ebcfbbc98ce0180d5bac3e932786f15661259d5b77a3010423583711a1f64a",
+              "bytes": 459,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "native-preview-not-deployment": {
+      "sourceId": "native-preview-not-deployment",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "native-preview-not-deployment--preview-and-notfound-not-lifecycle-proof"
+      ],
+      "variants": [
+        {
+          "taskId": "native-preview-not-deployment--preview-and-notfound-not-lifecycle-proof",
+          "variantId": "preview-and-notfound-not-lifecycle-proof",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "e6c1d426c799c1aaa1d8fa3b18bbb063f6509972bf04e5f3c9db9b6b8183432d",
+              "bytes": 176,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "absence-versus-read-failure": {
+      "sourceId": "absence-versus-read-failure",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "absence-versus-read-failure--distinguish-notfound-auth-malformed-incomplete"
+      ],
+      "variants": [
+        {
+          "taskId": "absence-versus-read-failure--distinguish-notfound-auth-malformed-incomplete",
+          "variantId": "distinguish-notfound-auth-malformed-incomplete",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "d3d2bd049fd35c000fd8720d098f1290e69560e891de1662c2f616e6605141c0",
+              "bytes": 161,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/read-attempts/01-notfound.json",
+              "sha256": "4de5b4fe6707a0ca56767539c0146e3f0bfb9e60613b564348b5c70d5683bf10",
+              "bytes": 466,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/read-attempts/02-authorization.json",
+              "sha256": "112dcf559cdf20234e5a6079c69106749402445016af2191f94a2b6f7dda739e",
+              "bytes": 482,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/read-attempts/03-malformed.json",
+              "sha256": "f462e8c2fb66cd022876eea25de5288568eb1c70c648c1601b8a10d6f49b0ccf",
+              "bytes": 431,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/read-attempts/04-incomplete.json",
+              "sha256": "decc0b7307c60c730fc5d5c06adc6357950bd92c8c29d9ae729786731660bba8",
+              "bytes": 503,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "cleanup-ownership-and-history": {
+      "sourceId": "cleanup-ownership-and-history",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "cleanup-ownership-and-history--prepare-cleanup-no-execution"
+      ],
+      "variants": [
+        {
+          "taskId": "cleanup-ownership-and-history--prepare-cleanup-no-execution",
+          "variantId": "prepare-cleanup-no-execution",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "4bcd49a891587f1c4b0586453a61ea2025057252456b3f560181f56b94de9e8a",
+              "bytes": 264,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/cleanup-state.json",
+              "sha256": "d74d4c0bb4496288e325b053f52e980c619cf62dd8557456f5a1608276e23d50",
+              "bytes": 565,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "healthy-headline-unknown-numeric": {
+      "sourceId": "healthy-headline-unknown-numeric",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "healthy-headline-unknown-numeric--healthy-entities-unknown-numeric-no-source-query"
+      ],
+      "variants": [
+        {
+          "taskId": "healthy-headline-unknown-numeric--healthy-entities-unknown-numeric-no-source-query",
+          "variantId": "healthy-entities-unknown-numeric-no-source-query",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "52b58de09054f11098ec7d34a8a49f00f7496fbb00da29806a212060b508acf8",
+              "bytes": 214,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "provisioning-succeeded-evaluation-failed": {
+      "sourceId": "provisioning-succeeded-evaluation-failed",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "provisioning-succeeded-evaluation-failed--provisioning-ok-latest-eval-auth-error"
+      ],
+      "variants": [
+        {
+          "taskId": "provisioning-succeeded-evaluation-failed--provisioning-ok-latest-eval-auth-error",
+          "variantId": "provisioning-ok-latest-eval-auth-error",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "70a833a24ae66e3a493d3530f90a58724f6a990eccbff1bde8211ef0f59629e2",
+              "bytes": 196,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/readback.json",
+              "sha256": "43332f2699485c769d3249fb2e74fe5db11d5ebf04e3592fa1c6871c721ef418",
+              "bytes": 700,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "c4-h1": {
+      "sourceId": "c4-h1",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "c4-h1--missing-scope-then-ambiguous-rg"
+      ],
+      "variants": [
+        {
+          "taskId": "c4-h1--missing-scope-then-ambiguous-rg",
+          "variantId": "missing-scope-then-ambiguous-rg",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "a72c21c8e1603f303490153f2695aa07a9f11a2d94b8c793eea06e6a9f02faeb",
+              "bytes": 174,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "c4-h2": {
+      "sourceId": "c4-h2",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "c4-h2--ordered-refusal-scope-correction-acceptance"
+      ],
+      "variants": [
+        {
+          "taskId": "c4-h2--ordered-refusal-scope-correction-acceptance",
+          "variantId": "ordered-refusal-scope-correction-acceptance",
+          "turnCount": 5,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "1436054cbfafa2f394e4e6bad2646a38731ec900e5289e6f701d09f5a8ce3d12",
+              "bytes": 377,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/inventory-capture.json",
+              "sha256": "8ac3da2878e5f54c6d9c6bd438e5f71b33a8c1d709ed9a188bc5f7281f7115c8",
+              "bytes": 2034,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "c4-h3": {
+      "sourceId": "c4-h3",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "c4-h3--same-target-update",
+        "c4-h3--wrong-target-awaiting-choice"
+      ],
+      "variants": [
+        {
+          "taskId": "c4-h3--same-target-update",
+          "variantId": "same-target-update",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "48780b7ea442bf4f7dc00541871923486d439a52eeefc4eccf85d8deaacad90b",
+              "bytes": 308,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/model-source.json",
+              "sha256": "1529176d49ce7d4bf9d3d963853b39b5fc48a45f6d906e2bb98d207c9d5701dc",
+              "bytes": 3031,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": ".healthmodel/brief.md",
+              "sha256": "75d9345eb288876eb89565fd6317300f4e354bbc7cf0af48bc668843d34129a2",
+              "bytes": 142,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "captures/older-readback.json",
+              "sha256": "6f7a7dd4037dcd5f177a1afcdd072c278445deefaab3a15396eee7a21e0c34c2",
+              "bytes": 365,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        },
+        {
+          "taskId": "c4-h3--wrong-target-awaiting-choice",
+          "variantId": "wrong-target-awaiting-choice",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "48780b7ea442bf4f7dc00541871923486d439a52eeefc4eccf85d8deaacad90b",
+              "bytes": 308,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/model-source.json",
+              "sha256": "1529176d49ce7d4bf9d3d963853b39b5fc48a45f6d906e2bb98d207c9d5701dc",
+              "bytes": 3031,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": ".healthmodel/brief.md",
+              "sha256": "347b210af1ab1e6bd07c883d1be3b8b46ee103a7880249618dfa183f1e45dd32",
+              "bytes": 92,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "captures/older-readback.json",
+              "sha256": "6f7a7dd4037dcd5f177a1afcdd072c278445deefaab3a15396eee7a21e0c34c2",
+              "bytes": 365,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "c4-h4": {
+      "sourceId": "c4-h4",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "c4-h4--missing-tools-offline-context",
+        "c4-h4--authorizationfailed-next-page",
+        "c4-h4--no-writable-files-repeat-h2"
+      ],
+      "variants": [
+        {
+          "taskId": "c4-h4--missing-tools-offline-context",
+          "variantId": "missing-tools-offline-context",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "1723547093d58f4dd96c52916eb7782f91a3a569411259cdf770a1029c4b6477",
+              "bytes": 189,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/offline-context.json",
+              "sha256": "2df64a6b72adb707218e8bc7af558451da6f3277b3fe143030d73bcf33fa2dc7",
+              "bytes": 593,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        },
+        {
+          "taskId": "c4-h4--authorizationfailed-next-page",
+          "variantId": "authorizationfailed-next-page",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "1723547093d58f4dd96c52916eb7782f91a3a569411259cdf770a1029c4b6477",
+              "bytes": 189,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/inventory-page-1.json",
+              "sha256": "db163e75ea1007f5ea9cca141e442cfc6a2747b2c50e45a204dcefa2269461d2",
+              "bytes": 496,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/inventory-page-2-error.json",
+              "sha256": "300201b043c04d996b11e6641191ece3ab6f5e45e0f4c4ecc9a1b68d4c3c985e",
+              "bytes": 401,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        },
+        {
+          "taskId": "c4-h4--no-writable-files-repeat-h2",
+          "variantId": "no-writable-files-repeat-h2",
+          "turnCount": 5,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "1723547093d58f4dd96c52916eb7782f91a3a569411259cdf770a1029c4b6477",
+              "bytes": 189,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/inventory-capture.json",
+              "sha256": "8ac3da2878e5f54c6d9c6bd438e5f71b33a8c1d709ed9a188bc5f7281f7115c8",
+              "bytes": 2034,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [
+            "brief"
+          ],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+            "blocked:unsupported-denied-attempt-evidence-contract"
+          ]
+        }
+      ]
+    },
+    "c4-h5": {
+      "sourceId": "c4-h5",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "c4-h5--consumer-threshold-edit",
+        "c4-h5--new-payment-dependency-called-small"
+      ],
+      "variants": [
+        {
+          "taskId": "c4-h5--consumer-threshold-edit",
+          "variantId": "consumer-threshold-edit",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "dff66bafcbf96f9c060594aef7b042e429def82d23e37a4ad2bf7ac1f4679a3b",
+              "bytes": 200,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/reviewed/main.bicep",
+              "sha256": "65042f9c3a597b2cdaa00e4da5ab2c3c54a4ac63a09385da348eff7d118118bf",
+              "bytes": 2492,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        },
+        {
+          "taskId": "c4-h5--new-payment-dependency-called-small",
+          "variantId": "new-payment-dependency-called-small",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "dff66bafcbf96f9c060594aef7b042e429def82d23e37a4ad2bf7ac1f4679a3b",
+              "bytes": 200,
+              "source": "source-task"
+            },
+            {
+              "path": ".healthmodel/brief.md",
+              "sha256": "fe429b8fe75b88bebd478af650aedf29789c7053ccf582bef96448029c067c61",
+              "bytes": 120,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/reviewed/main.bicep",
+              "sha256": "65042f9c3a597b2cdaa00e4da5ab2c3c54a4ac63a09385da348eff7d118118bf",
+              "bytes": 2492,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "genuine-unhealthy-evaluation": {
+      "sourceId": "genuine-unhealthy-evaluation",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "genuine-unhealthy-evaluation--matching-source-and-evaluation-unhealthy"
+      ],
+      "variants": [
+        {
+          "taskId": "genuine-unhealthy-evaluation--matching-source-and-evaluation-unhealthy",
+          "variantId": "matching-source-and-evaluation-unhealthy",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "788d7688fe1b41a17c2470a9aa14f8637af13eeb6d96d422240236eb60a958a3",
+              "bytes": 259,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/observations.json",
+              "sha256": "2c2685241b4684eddfafe727f6099b073250014feb1fe5b4d8d54d4cbe550415",
+              "bytes": 1034,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "c5-p1": {
+      "sourceId": "c5-p1",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "c5-p1--observe-save-then-fresh-signals-session"
+      ],
+      "variants": [
+        {
+          "taskId": "c5-p1--observe-save-then-fresh-signals-session",
+          "variantId": "observe-save-then-fresh-signals-session",
+          "turnCount": 2,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "bf4e6a4401e33ea00e77775d54b9e618a26d359f7c1b62b04a8e13b31f109583",
+              "bytes": 352,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/native/resources.json",
+              "sha256": "1b3cfaff3605bd6a1141149a775fb85d8ae6e58d065f058f9df170114e84328a",
+              "bytes": 1090,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/native/relationships.json",
+              "sha256": "ae7027533eca74ab929b6f7aaa1f2b545c7b576a6cba71268737841aeca337a2",
+              "bytes": 1052,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/native/metric-definitions.json",
+              "sha256": "96434cc8abe392e80eac39bbb02764acd8e6285da943aeb33f3b5ced9c140d4f",
+              "bytes": 980,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/native/metric-samples.json",
+              "sha256": "84c658c8ff774fb6d46eaeb922894d99959947aa8ed55c55946272c575bd46c2",
+              "bytes": 1537,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/native/log-query.json",
+              "sha256": "a806d63d72e744d8ef9dac0ca2996711b3420b679db02aa7e36cf1f7cdaf2991",
+              "bytes": 973,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [
+            "captures/**"
+          ],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+            "blocked:cross-case-dependency-requires-prior-artifact-state"
+          ]
+        }
+      ]
+    },
+    "c5-p2": {
+      "sourceId": "c5-p2",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "c5-p2--mismatch-cloud-tenant",
+        "c5-p2--mismatch-duplicate-rg-resource-name",
+        "c5-p2--mismatch-source-workspace",
+        "c5-p2--mismatch-query-filter-dimensions-aggregation",
+        "c5-p2--mismatch-window-currentness",
+        "c5-p2--mismatch-operation-cached-approval"
+      ],
+      "variants": [
+        {
+          "taskId": "c5-p2--mismatch-cloud-tenant",
+          "variantId": "mismatch-cloud-tenant",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "0df8ef87ec4d6d6ceec06da4a1bcf054c04292afecc0114e22fb93bc830f0bef",
+              "bytes": 285,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/request.json",
+              "sha256": "87aea502d9efe9b6f2c5c3512d469fefb232b2993a8c95a344bfcdfbe3fe5b21",
+              "bytes": 293,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+            "blocked:cross-case-dependency-requires-prior-artifact-state"
+          ]
+        },
+        {
+          "taskId": "c5-p2--mismatch-duplicate-rg-resource-name",
+          "variantId": "mismatch-duplicate-rg-resource-name",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "0df8ef87ec4d6d6ceec06da4a1bcf054c04292afecc0114e22fb93bc830f0bef",
+              "bytes": 285,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/request.json",
+              "sha256": "7c6cd6edd206f0fe22a264afaf37cc27978cd2920f81ceba8161e6e3e392b6ea",
+              "bytes": 465,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+            "blocked:cross-case-dependency-requires-prior-artifact-state"
+          ]
+        },
+        {
+          "taskId": "c5-p2--mismatch-source-workspace",
+          "variantId": "mismatch-source-workspace",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "0df8ef87ec4d6d6ceec06da4a1bcf054c04292afecc0114e22fb93bc830f0bef",
+              "bytes": 285,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/request.json",
+              "sha256": "21873ecf663ca50c31d3361dde274a8d7c60e76cdaf19478f4dbfe17b4db7a80",
+              "bytes": 278,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+            "blocked:cross-case-dependency-requires-prior-artifact-state"
+          ]
+        },
+        {
+          "taskId": "c5-p2--mismatch-query-filter-dimensions-aggregation",
+          "variantId": "mismatch-query-filter-dimensions-aggregation",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "0df8ef87ec4d6d6ceec06da4a1bcf054c04292afecc0114e22fb93bc830f0bef",
+              "bytes": 285,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/request.json",
+              "sha256": "1859455b97ed6a3bf98b277bc59f5a87315c186a6efa3bb8fdc169f007663e63",
+              "bytes": 430,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+            "blocked:cross-case-dependency-requires-prior-artifact-state"
+          ]
+        },
+        {
+          "taskId": "c5-p2--mismatch-window-currentness",
+          "variantId": "mismatch-window-currentness",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "0df8ef87ec4d6d6ceec06da4a1bcf054c04292afecc0114e22fb93bc830f0bef",
+              "bytes": 285,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/request.json",
+              "sha256": "e2d09c31493af77a5ea60c9c766e69d9ab48361a39f09cdf5c3be0e43e4c44ba",
+              "bytes": 343,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+            "blocked:cross-case-dependency-requires-prior-artifact-state"
+          ]
+        },
+        {
+          "taskId": "c5-p2--mismatch-operation-cached-approval",
+          "variantId": "mismatch-operation-cached-approval",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "0df8ef87ec4d6d6ceec06da4a1bcf054c04292afecc0114e22fb93bc830f0bef",
+              "bytes": 285,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/request.json",
+              "sha256": "83cb05f88bd5ee10d7e116996489c09c58d351afebf667e6bb6e9682acd59890",
+              "bytes": 299,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+            "blocked:cross-case-dependency-requires-prior-artifact-state"
+          ]
+        }
+      ]
+    },
+    "c5-p3": {
+      "sourceId": "c5-p3",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "c5-p3--successful-captures-and-denied-continuations",
+        "c5-p3--deny-capture-write",
+        "c5-p3--deny-evidence-note-write"
+      ],
+      "variants": [
+        {
+          "taskId": "c5-p3--successful-captures-and-denied-continuations",
+          "variantId": "successful-captures-and-denied-continuations",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "2333608341e2eebf81e8e1b20543adff23ed6aa592d22c0403d82b710a6af307",
+              "bytes": 268,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/native/inventory-page-1.json",
+              "sha256": "00a6822136fd1015a94b2d004b43cc7878f96e9851b901b0ead3e85be932b2a2",
+              "bytes": 496,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/native/inventory-page-2-denied.json",
+              "sha256": "9c8c29634bd5c917777602d6b00885c055b84c26e4264177927b52abd8d7f2ab",
+              "bytes": 419,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/native/log-partial-error.json",
+              "sha256": "b019951ce1e414662329c1e67983627fc35e36f3977485249589eda569712790",
+              "bytes": 769,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/native/entity-history.json",
+              "sha256": "4bbbd767e8f2920d72c31b4dac05b2242ce89142f5ea233c2ddd300235645a88",
+              "bytes": 415,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [
+            "captures/**"
+          ],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+            "blocked:cross-case-dependency-requires-prior-artifact-state"
+          ]
+        },
+        {
+          "taskId": "c5-p3--deny-capture-write",
+          "variantId": "deny-capture-write",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "2333608341e2eebf81e8e1b20543adff23ed6aa592d22c0403d82b710a6af307",
+              "bytes": 268,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/native/inventory-page-1.json",
+              "sha256": "00a6822136fd1015a94b2d004b43cc7878f96e9851b901b0ead3e85be932b2a2",
+              "bytes": 496,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/native/inventory-page-2-denied.json",
+              "sha256": "9c8c29634bd5c917777602d6b00885c055b84c26e4264177927b52abd8d7f2ab",
+              "bytes": 419,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/native/log-partial-error.json",
+              "sha256": "b019951ce1e414662329c1e67983627fc35e36f3977485249589eda569712790",
+              "bytes": 769,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/native/entity-history.json",
+              "sha256": "4bbbd767e8f2920d72c31b4dac05b2242ce89142f5ea233c2ddd300235645a88",
+              "bytes": 415,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [
+            "capture"
+          ],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+            "blocked:unsupported-denied-attempt-evidence-contract",
+            "blocked:cross-case-dependency-requires-prior-artifact-state"
+          ]
+        },
+        {
+          "taskId": "c5-p3--deny-evidence-note-write",
+          "variantId": "deny-evidence-note-write",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "2333608341e2eebf81e8e1b20543adff23ed6aa592d22c0403d82b710a6af307",
+              "bytes": 268,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/native/inventory-page-1.json",
+              "sha256": "00a6822136fd1015a94b2d004b43cc7878f96e9851b901b0ead3e85be932b2a2",
+              "bytes": 496,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/native/inventory-page-2-denied.json",
+              "sha256": "9c8c29634bd5c917777602d6b00885c055b84c26e4264177927b52abd8d7f2ab",
+              "bytes": 419,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/native/log-partial-error.json",
+              "sha256": "b019951ce1e414662329c1e67983627fc35e36f3977485249589eda569712790",
+              "bytes": 769,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/native/entity-history.json",
+              "sha256": "4bbbd767e8f2920d72c31b4dac05b2242ce89142f5ea233c2ddd300235645a88",
+              "bytes": 415,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [
+            "captures/**"
+          ],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [
+            "note"
+          ],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+            "blocked:unsupported-denied-attempt-evidence-contract",
+            "blocked:cross-case-dependency-requires-prior-artifact-state"
+          ]
+        }
+      ]
+    },
+    "c5-p4": {
+      "sourceId": "c5-p4",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "c5-p4--protected-outside-git-consumer",
+        "c5-p4--unsafe-consumer-pauses",
+        "c5-p4--unverified-consumer-pauses",
+        "c5-p4--capture-name-collision",
+        "c5-p4--missing-or-ambiguous-scope",
+        "c5-p4--scope-only-refused-review",
+        "c5-p4--wrong-target-brief"
+      ],
+      "variants": [
+        {
+          "taskId": "c5-p4--protected-outside-git-consumer",
+          "variantId": "protected-outside-git-consumer",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "8cdd012b9d77f65077340363f0a3801ddbf6ecbf9d5a719251f8cb9a73f365dd",
+              "bytes": 266,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+            "blocked:cross-case-dependency-requires-prior-artifact-state"
+          ]
+        },
+        {
+          "taskId": "c5-p4--unsafe-consumer-pauses",
+          "variantId": "unsafe-consumer-pauses",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "8cdd012b9d77f65077340363f0a3801ddbf6ecbf9d5a719251f8cb9a73f365dd",
+              "bytes": 266,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/destination.json",
+              "sha256": "2aa492284e10d6eade3ca9838cdc0964fdc238ec3967ca698a8278b4f80ac452",
+              "bytes": 190,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+            "blocked:cross-case-dependency-requires-prior-artifact-state"
+          ]
+        },
+        {
+          "taskId": "c5-p4--unverified-consumer-pauses",
+          "variantId": "unverified-consumer-pauses",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "8cdd012b9d77f65077340363f0a3801ddbf6ecbf9d5a719251f8cb9a73f365dd",
+              "bytes": 266,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/destination.json",
+              "sha256": "393998f481b0bda62006dffac81003504ab5b0e79e8f7eddf1e855e60a7bae24",
+              "bytes": 180,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+            "blocked:cross-case-dependency-requires-prior-artifact-state"
+          ]
+        },
+        {
+          "taskId": "c5-p4--capture-name-collision",
+          "variantId": "capture-name-collision",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "8cdd012b9d77f65077340363f0a3801ddbf6ecbf9d5a719251f8cb9a73f365dd",
+              "bytes": 266,
+              "source": "source-task"
+            },
+            {
+              "path": "captures/inventory.json",
+              "sha256": "467be201b0fca4744bd49ccd2cd0378299fd25e1f03b5c80e19e11170c2dcc3b",
+              "bytes": 425,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/new-inventory.json",
+              "sha256": "0446ddf4f22cb1b04ac126a5347d6a1eebdfa8b7ba6c1e35110e50620bda1c56",
+              "bytes": 478,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+            "blocked:cross-case-dependency-requires-prior-artifact-state"
+          ]
+        },
+        {
+          "taskId": "c5-p4--missing-or-ambiguous-scope",
+          "variantId": "missing-or-ambiguous-scope",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "8cdd012b9d77f65077340363f0a3801ddbf6ecbf9d5a719251f8cb9a73f365dd",
+              "bytes": 266,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+            "blocked:cross-case-dependency-requires-prior-artifact-state"
+          ]
+        },
+        {
+          "taskId": "c5-p4--scope-only-refused-review",
+          "variantId": "scope-only-refused-review",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "8cdd012b9d77f65077340363f0a3801ddbf6ecbf9d5a719251f8cb9a73f365dd",
+              "bytes": 266,
+              "source": "source-task"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+            "blocked:cross-case-dependency-requires-prior-artifact-state"
+          ]
+        },
+        {
+          "taskId": "c5-p4--wrong-target-brief",
+          "variantId": "wrong-target-brief",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "8cdd012b9d77f65077340363f0a3801ddbf6ecbf9d5a719251f8cb9a73f365dd",
+              "bytes": 266,
+              "source": "source-task"
+            },
+            {
+              "path": ".healthmodel/brief.md",
+              "sha256": "347b210af1ab1e6bd07c883d1be3b8b46ee103a7880249618dfa183f1e45dd32",
+              "bytes": 92,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping",
+            "blocked:cross-case-dependency-requires-prior-artifact-state"
+          ]
+        }
+      ]
+    },
+    "c9-observe-scope-and-alert-leads": {
+      "sourceId": "c9-observe-scope-and-alert-leads",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "c9-observe-scope-and-alert-leads--scope-a-b-with-duplicate-names-and-alert-lead"
+      ],
+      "variants": [
+        {
+          "taskId": "c9-observe-scope-and-alert-leads--scope-a-b-with-duplicate-names-and-alert-lead",
+          "variantId": "scope-a-b-with-duplicate-names-and-alert-lead",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "68810e3573a156069aeb7458e9fc900bb01a29ec17dcc700d559d385f9edeb6a",
+              "bytes": 221,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/inventory-pages.json",
+              "sha256": "da8b6fb1ceffc339fe32eed1ca1b10d62d2f2d596e37129e7147f85d78984fc7",
+              "bytes": 1233,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/alert.json",
+              "sha256": "4fac1b83f05a29dda386776bac35025db6434ff4f425229b8918065bfae1a5e5",
+              "bytes": 283,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "c9-query-source-outcomes": {
+      "sourceId": "c9-query-source-outcomes",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "c9-query-source-outcomes--metric-kql-promql-outcome-matrix"
+      ],
+      "variants": [
+        {
+          "taskId": "c9-query-source-outcomes--metric-kql-promql-outcome-matrix",
+          "variantId": "metric-kql-promql-outcome-matrix",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "d2ba4f8a2090d63dfe498b52970c721aacf4d9c9b8abe077da89a5e4729ff052",
+              "bytes": 297,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/source-outcomes.json",
+              "sha256": "f5b8a089812b853d49bb85d8908959e1636042b49e07026cf25586cb226bcb50",
+              "bytes": 4034,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/**",
+            "outputs/**",
+            "**/*.bicep",
+            "outputs/**/*.bicep"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "c9-signal-fragment-and-stable-instance": {
+      "sourceId": "c9-signal-fragment-and-stable-instance",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "c9-signal-fragment-and-stable-instance--shared-definition-reorder-and-tune-one-binding"
+      ],
+      "variants": [
+        {
+          "taskId": "c9-signal-fragment-and-stable-instance--shared-definition-reorder-and-tune-one-binding",
+          "variantId": "shared-definition-reorder-and-tune-one-binding",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "f6f6fcb5e8a71bcc575d17cde4c1f23aae0a23f253b557f89a7e10ce23f7b2a6",
+              "bytes": 254,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/model/main.bicep",
+              "sha256": "65042f9c3a597b2cdaa00e4da5ab2c3c54a4ac63a09385da348eff7d118118bf",
+              "bytes": 2492,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/alert-suggestion.json",
+              "sha256": "bf95915ddbca9b85d371028a3dfd29747208419116af60648d827875e3c9794b",
+              "bytes": 280,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "c9-bounded-removal": {
+      "sourceId": "c9-bounded-removal",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "c9-bounded-removal--remove-manual-entity",
+        "c9-bounded-removal--discovery-owned-entity",
+        "c9-bounded-removal--unmapped-writable-field"
+      ],
+      "variants": [
+        {
+          "taskId": "c9-bounded-removal--remove-manual-entity",
+          "variantId": "remove-manual-entity",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "8969382bb210c826d7457aeb6ffccbc5a0b0d88206ad09176b16637bb1901769",
+              "bytes": 261,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/baseline/main.bicep",
+              "sha256": "02f22aba1c77ddf786fa7107dfbbd4d86631bade53568eea8086b6137ff2570b",
+              "bytes": 3357,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/native-readback.json",
+              "sha256": "560505673ca7b68ac0f3da0ca29b92b5d7a4632c03ed37a5941acbcdac631065",
+              "bytes": 2292,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        },
+        {
+          "taskId": "c9-bounded-removal--discovery-owned-entity",
+          "variantId": "discovery-owned-entity",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "8969382bb210c826d7457aeb6ffccbc5a0b0d88206ad09176b16637bb1901769",
+              "bytes": 261,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/baseline/main.bicep",
+              "sha256": "02f22aba1c77ddf786fa7107dfbbd4d86631bade53568eea8086b6137ff2570b",
+              "bytes": 3357,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/native-readback.json",
+              "sha256": "ef992c8f68737210113e2c3cac60d9da6a5a40b8b5085c2a9839cf5d00f75378",
+              "bytes": 2609,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        },
+        {
+          "taskId": "c9-bounded-removal--unmapped-writable-field",
+          "variantId": "unmapped-writable-field",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "8969382bb210c826d7457aeb6ffccbc5a0b0d88206ad09176b16637bb1901769",
+              "bytes": 261,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/baseline/main.bicep",
+              "sha256": "02f22aba1c77ddf786fa7107dfbbd4d86631bade53568eea8086b6137ff2570b",
+              "bytes": 3357,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/native-readback.json",
+              "sha256": "bb0742537e70f8f143cb4b2cad12d1fcde434668dfa669cccf4e399e78ab13c1",
+              "bytes": 2377,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "c9-rollup-impact-custom-groups": {
+      "sourceId": "c9-rollup-impact-custom-groups",
+      "expectedCount": 2,
+      "variantTaskIds": [
+        "c9-rollup-impact-custom-groups--native-aggregation-semantics-supplied",
+        "c9-rollup-impact-custom-groups--native-aggregation-semantics-unavailable"
+      ],
+      "variants": [
+        {
+          "taskId": "c9-rollup-impact-custom-groups--native-aggregation-semantics-supplied",
+          "variantId": "native-aggregation-semantics-supplied",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "a11b5da13023caed1b0560d8ef854534778a5b1bfef245caaf8fdb1e6bd9728f",
+              "bytes": 238,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/model/main.bicep",
+              "sha256": "65042f9c3a597b2cdaa00e4da5ab2c3c54a4ac63a09385da348eff7d118118bf",
+              "bytes": 2492,
+              "source": "synthetic-premise"
+            },
+            {
+              "path": "inputs/aggregation-semantics.md",
+              "sha256": "a6d2769b6d8947a4ec456fbf306b8cfdb5294ab435e6305890b012cf8abea624",
+              "bytes": 180,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        },
+        {
+          "taskId": "c9-rollup-impact-custom-groups--native-aggregation-semantics-unavailable",
+          "variantId": "native-aggregation-semantics-unavailable",
+          "turnCount": 1,
+          "fileRefs": [
+            {
+              "path": "inputs/public-task.md",
+              "sha256": "a11b5da13023caed1b0560d8ef854534778a5b1bfef245caaf8fdb1e6bd9728f",
+              "bytes": 238,
+              "source": "source-task"
+            },
+            {
+              "path": "inputs/model/main.bicep",
+              "sha256": "65042f9c3a597b2cdaa00e4da5ab2c3c54a4ac63a09385da348eff7d118118bf",
+              "bytes": 2492,
+              "source": "synthetic-premise"
+            }
+          ],
+          "requiredArtifacts": [],
+          "forbiddenArtifacts": [
+            "captures/**",
+            "notes/**",
+            ".healthmodel/brief.md"
+          ],
+          "forbiddenAttemptOperations": [
+            "azure.network",
+            "capture",
+            "note",
+            "brief"
+          ],
+          "requiredDeniedAttemptClasses": [],
+          "blockedReasons": [
+            "blocked:safety-admission-unproven",
+            "blocked:unsupported-forbidden-operation-toolconstraint-mapping"
+          ]
+        }
+      ]
+    },
+    "always-on-01": {
+      "sourceId": "always-on-01",
+      "expectedCount": 10,
+      "variantTaskIds": [
+        "always-on-01--private-workflow"
+      ],
+      "variants": [
+        {
+          "taskId": "always-on-01--private-workflow",
+          "variantId": "private-workflow",
+          "turnCount": 0,
+          "fileRefs": [],
+          "blockedReasons": [
+            "blocked:private-workflow-capture-set-unavailable",
+            "blocked:safety-admission-unproven"
+          ]
+        }
+      ]
+    },
+    "always-on-02": {
+      "sourceId": "always-on-02",
+      "expectedCount": 10,
+      "variantTaskIds": [
+        "always-on-02--private-workflow"
+      ],
+      "variants": [
+        {
+          "taskId": "always-on-02--private-workflow",
+          "variantId": "private-workflow",
+          "turnCount": 0,
+          "fileRefs": [],
+          "blockedReasons": [
+            "blocked:private-workflow-capture-set-unavailable",
+            "blocked:safety-admission-unproven"
+          ]
+        }
+      ]
+    },
+    "always-on-03": {
+      "sourceId": "always-on-03",
+      "expectedCount": 11,
+      "variantTaskIds": [
+        "always-on-03--private-workflow"
+      ],
+      "variants": [
+        {
+          "taskId": "always-on-03--private-workflow",
+          "variantId": "private-workflow",
+          "turnCount": 0,
+          "fileRefs": [],
+          "blockedReasons": [
+            "blocked:private-workflow-capture-set-unavailable",
+            "blocked:safety-admission-unproven"
+          ]
+        }
+      ]
+    },
+    "always-on-04": {
+      "sourceId": "always-on-04",
+      "expectedCount": 11,
+      "variantTaskIds": [
+        "always-on-04--private-workflow"
+      ],
+      "variants": [
+        {
+          "taskId": "always-on-04--private-workflow",
+          "variantId": "private-workflow",
+          "turnCount": 0,
+          "fileRefs": [],
+          "blockedReasons": [
+            "blocked:private-workflow-capture-set-unavailable",
+            "blocked:safety-admission-unproven"
+          ]
+        }
+      ]
+    },
+    "always-on-05": {
+      "sourceId": "always-on-05",
+      "expectedCount": 10,
+      "variantTaskIds": [
+        "always-on-05--private-workflow"
+      ],
+      "variants": [
+        {
+          "taskId": "always-on-05--private-workflow",
+          "variantId": "private-workflow",
+          "turnCount": 0,
+          "fileRefs": [],
+          "blockedReasons": [
+            "blocked:private-workflow-capture-set-unavailable",
+            "blocked:safety-admission-unproven"
+          ]
+        }
+      ]
+    }
+  }
+}

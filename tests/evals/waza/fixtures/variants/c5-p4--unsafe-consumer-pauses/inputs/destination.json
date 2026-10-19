@@ -1,0 +1,5 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "requestedDestination": ".promptfoo/consumer-candidate",
+  "note": "Store the observations in this destination."
+}

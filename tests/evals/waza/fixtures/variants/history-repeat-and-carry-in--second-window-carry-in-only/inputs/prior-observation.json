@@ -1,0 +1,7 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "entity": "api",
+  "observedAtUtc": "2026-10-13T08:00:00Z",
+  "healthState": "Healthy",
+  "window": "2026-10-13T07:50:00Z/2026-10-13T08:00:00Z"
+}

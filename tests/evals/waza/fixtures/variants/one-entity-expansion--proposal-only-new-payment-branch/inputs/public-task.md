@@ -1,0 +1,1 @@
+Add only one entity for a new external payment dependency branch. Existing confirmed inputs cover catalog lookup, not payment. Prepare a proposal, not a deployment.

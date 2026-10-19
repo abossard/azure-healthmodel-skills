@@ -1,0 +1,29 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "target": "/subscriptions/00000000-0000-4000-8000-00000000000a/resourceGroups/rg-shared/providers/Microsoft.CloudHealth/healthmodels/catalog-health-model/entities/api",
+  "approvedPayload": {
+    "body": "Deployment of api build 1842 started.",
+    "eventTimeUtc": "2026-10-14T05:25:00Z"
+  },
+  "listedAtUtc": "2026-10-14T05:41:00Z",
+  "response": {
+    "value": [
+      {
+        "name": "a-17",
+        "properties": {
+          "body": "Deployment of api build 1842 started.",
+          "eventTimeUtc": "2026-10-14T05:25:00Z",
+          "createdBy": "automation-1"
+        }
+      },
+      {
+        "name": "a-18",
+        "properties": {
+          "body": "Deployment of api build 1842 started.",
+          "eventTimeUtc": "2026-10-14T05:25:00Z",
+          "createdBy": "fictional-operator"
+        }
+      }
+    ]
+  }
+}

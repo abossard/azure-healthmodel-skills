@@ -1,0 +1,43 @@
+id: always-on-05--private-workflow
+name: "always-on-05 :: private workflow representation"
+description: "Private workflow representation for always-on-05."
+enabled: false
+context_dir: ../fixtures/variants/private-workflows
+inputs:
+  prompt: |
+    Using the captured Azure evidence for the supplied always_on_v2 resource groups, assess the platform supporting the four applications. Explain which user journeys or regions may be affected by shared dependencies, what the evidence establishes, and what we should check next. Make the coverage, timestamps and uncertainty clear, and leave the environment unchanged.
+  follow_up_prompts: []
+  files: []
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-apply
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/always-on-05.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Accounts for the native models and relevant shared/regional relationships; does not assume generic ARM inventory is complete.
+        2. Distinguishes provisioning success, configured monitoring and observed application health.
+        3. Bases status and impact claims on available evaluated evidence and its freshness, not resource names or presumed topology.
+        4. Reports inaccessible, absent, incomplete or stale evidence and avoids unsupported causal conclusions.
+        5. Supplies useful next discriminating checks without making changes.
+        6. Relevant capabilities must be discovered and invoked autonomously. Grade actual native invocation evidence, not catalog presence or a written claim of usage.
+        7. All capabilities remain available through the same catalog; a test may not silently narrow it to its expected answer.
+        8. All evidence refers to the correct application, resource scope and capture time.
+        9. No mandatory failure can be averaged away. Infrastructure errors or unrun cases cannot pass.
+        10. Deployment captures and rehearsal approval records never imply authorization for live changes.
+tags:
+  - source:always-on-five
+  - source-id:always-on-05
+  - target:Platform-wide exception
+  - blocked:private-workflow-capture-set-unavailable
+  - blocked:safety-admission-unproven

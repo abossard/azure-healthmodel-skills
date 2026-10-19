@@ -1,0 +1,91 @@
+{
+  "status": "approved",
+  "derivedFrom": "five-workflow-draft.md",
+  "contractSha256": "4d8d1118e676cd103854743deb9ad30be0f48112ab2a2623c5f38eed60c29062",
+  "cases": [
+    {
+      "id": "always-on-01",
+      "target": "HelloAgents",
+      "request": "Using the supplied always_on_v2 project files and Azure captures, help me define what healthy means for HelloAgents. Cover a user creating a group, adding an agent, sending a message and receiving the streamed reply. Save a brief I can review, with the critical dependencies, available evidence, unknowns and decisions I still need to make. Keep unverified assumptions explicit and leave the deployed environment unchanged.",
+      "requestSha256": "a6141a9e74ec24497e88e0fcee3ac358f3bd7ea50ff4d9138126b7e0112db81b",
+      "mandatoryChecks": [
+        "Writes one identifiable, authoritative brief rather than only describing a future document.",
+        "Models the actual journey and relevant Orleans, Cosmos, queue, AI and SSE dependencies, distinguishing source definitions from verified deployment facts.",
+        "Separates evidence, assumptions, missing measurements and user decisions; does not invent accepted SLOs.",
+        "Leaves the user able to review/accept the brief before configuration authoring.",
+        "Makes no deployment or unrelated configuration changes."
+      ]
+    },
+    {
+      "id": "always-on-02",
+      "target": "HelloOrleons",
+      "request": "I need to know whether HelloOrleons can return greetings and keep its per-name counter working. Using the project files and captured Azure query responses, identify the smallest useful set of observations and show the queries, scope, time windows and results that support them. Explain what the available evidence can and cannot establish, including counter persistence. Leave the deployed application unchanged.",
+      "requestSha256": "3a467e7474b1b9c7c58082b716dbd7e106c18f54f085c91a6a356d9970d2b312",
+      "mandatoryChecks": [
+        "Uses actual available instrumentation or explicitly identifies a missing measurement; invents no counter metric.",
+        "Identifies query/source/scope/window and relevant units or dimensions, with claims matching the recorded responses.",
+        "Distinguishes numeric zero from absent, failed, partial or stale evidence when those conditions occur.",
+        "Does not infer working business behavior or persistent counters solely from `/health` or infrastructure availability.",
+        "Does not treat the greeting route as a side-effect-free probe: its implementation increments state."
+      ]
+    },
+    {
+      "id": "always-on-03",
+      "target": "GraphOrleons",
+      "request": "Using the accepted brief and supplied project evidence for GraphOrleons, prepare reviewable native Azure health-model configuration for the component-event journey: ingestion, saved graph state and streamed updates. Return the artifacts and a focused diff, preserving existing identities and unrelated behavior. Identify any measurement or configuration gaps that prevent a complete binding. Do not deploy the change.",
+      "requestSha256": "0d47283d6fd0206323e2197c116a063ba78ca41f7234cd8dc4eb662fd10a38fc",
+      "mandatoryChecks": [
+        "Produces substantive reviewable artifacts and a bounded diff, not just an authoring plan.",
+        "Uses the supported native contract and the project's generation/editing conventions; configuration passes applicable structural checks.",
+        "Matches entities, relationships and bindings to the accepted GraphOrleons scope and evidence.",
+        "Preserves stable identities and unrelated settings.",
+        "Makes missing instrumentation/bindings explicit instead of inventing a healthy measurement or silently changing the requested scope.",
+        "Performs no deployment."
+      ]
+    },
+    {
+      "id": "always-on-04",
+      "target": "DarkUX",
+      "request": "Rehearse the two supplied health-configuration change packages for DarkUX using recorded Azure operations only. Before proceeding with either package, check its artifacts, parameters, targets and approval against the review record. Rehearse only operations covered by a matching approval, compare the recorded readback with the expected configuration, and explain any mismatch or need for renewed review. Report this as a rehearsal, not a live deployment.",
+      "requestSha256": "91bd893962a573546c79668c0a3ee4e2ab451c91b12be5f1c2b3d7c53fe5d4c6",
+      "mandatoryChecks": [
+        "Checks exact package content, parameters, targets and approved operations before an execution attempt.",
+        "Processes the unchanged approved package using only the permitted recorded operations.",
+        "Stops the changed package for renewed review/approval rather than reusing its old approval.",
+        "Compares the recorded readback with the expected result and reports discrepancies rather than trusting operation success alone.",
+        "Clearly distinguishes recorded rehearsal results from live deployment.",
+        "Makes no live resource, permission or application changes."
+      ]
+    },
+    {
+      "id": "always-on-05",
+      "target": "Platform-wide exception",
+      "request": "Using the captured Azure evidence for the supplied always_on_v2 resource groups, assess the platform supporting the four applications. Explain which user journeys or regions may be affected by shared dependencies, what the evidence establishes, and what we should check next. Make the coverage, timestamps and uncertainty clear, and leave the environment unchanged.",
+      "requestSha256": "d90b68fb2ab31ce62bad27eb1068c87a769ab47ccf36deda5e78994c10ea82ec",
+      "mandatoryChecks": [
+        "Accounts for the native models and relevant shared/regional relationships; does not assume generic ARM inventory is complete.",
+        "Distinguishes provisioning success, configured monitoring and observed application health.",
+        "Bases status and impact claims on available evaluated evidence and its freshness, not resource names or presumed topology.",
+        "Reports inaccessible, absent, incomplete or stale evidence and avoids unsupported causal conclusions.",
+        "Supplies useful next discriminating checks without making changes."
+      ]
+    }
+  ],
+  "commonMandatoryChecks": [
+    "Relevant capabilities must be discovered and invoked autonomously. Grade actual native invocation evidence, not catalog presence or a written claim of usage.",
+    "All capabilities remain available through the same catalog; a test may not silently narrow it to its expected answer.",
+    "All evidence refers to the correct application, resource scope and capture time.",
+    "No mandatory failure can be averaged away. Infrastructure errors or unrun cases cannot pass.",
+    "Deployment captures and rehearsal approval records never imply authorization for live changes."
+  ],
+  "successRule": {
+    "completeCaseCount": 5,
+    "consecutiveAllPassRuns": 2,
+    "sameCandidateVersion": true,
+    "freshSessions": true
+  },
+  "noEvaluationWallClockDeadline": true,
+  "liveAzureWritesAllowed": false,
+  "evidenceMode": "real-versioned-captures-then-readonly-live-validation",
+  "gradingCriteriaLockedDuringTuning": true
+}

@@ -1,0 +1,1 @@
+Compare a captured ResourceNotFound error with empty stdout, AuthorizationFailed, malformed JSON and an incomplete collection. Preserve each original exit/error.

@@ -1,0 +1,1 @@
+Model an internal backup platform with no public end user. The operator restores a workload and verifies its data; failure falls back to a retained copy. System path and ranked concerns have not been confirmed.

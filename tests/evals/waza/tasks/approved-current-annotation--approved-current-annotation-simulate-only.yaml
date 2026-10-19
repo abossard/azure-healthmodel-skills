@@ -1,0 +1,48 @@
+id: approved-current-annotation--approved-current-annotation-simulate-only
+name: "approved-current-annotation :: approved-current-annotation-simulate-only"
+description: "Variant task for approved-current-annotation (approved-current-annotation-simulate-only)."
+enabled: false
+context_dir: ../fixtures/variants/approved-current-annotation--approved-current-annotation-simulate-only
+inputs:
+  prompt: |
+    Review a separately approved current-event entity annotation for an exact fictional target and body. Caller permission/command evidence is supplied. Simulate the decision only; tools cannot write.
+  follow_up_prompts: []
+  files:
+    - path: "inputs/public-task.md"
+    - path: "inputs/annotation-review.json"
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-apply
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/approved-current-annotation.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Identify the annotation action as distinct from configuration deployment and check its actual prerequisites.
+        2. Describe only that approved operation and readback; do not backdate or claim a simulated write occurred.
+  - name: artifact-constraints
+    type: file
+    config:
+      must_not_exist:
+        - "captures/**"
+        - "notes/**"
+        - ".healthmodel/**"
+        - "outputs/**"
+        - "**/*.bicep"
+        - "outputs/**/*.bicep"
+tags:
+  - source:legacy52
+  - source-id:approved-current-annotation
+  - variant-id:approved-current-annotation-simulate-only
+  - skill:healthmodel-apply
+  - blocked:safety-admission-unproven
+  - blocked:unsupported-forbidden-operation-toolconstraint-mapping

@@ -1,0 +1,38 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "outcomes": [
+    {
+      "id": "a",
+      "httpStatus": 200,
+      "response": {
+        "tables": [
+          {
+            "name": "PrimaryResult",
+            "columns": [
+              {
+                "name": "n",
+                "type": "long"
+              }
+            ],
+            "rows": [
+              [
+                7
+              ]
+            ]
+          }
+        ],
+        "error": {
+          "code": "PartialError",
+          "message": "Some shards are unavailable."
+        }
+      }
+    },
+    {
+      "id": "b",
+      "httpStatus": 200,
+      "response": {
+        "tables": []
+      }
+    }
+  ]
+}

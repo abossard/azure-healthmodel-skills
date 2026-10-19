@@ -1,0 +1,45 @@
+id: intake-missing-user-flow--missing-user-flow
+name: "intake-missing-user-flow :: missing-user-flow"
+description: "Variant task for intake-missing-user-flow (missing-user-flow)."
+enabled: false
+context_dir: ../fixtures/variants/intake-missing-user-flow--missing-user-flow
+inputs:
+  prompt: |
+    Create a request-processing model. Confirmed system flow: gateway to API to database. Ranked concerns: failed submissions, then latency. No user flow is supplied.
+  follow_up_prompts: []
+  files:
+    - path: "inputs/public-task.md"
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-plan
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/intake-missing-user-flow.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Populate .healthmodel/brief.md from supplied context with a proposed actor, goal, success/failure and fallback; keep missing scope and resource facts explicit.
+        2. Ask the user to correct or accept that flow; keep new-scope authoring pending and label inferred intent unconfirmed.
+  - name: artifact-constraints
+    type: file
+    config:
+      must_exist:
+        - ".healthmodel/brief.md"
+      must_not_exist:
+        - "**/*.bicep"
+        - "outputs/**/*.bicep"
+tags:
+  - source:legacy52
+  - source-id:intake-missing-user-flow
+  - variant-id:missing-user-flow
+  - skill:healthmodel-plan
+  - blocked:safety-admission-unproven
+  - blocked:unsupported-forbidden-operation-toolconstraint-mapping

@@ -1,0 +1,34 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "model": "catalog-health-model",
+  "entities": [
+    "catalog-health-model",
+    "checkout-flow",
+    "orders",
+    "inventory",
+    "shared-db",
+    "queue-monitor"
+  ],
+  "relationships": [
+    {
+      "parentEntityName": "catalog-health-model",
+      "childEntityName": "checkout-flow"
+    },
+    {
+      "parentEntityName": "checkout-flow",
+      "childEntityName": "orders"
+    },
+    {
+      "parentEntityName": "checkout-flow",
+      "childEntityName": "inventory"
+    },
+    {
+      "parentEntityName": "orders",
+      "childEntityName": "shared-db"
+    },
+    {
+      "parentEntityName": "inventory",
+      "childEntityName": "shared-db"
+    }
+  ]
+}

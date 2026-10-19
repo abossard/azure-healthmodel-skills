@@ -1,0 +1,34 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "window": "2026-10-14T05:00:00Z/2026-10-14T05:10:00Z",
+  "source": {
+    "operation": "log-analytics.query",
+    "query": "requests | where success == false | summarize errors = count()",
+    "response": {
+      "tables": [
+        {
+          "name": "PrimaryResult",
+          "columns": [
+            {
+              "name": "errors",
+              "type": "long"
+            }
+          ],
+          "rows": [
+            [
+              0
+            ]
+          ]
+        }
+      ],
+      "rowsScanned": 214
+    }
+  },
+  "evaluation": {
+    "entity": "api",
+    "signal": "error-count",
+    "value": 0,
+    "rule": "GreaterThan 5 is Degraded",
+    "windowEndUtc": "2026-10-14T05:10:00Z"
+  }
+}

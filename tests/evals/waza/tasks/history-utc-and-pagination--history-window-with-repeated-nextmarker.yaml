@@ -1,0 +1,47 @@
+id: history-utc-and-pagination--history-window-with-repeated-nextmarker
+name: "history-utc-and-pagination :: history-window-with-repeated-nextmarker"
+description: "Variant task for history-utc-and-pagination (history-window-with-repeated-nextmarker)."
+enabled: false
+context_dir: ../fixtures/variants/history-utc-and-pagination--history-window-with-repeated-nextmarker
+inputs:
+  prompt: |
+    Investigate the supplied fictional history from 2026-10-14T07:00:00+02:00 to 07:10:00+02:00. A second page repeats nextMarker x and optional reason/value fields are absent. No writes.
+  follow_up_prompts: []
+  files:
+    - path: "inputs/public-task.md"
+graders:
+  - name: required-skill-invocation
+    type: skill_invocation
+    config:
+      mode: any_order
+      required_skills:
+        - healthmodel-explain
+  - name: expectation-rubric
+    type: prompt
+    rubric: tests/evals/waza/rubrics/history-utc-and-pagination.md
+    config:
+      prompt: |
+        Grade the assistant response against the rubric requirements.
+        Return pass only if every requirement is clearly satisfied.
+        Fail if any requirement is missing, contradicted, or unsupported by evidence in the response.
+        
+        Requirements:
+        1. Use 05:00:00Z to 05:10:00Z with page/record citations and original timestamps.
+        2. Report incomplete pagination, retain absent values and separate nearby annotation correlation from causation.
+  - name: artifact-constraints
+    type: file
+    config:
+      must_not_exist:
+        - "captures/**"
+        - "notes/**"
+        - ".healthmodel/**"
+        - "outputs/**"
+        - "**/*.bicep"
+        - "outputs/**/*.bicep"
+tags:
+  - source:legacy52
+  - source-id:history-utc-and-pagination
+  - variant-id:history-window-with-repeated-nextmarker
+  - skill:healthmodel-explain
+  - blocked:safety-admission-unproven
+  - blocked:unsupported-forbidden-operation-toolconstraint-mapping

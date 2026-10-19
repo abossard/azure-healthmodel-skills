@@ -1,0 +1,14 @@
+{
+  "x-fixture": "synthetic fictional fixture; not captured from Azure",
+  "name": "api-latency-alert",
+  "properties": {
+    "severity": 0,
+    "actionGroups": [
+      "ag-pager"
+    ],
+    "criteria": {
+      "metricName": "HttpResponseTime",
+      "threshold": 500
+    }
+  }
+}
